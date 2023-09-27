@@ -10,6 +10,8 @@ import { performAddressAliasReplacement } from './utils/address-helpers';
 import { AtomicalsGetFetchType } from './commands/command.interface';
 dotenv.config();
 
+const WALLET_FILE = "wallet.json";
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 // General Helper Functions
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -230,9 +232,11 @@ program.command('wallet-import')
   .description('Import a wallet by WIF and assign it to provided alias')
   .argument('<wif>', 'string')
   .argument('<alias>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .action(async (wif, alias, options) => {
     try {
-      await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      await validateWalletStorage(walletPath);
       await Atomicals.walletImport(wif, alias);
       console.log('Success! wallet.json updated')
     } catch (error) {
@@ -243,8 +247,10 @@ program.command('wallet-import')
 program.command('address-script')
   .description('Encodes an address or wallet alias as the hex output script')
   .argument('<addressOrAlias>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .action(async (addressOrAlias, options) => {
-    const walletInfo = await validateWalletStorage();
+    const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+    const walletInfo = await validateWalletStorage(walletPath);
     const result: { output: any, address: string } = performAddressAliasReplacement(walletInfo, addressOrAlias || undefined);
     console.log('Address:', result.address)
     console.log('Script:', result.output.toString('hex'))
@@ -255,10 +261,12 @@ program.command('address-script')
 program.command('address')
   .description('Get balances and Atomicals stored at an address')
   .argument('<address>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--history', 'Verbose output to include history or not')
   .action(async (address, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const history = options.history ? true : false;
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
@@ -273,6 +281,7 @@ program.command('address')
 
 program.command('wallets')
   .description('Get balances and atomicals stored at internal wallets')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--history', 'Shows history of txids for each wallet if enabled')
   .option('--all', 'Shows all loaded wallets and not just the primary and funding')
   .option('--extra', 'Show extended wallet information such as specific utxos. Default is to only show a summary.')
@@ -284,6 +293,7 @@ program.command('wallets')
   .option('--address <string>', 'Show the data and a QR code for an arbitrary address. Not expected to be loaded into local wallets.')
   .action(async (options) => {
     try {
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
       const all = options.all ? true : false;
       const history = options.history ? true : false;
       const alias = options.alias ? options.alias : null;
@@ -297,7 +307,7 @@ program.command('wallets')
       if (type && (type.toLowerCase() !== 'all' && type.toLowerCase() !== 'nft' && type.toLowerCase() != 'ft')) {
         throw `Invalid type ${type}`
       }
-      const walletInfo = await validateWalletStorage();
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const electrum = ElectrumApi.createClient(process.env.ELECTRUMX_WSS || '');
       const atomicals = new Atomicals(config, electrum);
@@ -399,6 +409,7 @@ program.command('wallets')
   });
   program.command('balances')
   .description('Get balances and atomicals stored at internal wallets')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--noqr', 'Hide QR codes')
   .option('--utxos', 'Show utxos too')
   .option('--all', 'Shows all loaded wallets and not just the primary and funding')
@@ -406,13 +417,14 @@ program.command('wallets')
   .option('--address <string>', 'Restrict to only showing by address. Using this option with --alias has no effect.')
   .action(async (options) => {
     try {
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
       const alias = options.alias ? options.alias : null;
       const noqr = options.noqr ? options.noqr : null;
       const address = options.address ? options.address : null;
       const all = options.all ? true : false;
       const utxos = options.utxos ? true : false;
       const balancesOnly = true
-      const walletInfo = await validateWalletStorage();
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const electrum = ElectrumApi.createClient(process.env.ELECTRUMX_WSS || '');
       const atomicals = new Atomicals(config, electrum);
@@ -488,9 +500,11 @@ program.command('wallets')
 program.command('address-utxos')
   .description('List all utxos owned by an address')
   .argument('<address>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .action(async (address, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       // address = performAddressAliasReplacement(walletInfo, address);
@@ -505,9 +519,11 @@ program.command('address-utxos')
 program.command('address-history')
   .description('List address history of an address')
   .argument('<address>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .action(async (address, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       const receive: { output: any, address: string } = performAddressAliasReplacement(walletInfo, address || undefined);
@@ -522,9 +538,11 @@ program.command('tx')
   .description('Get any transaction')
   .argument('<txid>', 'string')
   .option('--verbose', 'Verbose output')
+  .option('--wallet <string>', 'Path to wallet json file')
   .action(async (txid, options) => {
     try {
-      await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      await validateWalletStorage(walletPath);
       const verbose = options.verbose ? true : false;
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
@@ -559,6 +577,7 @@ const resolveRealmAction = async (realm_or_subrealm, options) => {
 program.command('get-ticker')
   .description('Get Atomical by ticker name')
   .argument('<ticker>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--verbose', 'Verbose to show extended information.')
   .action(async (ticker, options) => {
     try {
@@ -574,6 +593,7 @@ program.command('get-ticker')
 program.command('get-container')
   .description('Get Atomical by container name')
   .argument('<container>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--verbose', 'Verbose to show extended information.')
   .action(async (container, options) => {
     try {
@@ -605,10 +625,12 @@ program.command('get-realm')
 program.command('realm-info')
   .description('Get realm and subrealm information of an atomical')
   .argument('<atomicalIdAlias>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--verbose', 'Verbose output')
   .action(async (atomicalAliasOrId, options) => {
     try {
-      await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       const verbose = options.verbose ? true : false;
@@ -622,11 +644,13 @@ program.command('realm-info')
 
 program.command('summary-subrealms')
   .description('Show summary of owned subrealms by wallet')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--owner <string>', 'Provide alternate wallet alias to query')
   .option('--filter <string>', 'Filter by status')
   .action(async (options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
@@ -640,11 +664,13 @@ program.command('summary-subrealms')
 
 program.command('summary-containers')
   .description('Show summary of owned containers by wallet')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--owner <string>', 'Provide alternate wallet alias to query')
   .option('--filter <string>', 'Filter by status')
   .action(async (options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
@@ -658,11 +684,13 @@ program.command('summary-containers')
 
 program.command('summary-realms')
   .description('Show summary of owned realms by wallet')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--owner <string>', 'Provide alternate wallet alias to query')
   .option('--filter <string>', 'Filter by status')
   .action(async (options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
@@ -676,11 +704,13 @@ program.command('summary-realms')
 
 program.command('summary-tickers')
   .description('Show summary of owned tokens by tickers by wallet')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--owner <string>', 'Provide alternate wallet alias to query')
   .option('--filter <string>', 'Filter by status')
   .action(async (options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
@@ -694,11 +724,13 @@ program.command('summary-tickers')
 
 program.command('find-tickers')
   .description('Search tickers')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--q <string>', 'Search query')
   .option('--asc <string>', 'Sort by ascending', 'true')
   .action(async (options) => {
     try {
-      await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       const verbose = options.verbose ? true : false;
@@ -713,11 +745,13 @@ program.command('find-tickers')
 
 program.command('find-realms')
   .description('Search realms')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--q <string>', 'Search query')
   .option('--asc <string>', 'Sort by ascending', 'true')
   .action(async (options) => {
     try {
-      await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       const verbose = options.verbose ? true : false;
@@ -732,11 +766,13 @@ program.command('find-realms')
 
 program.command('find-containers')
   .description('Search containers')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--q <string>', 'Search query')
   .option('--asc <string>', 'Sort by ascending', 'true')
   .action(async (prefix, options) => {
     try {
-      await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       const verbose = options.verbose ? true : false;
@@ -758,13 +794,15 @@ program.command('set')
   .argument('<atomicalIdAlias>', 'string')
   .argument('<path>', 'string')
   .argument('<data...>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '20')
   .option('--satsoutput <number>', 'Satoshis to put into output', '1000')
   .action(async (atomicalId, path, data, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
@@ -784,13 +822,15 @@ program.command('emit')
   .argument('<atomicalIdAlias>', 'string')
   .argument('<path>', 'string')
   .argument('<data...>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '20')
   .option('--satsoutput <number>', 'Satoshis to put into output', '1000')
   .action(async (atomicalId, path, data, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
@@ -811,13 +851,15 @@ program.command('set-relation')
   .argument('<atomicalId>', 'string')
   .argument('<relationName>', 'string')
   .argument('<relationValues...>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '20')
   .option('--satsoutput <number>', 'Satoshis to put into output', '1000')
   .action(async (atomicalId, relationName, values, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
@@ -837,6 +879,7 @@ program.command('delete')
   .argument('<atomicalIdAlias>', 'string')
   .argument('<path>', 'string')
   .argument('<keystoDelete...>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '20')
@@ -846,7 +889,8 @@ program.command('delete')
   .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for mining. Improvements mining performance to set this flag')
   .action(async (atomicalId, path, keystoDelete, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
@@ -867,12 +911,14 @@ program.command('delete')
 program.command('seal')
   .description('Seal any NFT Atomical type permanently so that it can never be updated or transferred ever again.')
   .argument('<atomicalIdAlias>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '20')
   .action(async (atomicalId, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
@@ -889,13 +935,15 @@ program.command('seal')
 program.command('splat')
   .description('Extract an NFT Atomical from a UTXO which contains multiple Atomicals')
   .argument('<locationId>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '20')
   .option('--satsoutput <number>', 'Satoshis to put into each output', '1000')
   .action(async (locationId, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
@@ -913,12 +961,14 @@ program.command('splat')
 program.command('split')
   .description('Split operation to seperate the FT Atomicals at a single UTXOs.')
   .argument('<locationId>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--funding <string>', 'Use wallet alias wif key to be used for funding')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '20')
   .action(async (locationId, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
@@ -935,10 +985,12 @@ program.command('split')
 program.command('get')
   .description('Get the status of an Atomical')
   .argument('<atomicalAliasOrId>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--verbose', 'Verbose output')
   .action(async (atomicalAliasOrId, options) => {
     try {
-      await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       const verbose = options.verbose ? true : false;
@@ -951,10 +1003,12 @@ program.command('get')
 
 program.command('global')
 .description('Get global status')
+.option('--wallet <string>', 'Path to wallet json file')
 .option('--hashes <number>', 'How many atomicals block hashes to retrieve', '10')
 .action(async (options) => {
   try {
-    await validateWalletStorage();
+    const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+    await validateWalletStorage(walletPath);
     const config: ConfigurationInterface = validateCliInputs();
     const headersCount = parseInt(options.hashes, 10)
     const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
@@ -967,9 +1021,10 @@ program.command('global')
 
 program.command('dump')
 .description('dump')
+.option('--wallet <string>', 'Path to wallet json file')
 .action(async (options) => {
-  try {
-    await validateWalletStorage();
+  const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+  await validateWalletStorage(walletPath);
     const config: ConfigurationInterface = validateCliInputs();
     const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
     const result = await atomicals.dump();
@@ -982,10 +1037,12 @@ program.command('dump')
 program.command('location')
   .description('Get locations of an Atomical')
   .argument('<atomicalAliasOrId>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--verbose', 'Verbose output')
   .action(async (atomicalAliasOrId, options) => {
     try {
-      await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       const verbose = options.verbose ? true : false;
@@ -1000,10 +1057,12 @@ program.command('state')
   .description('Get the state of an Atomical')
   .argument('<atomicalAliasOrId>', 'string')
   .argument('<path>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--verbose', 'Verbose output')
   .action(async (atomicalAliasOrId, path, options) => {
     try {
-      await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       const verbose = options.verbose ? true : false;
@@ -1017,10 +1076,12 @@ program.command('state')
 program.command('state-history')
   .description('Get the state history of an Atomical')
   .argument('<atomicalAliasOrId>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--verbose', 'Verbose output')
   .action(async (atomicalAliasOrId, options) => {
     try {
-      await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       const verbose = options.verbose ? true : false;
@@ -1034,10 +1095,12 @@ program.command('state-history')
 program.command('event-history')
   .description('Get the event state history of an Atomical')
   .argument('<atomicalAliasOrId>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--verbose', 'Verbose output')
   .action(async (atomicalAliasOrId, options) => {
     try {
-      await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      await validateWalletStorage(walletPath);
 
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
@@ -1058,6 +1121,7 @@ program.command('enable-subrealms')
   .description('Set and enable subrealm minting rules for a realm or subrealm')
   .argument('<realmOrSubRealm>', 'string')
   .argument('<rules...>')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '20')
@@ -1067,7 +1131,8 @@ program.command('enable-subrealms')
   .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for mining. Improvements mining performance to set this flag')
   .action(async (realmOrSubRealm, rules, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
@@ -1088,6 +1153,7 @@ program.command('enable-subrealms')
 program.command('disable-subrealm-mints')
   .description('Delete the subrealm minting rules for a realm or subrealm')
   .argument('<realmOrSubRealm>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '20')
@@ -1097,7 +1163,8 @@ program.command('disable-subrealm-mints')
   .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for mining. Improvements mining performance to set this flag')
   .action(async (realmOrSubRealm, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
@@ -1117,6 +1184,7 @@ program.command('disable-subrealm-mints')
 
 program.command('pending-subrealms')
   .description('Display pending subrealm Atomical requests and make payments')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--owner <string>', 'Show pending subrealms for an address or wallet')
   .option('--display', 'Show pending subrealms for an address or wallet')
   .option('--verbose', 'Show verbose raw output')
@@ -1124,7 +1192,8 @@ program.command('pending-subrealms')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '20')
   .action(async (options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
@@ -1149,6 +1218,7 @@ program.command('mint-ft')
   .argument('<ticker>', 'string')
   .argument('<supply>', 'number')
   .argument('<files...>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--meta <string...>', 'Populate the \'meta\' field with key value pairs or file contents')
   .option('--ctx <string...>', 'Populate the \'ctx\' field with key value pairs or file contents')
   .option('--init <string...>', 'Populate the \'init\' field with key value pairs or file contents')
@@ -1162,7 +1232,8 @@ program.command('mint-ft')
   .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for mining. Improvements mining performance to set this flag')
   .action(async (ticker, supply, files, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const requestTicker = ticker.toLowerCase();
       let parentOwnerRecord = resolveWalletAliasNew(walletInfo, options.parentowner, walletInfo.primary);
@@ -1197,6 +1268,7 @@ program.command('init-dft')
   .argument('<max_mints>', 'number')
   .argument('<mint_height>', 'number')
   .argument('<files...>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--meta <string...>', 'Populate the \'meta\' field with key value pairs or file contents')
   .option('--ctx <string...>', 'Populate the \'ctx\' field with key value pairs or file contents')
   .option('--init <string...>', 'Populate the \'init\' field with key value pairs or file contents')
@@ -1211,7 +1283,8 @@ program.command('init-dft')
   .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for Bitwork mining. Improvements mining performance to set this flag')
   .action(async (ticker, mintAmount, maxMints, mintHeight, files, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const requestTicker = ticker.toLowerCase();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
@@ -1241,13 +1314,15 @@ program.command('init-dft')
 program.command('mint-dft')
   .description('Mint coins for a decentralized fungible token (FT)')
   .argument('<ticker>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--initialowner <string>', 'Make change into this wallet')
   .option('--funding <string>', 'Use wallet alias wif key to be used for funding and change')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '20')
   .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for Bitwork mining. Improvements mining performance to set this flag')
   .action(async (ticker, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       ticker = ticker.toLowerCase();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
@@ -1267,6 +1342,7 @@ program.command('mint-dft')
 program.command('mint-nft')
   .description('Mint non-fungible token (NFT) Atomical')
   .argument('<files...>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--meta <string...>', 'Populate the \'meta\' field with key value pairs or file contents')
   .option('--ctx <string...>', 'Populate the \'ctx\' field with key value pairs or file contents')
   .option('--init <string...>', 'Populate the \'init\' field with key value pairs or file contents')
@@ -1282,7 +1358,8 @@ program.command('mint-nft')
   .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for mining. Improvements mining performance to set this flag')
   .action(async (files, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let walletRecord = resolveWalletAliasNew(walletInfo, options.initialowner, walletInfo.primary);
@@ -1310,6 +1387,7 @@ program.command('mint-nft')
 program.command('mint-realm')
   .description('Mint top level Realm non-fungible token (NFT) Atomical')
   .argument('<realm>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--meta <string...>', 'Populate the \'meta\' field with key value pairs or file contents')
   .option('--ctx <string...>', 'Populate the \'ctx\' field with key value pairs or file contents')
   .option('--init <string...>', 'Populate the \'init\' field with key value pairs or file contents')
@@ -1325,7 +1403,8 @@ program.command('mint-realm')
   .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for mining. Improvements mining performance to set this flag')
   .action(async (realm, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let walletRecord = resolveWalletAliasNew(walletInfo, options.initialowner, walletInfo.primary);
@@ -1353,6 +1432,7 @@ program.command('mint-realm')
 program.command('mint-subrealm')
   .description('Mint subrealm non-fungible token (NFT) Atomical')
   .argument('<realm>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--meta <string...>', 'Populate the \'meta\' field with key value pairs or file contents')
   .option('--ctx <string...>', 'Populate the \'ctx\' field with key value pairs or file contents')
   .option('--init <string...>', 'Populate the \'init\' field with key value pairs or file contents')
@@ -1367,7 +1447,8 @@ program.command('mint-subrealm')
   .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for mining. Improvements mining performance to set this flag')
   .action(async (subrealm, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let walletRecord = resolveWalletAliasNew(walletInfo, options.initialowner, walletInfo.primary);
@@ -1393,6 +1474,7 @@ program.command('mint-subrealm')
 program.command('mint-container')
   .description('Mint container non-fungible token (NFT) Atomical')
   .argument('<container>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--meta <string...>', 'Populate the \'meta\' field with key value pairs or file contents')
   .option('--ctx <string...>', 'Populate the \'ctx\' field with key value pairs or file contents')
   .option('--init <string...>', 'Populate the \'init\' field with key value pairs or file contents')
@@ -1408,7 +1490,8 @@ program.command('mint-container')
   .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for mining. Improvements mining performance to set this flag')
   .action(async (container, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let walletRecord = resolveWalletAliasNew(walletInfo, options.initialowner, walletInfo.primary);
@@ -1442,13 +1525,15 @@ program.command('transfer-nft')
   .description('Transfer Atomical NFT to new address')
   .argument('<atomicalId>', 'string')
   .argument('<address>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '20')
   .option('--satsoutput <number>', 'Satoshis to put into the transferred atomical', '546')
   .action(async (atomicalId, address, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const satsbyte = parseInt(options.satsbyte);
       const satsoutput = parseInt(options.satsoutput)
       const config: ConfigurationInterface = validateCliInputs();
@@ -1466,12 +1551,14 @@ program.command('transfer-nft')
 program.command('transfer-ft')
   .description('Transfer Atomical FT to other addresses')
   .argument('<atomicalId>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
   .option('--satsbyte <number>', 'Satoshis per byte in   fees', '20')
   .action(async (atomicalId, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const satsbyte = parseInt(options.satsbyte);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
@@ -1486,12 +1573,14 @@ program.command('transfer-ft')
 
 program.command('transfer-utxos')
   .description('Transfer plain regular UTXOs to another addresses')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
   .option('--satsbyte <number>', 'Satoshis per byte in   fees', '20')
   .action(async (options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const satsbyte = parseInt(options.satsbyte);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
@@ -1506,12 +1595,14 @@ program.command('transfer-utxos')
 
 program.command('merge-atomicals')
   .description('Merge Atomicals UTXOs together for test purposes')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomicals')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '20')
   .action(async (options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const satsbyte = parseInt(options.satsbyte, 10);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
@@ -1527,10 +1618,12 @@ program.command('merge-atomicals')
 program.command('tx-history')
   .description('Get the history of an Atomical')
   .argument('<atomicalAliasOrId>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--verbose', 'Verbose output')
   .action(async (atomicalAliasOrId, options) => {
     try {
-      await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       const verbose = options.verbose ? true : false;
@@ -1543,6 +1636,7 @@ program.command('tx-history')
 
 program.command('list')
   .description('List feed of Atomicals minted globally')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--limit <number>', 'Limit the number of results', '20')
   .option('--offset <number>', 'Offset for pagination', '-20')
   .option('--asc <string>', 'Whether to sort by ascending or descending', 'true')
@@ -1551,7 +1645,8 @@ program.command('list')
       const limit = options.limit;
       const offset = options.offset;
       const asc = options.asc === 'true' ? true : false
-      await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       const result = await atomicals.list(parseInt(limit, 10), parseInt(offset, 10), asc);
@@ -1564,9 +1659,11 @@ program.command('list')
 program.command('address-atomicals')
   .description('List all atomicals owned by an address')
   .argument('<address>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .action(async (address, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       // address = performAddressAliasReplacement(walletInfo, address);
@@ -1581,9 +1678,11 @@ program.command('address-atomicals')
 program.command('at-location')
   .description('Get Atomicals at a utxo location')
   .argument('<location>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .action(async (location, options) => {
     try {
-      await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       const result = await atomicals.getAtomicalsAtLocation(location);
@@ -1601,6 +1700,7 @@ program.command('at-location')
 program.command('store-dat')
   .description('Store general immutable data transaction that is not an NFT or FT')
   .argument('<files...>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--meta <string...>', 'Populate the \'meta\' field with key value pairs or file contents')
   .option('--ctx <string...>', 'Populate the \'ctx\' field with key value pairs or file contents')
   .option('--init <string...>', 'Populate the \'init\' field with key value pairs or file contents')
@@ -1614,7 +1714,8 @@ program.command('store-dat')
   .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for mining. Improvements mining performance to set this flag')
   .action(async (files, options) => {
     try {
-      const walletInfo = await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const walletInfo = await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       let walletRecord = resolveWalletAliasNew(walletInfo, options.initialowner, walletInfo.primary);
@@ -1640,10 +1741,12 @@ program.command('store-dat')
 program.command('download')
   .description('Download a file from a locationId or atomicalId')
   .argument('<locationIdOrTxId>', 'string')
+  .option('--wallet <string>', 'Path to wallet json file')
   .option('--body', 'Whether to include the body bytes in the print out or suppress it')
   .action(async (locationIdOrTxId, options) => {
     try {
-      await validateWalletStorage();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      await validateWalletStorage(walletPath);
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_WSS || ''));
       const result: any = await atomicals.download(locationIdOrTxId);

@@ -28,12 +28,12 @@ export interface IValidatedWalletInfo {
   }
 }
 
-export const validateWalletStorage = async (): Promise<IValidatedWalletInfo> => {
+export const validateWalletStorage = async (walletPath: string=WALLET_FILE): Promise<IValidatedWalletInfo> => {
   try {
-    const wallet: any = await jsonFileReader(WALLET_FILE);
+    const wallet: any = await jsonFileReader(walletPath);
     if (!wallet.phrase) {
-      console.log(`phrase field not found in ${WALLET_FILE}`);
-      throw new Error(`phrase field not found in ${WALLET_FILE}`)
+      console.log(`phrase field not found in ${walletPath}`);
+      throw new Error(`phrase field not found in ${walletPath}`)
     }
 
     // Validate is a valid mnemonic
@@ -182,7 +182,7 @@ export const validateWalletStorage = async (): Promise<IValidatedWalletInfo> => 
     };
 
   } catch (err) {
-    console.log(`Error reading ${WALLET_FILE}. Create a new wallet with "npm cli wallet-init"`)
+    console.log(`Error reading ${walletPath}. Create a new wallet with "npm cli wallet-init"`)
     throw err;
   }
 }
