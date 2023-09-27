@@ -15,7 +15,10 @@ export class ElectrumApi implements ElectrumApiInterface {
     }
 
     public async resetConnection() {
-        this.ws = new WebSocket(this.url);
+        this.ws = new WebSocket(
+            this.url,
+	    { rejectUnauthorized: process.env.ALLOW_INSECURE_RPC !== 'true' }
+        );
         //this.open();
     }
 
