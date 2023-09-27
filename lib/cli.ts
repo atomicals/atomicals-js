@@ -211,9 +211,11 @@ program.command('wallet-decode')
 
 program.command('wallet-init')
   .description('Initializes a new wallet at wallet.json')
+  .option('--wallet <string>', 'Path to wallet json file')
   .action(async (options) => {
     try {
-      const result = await Atomicals.walletInit();
+      const walletPath = options.wallet ? options.wallet: WALLET_FILE;
+      const result = await Atomicals.walletInit(walletPath);
       console.log('Wallet created at wallet.json');
       console.log(`phrase: ${result.data.phrase}`);
       console.log(`Primary address (P2TR): ${result.data.primary.address}`);

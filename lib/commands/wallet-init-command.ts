@@ -2,15 +2,21 @@ import { CommandResultInterface } from "./command-result.interface";
 import { CommandInterface } from "./command.interface";
 import { createPrimaryAndFundingKeyPairs } from "../utils/create-key-pair";
 import { jsonFileExists, jsonFileWriter } from "../utils/file-utils";
-const walletPath = "wallet.json";
+const WALLET_PATH = "wallet.json";
 export class WalletInitCommand implements CommandInterface {
+
+    constructor(
+      private walletPath: string=WALLET_PATH
+    ) {
+
+    }
     async run(): Promise<CommandResultInterface> {
         if (await this.walletExists()) {
             throw "wallet.json exists, please remove it first to initialize another wallet. You may also use 'wallet-create' command to generate a new wallet."
         }
         const wallet = await createPrimaryAndFundingKeyPairs();
 
-        await jsonFileWriter(walletPath, {
+        await jsonFileWriter(this.walletPath, {
             phrase: wallet.phrase,
             primary: {
                 address: wallet.primary.address,
@@ -29,7 +35,7 @@ export class WalletInitCommand implements CommandInterface {
         }
     }
     async walletExists() {
-        if (await jsonFileExists(walletPath)) {
+        if (await jsonFileExists(this.walletPath)) {
             return true;
         }
     }

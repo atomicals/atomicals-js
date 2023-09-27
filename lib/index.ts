@@ -125,7 +125,7 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  static async walletInit(): Promise<any> {
+  static async walletInit(walletPath: string="wallet.json"): Promise<any> {
     try {
       const command: CommandInterface = new WalletInitCommand();
       return command.run();
