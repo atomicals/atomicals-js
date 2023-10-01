@@ -397,6 +397,28 @@ program.command('wallets')
       console.log(error);
     }
   });
+
+  program
+  .command('get-balances [address...]')
+  .action(async function (address) {
+    if (address) {
+      const walletInfo = await validateWalletStorage();
+      const config: ConfigurationInterface = validateCliInputs();
+      const electrum = ElectrumApi.createClient(process.env.ELECTRUMX_WSS || '');
+      const atomicals = new Atomicals(config, electrum);
+      for await (const addr of address) {
+        console.log('-------addr-----', addr)
+        let result: any = await atomicals.walletInfo(addr, false, true);
+        console.log("\n========================================================================================================")
+        console.log(`Wallet Information - ${addr} Address - ${result.data?.address}`)
+        console.log("========================================================================================================")  
+        showWalletFTBalancesDetails(result.data)  
+      }
+      await electrum.close();
+    }
+  });
+
+
   program.command('balances')
   .description('Get balances and atomicals stored at internal wallets')
   .option('--noqr', 'Hide QR codes')

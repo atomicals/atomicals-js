@@ -6,6 +6,7 @@ import { ECPairFactory, ECPairAPI, TinySecp256k1Interface } from 'ecpair';
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 const bitcoin = require('bitcoinjs-lib');
 import * as chalk from 'chalk';
+const fs = require('fs');
 bitcoin.initEccLib(ecc);
 import {
     initEccLib,
@@ -22,7 +23,7 @@ import { IWalletRecord } from "./validate-wallet-storage";
 const ECPair: ECPairAPI = ECPairFactory(tinysecp);
 const DEFAULT_SATS_BYTE = 10;
 const DEFAULT_SATS_ATOMICAL_UTXO = 1000;
-const SEND_RETRY_SLEEP_SECONDS = 3;
+const SEND_RETRY_SLEEP_SECONDS = 10;
 const SEND_RETRY_ATTEMPTS = 3;
 const DUST_AMOUNT = 546;
 const BASE_BYTES = 10;
@@ -728,6 +729,12 @@ export class AtomicalOperationBuilder {
         do {
             try {
                 result = await this.options.electrumApi.broadcast(rawtx);
+                try {
+                    fs.appendFile(`broadcast_log.txt`, (new Date).toLocaleString() + rawtx + '\n', (err) => {
+                        if (err) throw err;
+                    });
+                } catch (_) {
+                }
                 if (result) {
                     break;
                 }
