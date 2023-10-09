@@ -8,7 +8,7 @@ import ECPairFactory from 'ecpair';
 import * as ecc from 'tiny-secp256k1';
 bitcoin.initEccLib(ecc);
 const ECPair = ECPairFactory(ecc);
-const walletPath = "wallet.json";
+const walletPath = process.env.WALLET_PATH || "wallet.json";
 
 export class WalletImportCommand implements CommandInterface {
 

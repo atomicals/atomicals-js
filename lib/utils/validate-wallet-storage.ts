@@ -11,7 +11,7 @@ import { jsonFileReader } from './file-utils';
 import { toXOnly } from './create-key-pair';
 const bip32 = BIP32Factory(ecc);
 
-const WALLET_FILE = "wallet.json";
+const WALLET_FILE = process.env.WALLET_PATH || "wallet.json";
 
 
 export interface IWalletRecord {
