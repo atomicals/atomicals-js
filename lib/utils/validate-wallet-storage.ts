@@ -5,16 +5,12 @@ import { ConfigurationInterface } from '../interfaces/configuration.interface';
 bitcoin.initEccLib(ecc);
 const ECPair = ECPairFactory(ecc);
 import * as bip39 from 'bip39';
-import * as fs from 'fs';
-import * as path from 'path';
 import BIP32Factory from 'bip32';
 import { jsonFileReader } from './file-utils';
 import { toXOnly } from './create-key-pair';
+import { walletPathResolver } from './wallet-path-resolver';
 const bip32 = BIP32Factory(ecc);
-
-import * as path from 'path';
-const walletsPath = path.join(__dirname, '../../wallets');
-const walletPath = path.join(walletsPath, process.env.WALLET_PATH || "wallet.json")
+const walletPath = walletPathResolver();
 
 export interface IWalletRecord {
   address: string,
@@ -32,10 +28,11 @@ export interface IValidatedWalletInfo {
 
 export const validateWalletStorage = async (): Promise<IValidatedWalletInfo> => {
   try {
-    const wallet: any = await jsonFileReader(WALLET_FILE);
+    console.log('walletPath', walletPath);
+    const wallet: any = await jsonFileReader(walletPath);
     if (!wallet.phrase) {
-      console.log(`phrase field not found in ${WALLET_FILE}`);
-      throw new Error(`phrase field not found in ${WALLET_FILE}`)
+      console.log(`phrase field not found in ${walletPath}`);
+      throw new Error(`phrase field not found in ${walletPath}`)
     }
 
     // Validate is a valid mnemonic
@@ -184,7 +181,7 @@ export const validateWalletStorage = async (): Promise<IValidatedWalletInfo> => 
     };
 
   } catch (err) {
-    console.log(`Error reading ${WALLET_FILE}. Create a new wallet with "npm cli wallet-init"`)
+    console.log(`Error reading ${walletPath}. Create a new wallet with "npm cli wallet-init"`)
     throw err;
   }
 }

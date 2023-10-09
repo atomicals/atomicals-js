@@ -6,12 +6,12 @@ import { IValidatedWalletInfo } from "../utils/validate-wallet-storage";
 const bitcoin = require('bitcoinjs-lib');
 import ECPairFactory from 'ecpair';
 import * as ecc from 'tiny-secp256k1';
+import { walletPathResolver } from "../utils/wallet-path-resolver";
+
 bitcoin.initEccLib(ecc);
 const ECPair = ECPairFactory(ecc);
 
-import * as path from 'path';
-const walletsPath = path.join(__dirname, '../../wallets');
-const walletPath = path.join(walletsPath, process.env.WALLET_PATH || "wallet.json")
+const walletPath = walletPathResolver();
 
 export class WalletImportCommand implements CommandInterface {
 
@@ -28,6 +28,9 @@ export class WalletImportCommand implements CommandInterface {
         if (walletFileData.imported.hasOwnProperty(this.alias)) {
             throw `Wallet alias ${this.alias} already exists!`
         }
+        // Just make a backup for now to be safe
+        await jsonFileWriter(walletPath + '.' + (new Date()).getTime() + '.walletbackup', walletFileData);
+
         // Get the wif and the address and ensure they match
         const importedKeypair = ECPair.fromWIF(this.wif);
         const { address, output } = bitcoin.payments.p2tr({
