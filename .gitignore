@@ -24,4 +24,4 @@ commit-command-output*.json
 *.njsproj
 *.sln
 .env
-
+.gitkeep
