@@ -31,6 +31,9 @@ The environment file comes with defaults (`.env.example`), but it is highly reco
 
 ```
 ELECTRUMX_WSS=wss://electrumx.atomicals.xyz:50012
+
+// Optional (defaults to wallet.json)
+WALLET_PATH=path-to-wallet.json
 ```
 
 _ELECTRUMX_WSS_: URL of the ElectrumX with Atomicals support. Note that only `wss` endpoints are accessible from web browsers.
@@ -41,6 +44,22 @@ The purpose of the wallet is to create p2tr (pay-to-taproot) spend scripts and t
 
 
 To initialize a new `wallet.json` file that will store your address for receiving change use the `wallet-init` command. Alternatively, you may populate the `wallet.json` manually, ensuring that the address at `m/44'/0'/0'/0/0` is equal to the address and the derivePath is set correctly.
+
+Configure the path in the environment `.env` file to point to your wallet file. defaults to `./wallet.json`
+
+Default:
+```
+WALLET_PATH=.
+WALLET_FILE=wallet.json
+```
+Update to `wallets/` directory:
+
+```
+WALLET_PATH=./wallets
+WALLET_FILE=wallet.json
+```
+
+Create the wallet:
 
 ```
 yarn cli wallet-init
