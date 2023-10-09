@@ -156,7 +156,7 @@ export class MergeInteractiveUtxosCommand implements CommandInterface {
       const prompt = (query) => new Promise((resolve) => rl.question(query, resolve));
 
       console.log(`WARNING! There are some chosen UTXOs which contain Atomicals which would be transferred at the same time.`);
-      console.log(`It is recommended to use the "extract" (NFT) or "skip" (FT) operations to seperate them first.`)
+      console.log(`It is recommended to use the "extract" (NFT) or "skip" (FT) operations to separate them first.`)
       let i = 0;
       for (const item of indexesOfSelectedUtxosWithMultipleAtomicals) {
         console.log(`${i}.`)
@@ -292,7 +292,7 @@ export class MergeInteractiveUtxosCommand implements CommandInterface {
         console.log(`'f' for Finished adding recipients`)
         console.log('-')
 
-        let reply = (await prompt("Enter address and amount seperated by a space: ") as any);
+        let reply = (await prompt("Enter address and amount separated by a space: ") as any);
 
         if (reply === 'f') {
           break;
@@ -406,15 +406,7 @@ export class MergeInteractiveUtxosCommand implements CommandInterface {
     const tx = psbt.extractTransaction();
 
     const rawtx = tx.toHex();
-    await jsonFileWriter(`transfer_txs/${tx.getId()}.json`, {
-      rawtx,
-    });
-
     console.log(`Constructed Atomicals operation, attempting to broadcast: ${tx.getId()}`);
-    console.log(`Saved raw transaction to: transfer_txs/${tx.getId()}.json`);
-    await jsonFileWriter(`transfer_txs/${tx.getId()}.json`, {
-      rawtx,
-    });
     let broadcastedTxId = await this.electrumApi.broadcast(rawtx);
     console.log(`Success!`);
     return {

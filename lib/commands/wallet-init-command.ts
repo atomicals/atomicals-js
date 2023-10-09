@@ -4,9 +4,8 @@ import { createPrimaryAndFundingKeyPairs } from "../utils/create-key-pair";
 import { jsonFileExists, jsonFileWriter } from "../utils/file-utils";
 
 import * as path from 'path';
-
 const walletsPath = path.join(__dirname, '../../wallets');
-const walletPath = path.join(walletsPath, 'wallet.json')
+const walletPath = path.join(walletsPath, process.env.WALLET_PATH || "wallet.json")
 
 export class WalletInitCommand implements CommandInterface {
     async run(): Promise<CommandResultInterface> {

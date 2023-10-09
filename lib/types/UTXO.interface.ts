@@ -8,6 +8,7 @@ export interface UTXO {
   height?: number;
   outputIndex: number;
   atomicals?: any[];
+  atomicals_at_location?: any[];
 }
 
 export interface BalanceData {

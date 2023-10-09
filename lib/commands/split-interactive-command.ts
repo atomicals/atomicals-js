@@ -14,7 +14,7 @@ import { IWalletRecord } from "../utils/validate-wallet-storage";
 import { GetAtomicalsAtLocationCommand } from "./get-atomicals-at-location-command";
 import { GetUtxoPartialFromLocation } from "../utils/address-helpers";
 import { IInputUtxoPartial } from "../types/UTXO.interface";
-import { hasAtomicalType } from "../utils/atomical-format-helpers";
+import { hasAtomicalType, isAtomicalId } from "../utils/atomical-format-helpers";
 
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 initEccLib(tinysecp as any);
@@ -39,16 +39,18 @@ export class SplitInteractiveCommand implements CommandInterface {
     const atomicalFts = atomicals.filter((item) => {
       return item.type === 'FT';
     });
-    if (atomicalFts.length <= 1) {
-      throw new Error('Multiple FTs were not found at the same location. Nothing to skip split out.');
-    }
 
     console.log('Found multiple FTs at the same location: ', atomicalFts);
 
     const hasNfts = hasAtomicalType('NFT', atomicals);
     if (hasNfts) {
-      console.log('Also found at least one NFT at the same location. The first output will contain the NFTs, and the second output, etc will contain the FTs split out.')
+      console.log('Found at least one NFT at the same location. The first output will contain the NFTs, and the second output, etc will contain the FTs split out. After you may use the splat command to seperate multiple NFTs if they exist at the same location.')
     }
+
+    if (!hasNfts && atomicalFts.length <= 1) {
+      throw new Error('Multiple FTs were not found at the same location. Nothing to skip split.');
+    }
+
     const inputUtxoPartial: IInputUtxoPartial | any = GetUtxoPartialFromLocation(this.owner.address, response.data.location_info);
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
@@ -75,7 +77,16 @@ export class SplitInteractiveCommand implements CommandInterface {
       });
       amountSkipped += inputUtxoPartial.witnessUtxo.value;
     }
+    if (isNaN(amountSkipped)) {
+      throw new Error('Critical error amountSkipped isNaN');
+    }
     for (const ft of atomicalFts) {
+      if (!ft.atomical_id) {
+        throw new Error('Critical error atomical_id not set for FT');
+      }
+      if (!isAtomicalId(ft.atomical_id)) {
+        throw new Error('Critical error atomical_id is not valid for FT');
+      }
       // Make sure to make N outputs, for each atomical NFT
       ftsToSplit[ft.atomical_id] = amountSkipped;
       atomicalBuilder.addOutput({
@@ -84,6 +95,9 @@ export class SplitInteractiveCommand implements CommandInterface {
       });
       // Add the amount to skip for the next FT
       amountSkipped += inputUtxoPartial.witnessUtxo.value;
+      if (isNaN(amountSkipped)) {
+        throw new Error('Critical error amountSkipped isNaN');
+      }
     }
     await atomicalBuilder.setData(ftsToSplit);
     const result = await atomicalBuilder.start(this.funding.WIF);

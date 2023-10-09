@@ -1,4 +1,4 @@
-export interface LocationInfo {
+export interface Location {
   location: string;
   txid: string;
   index: number;
@@ -10,6 +10,11 @@ export interface LocationInfo {
   tx_num?: number,
   adddress?: string;
 }
+
+export interface LocationInfo {
+  locations: Location[]
+}
+
 export interface MintInfo {
   commit_txid: string;
   commit_index: number;
@@ -124,7 +129,7 @@ export interface AtomicalStatus {
   atomical_number: number;
   type: 'NFT' | 'FT';
   subtype?: 'request_realm' | 'realm' | 'request_subrealm' | 'subrealm' | 'request_container' | 'container' | 'direct' | 'decentralized';
-  location_info?: LocationInfo[];
+  location_info_obj?: LocationInfo;
   mint_info?: MintInfo;
   mint_data?: MintDataSummary;
   state_info?: StateInfo;

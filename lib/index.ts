@@ -62,13 +62,16 @@ import { DisableSubrealmRulesInteractiveCommand } from "./commands/disable-subre
 import { EnableSubrealmRulesCommand } from "./commands/enable-subrealm-rules-command";
 import { SplitInteractiveCommand } from "./commands/split-interactive-command";
 import { GetGlobalCommand } from "./commands/get-global-command";
+import { GetFtInfoCommand } from "./commands/get-dft-info-command";
+import { BroadcastCommand } from "./commands/broadcast-command";
 export { decorateAtomicals } from "./utils/atomical-format-helpers";
 export { addressToP2PKH } from "./utils/address-helpers";
 export { getExtendTaprootAddressKeypairPath } from "./utils/address-keypair-path";
 export { createKeyPair } from "./utils/create-key-pair";
-export { buildAtomicalsFileMapFromRawTx, hexifyObjectWithUtf8 } from "./utils/atomical-format-helpers";
+export { buildAtomicalsFileMapFromRawTx, hexifyObjectWithUtf8, isValidRealmName, isValidSubRealmName } from "./utils/atomical-format-helpers";
 export { createMnemonicPhrase } from "./utils/create-mnemonic-phrase";
 export { detectAddressTypeToScripthash, detectScriptToAddressType } from "./utils/address-helpers";
+
 export { bitcoin };
 export class Atomicals implements APIInterface {
   constructor(private config: ConfigurationInterface, private electrumApi: ElectrumApiInterface) {
@@ -493,11 +496,29 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async global(keepElectrumAlive = false): Promise<CommandResultInterface> {
+  async global(hashes = 10, keepElectrumAlive = false): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new GetGlobalCommand(this.electrumApi);
+      const command: CommandInterface = new GetGlobalCommand(this.electrumApi, hashes);
       return await command.run();
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.toString(),
+        error
+      }
+    } finally {
+      if (!keepElectrumAlive) {
+        this.electrumApi.close();
+      }
+    }
+  }
+
+  async dump(keepElectrumAlive = false): Promise<CommandResultInterface> {
+    try {
+      await this.electrumApi.open();
+      let response = await this.electrumApi.dump();
+      return response;
     } catch (error: any) {
       return {
         success: false,
@@ -551,6 +572,24 @@ export class Atomicals implements APIInterface {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new GetCommand(this.electrumApi, atomicalAliasOrId);
+      return await command.run();
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.toString(),
+        error
+      }
+    } finally {
+      if (!keepElectrumAlive) {
+        this.electrumApi.close();
+      }
+    }
+  }
+
+  async getAtomicalFtInfo(atomicalAliasOrId: string, keepElectrumAlive = false): Promise<CommandResultInterface> {
+    try {
+      await this.electrumApi.open();
+      const command: CommandInterface = new GetFtInfoCommand(this.electrumApi, atomicalAliasOrId);
       return await command.run();
     } catch (error: any) {
       return {
@@ -985,6 +1024,24 @@ export class Atomicals implements APIInterface {
       this.electrumApi.close();
     }
   }
+
+
+  async broadcast(rawtx: string): Promise<CommandResultInterface> {
+    try {
+      await this.electrumApi.open();
+      const command: CommandInterface = new BroadcastCommand(this.electrumApi, rawtx);
+      return await command.run();
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.toString(),
+        error
+      }
+    } finally {
+      this.electrumApi.close();
+    }
+  }
+
 
   async getAtomicalsAtLocation(location: string): Promise<CommandResultInterface> {
     try {

@@ -31,6 +31,14 @@ export class InitInteractiveDftCommand implements CommandInterface {
     this.options = checkBaseRequestOptions(this.options);
     this.requestTicker = this.requestTicker.startsWith('$') ? this.requestTicker.substring(1) : this.requestTicker;
     isValidBitworkMinimum(this.options.bitworkc);
+
+    if (this.maxMints > 100000 || this.maxMints < 1) {
+      throw new Error('max mints must be between 1 and 100,000')
+    }
+    
+    if (this.mintAmount > 100000000 || this.mintAmount < 546) {
+      throw new Error('mint amount must be between 546 and 100,000,000')
+    }
   }
   async run(): Promise<any> {
     const getExistingNameCommand = new GetByTickerCommand(this.electrumApi, this.requestTicker, AtomicalsGetFetchType.GET, undefined);

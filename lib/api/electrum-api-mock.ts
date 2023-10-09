@@ -20,13 +20,19 @@ export class ElectrumApiMock implements ElectrumApiInterface {
         return this.isOpenFlag;
     }
 
+    async dump() {
+ 
+    }
+
     async resetConnection() {
         await this.open();
     }
 
-    async atomicalsGetGlobal() {
+    async atomicalsGetGlobal(hashes: number) {
        return null;
     }
+
+    
 
     setSendTransaction(cb: Function) {
         return this.sendTransactionCallback = cb;
@@ -107,6 +113,10 @@ export class ElectrumApiMock implements ElectrumApiInterface {
     public async atomicalsGet(atomicalAliasOrId: string | number): Promise<any> {
         return "atomicalsGet"
     }
+    public async atomicalsGetFtInfo(atomicalAliasOrId: string | number): Promise<any> {
+        return "atomicalsGetFtInfo"
+    }
+    
     public async atomicalsGetLocation(atomicalAliasOrId: string | number): Promise<any> {
         return "atomicalsGetLocation"
     }

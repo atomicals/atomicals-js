@@ -242,14 +242,7 @@ export class PendingSubrealmsCommand implements CommandInterface {
     const tx = psbt.extractTransaction();
     const rawtx = tx.toHex();
     console.log('rawtx', rawtx);
-    await jsonFileWriter(`payment_txs/${tx.getId()}.json`, {
-      rawtx,
-    });
     console.log(`Constructed Atomicals Payment, attempting to broadcast: ${tx.getId()}`);
-    console.log(`Saved raw transaction to: payment_txs/${tx.getId()}.json`);
-    await jsonFileWriter(`payment_txs/${tx.getId()}.json`, {
-      rawtx,
-    });
     console.log(`About to broadcast`);
     let broadcastedTxId = await this.electrumApi.broadcast(rawtx);
     console.log(`Success!`);

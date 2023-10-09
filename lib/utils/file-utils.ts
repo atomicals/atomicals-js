@@ -2,9 +2,9 @@
 
 import * as fs from 'fs';
 
-export const fileReader = async (filePath) => {
+export const fileReader = async (filePath, encoding?: any) => {
 	return new Promise((resolve, reject) => {
-		fs.readFile(filePath, (err, fileData: any) => {
+		fs.readFile(filePath, encoding, (err, fileData: any) => {
 			if (err) {
 				console.log(`Error reading ${filePath}`, err);
 				return reject(err);

@@ -2,8 +2,8 @@ import { ConfigurationInterface } from '../interfaces/configuration.interface';
 export const validateCliInputs = (): ConfigurationInterface => {
   let electrumxWebsocketUrl = '';
   // Validate the BITCOIND_RPCURL 
-  if (process.env.ELECTRUMX_WSS) {
-    electrumxWebsocketUrl = process.env.ELECTRUMX_WSS;
+  if (process.env.ELECTRUMX_PROXY_BASE_URL) {
+    electrumxWebsocketUrl = process.env.ELECTRUMX_PROXY_BASE_URL;
   }
 
   return {

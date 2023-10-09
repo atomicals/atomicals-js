@@ -1,0 +1,40 @@
+{
+    "$path": "/",
+    "v": "v1",
+    "name": "Lorem Ipsum",
+    "image": "atom:btc:<atomicalId>/#image.jpg",
+    "banner": "",
+    "btc": "btc address to receive donations",
+    "doge": "doge address to receive donations",
+    "nostr": {
+        "nip05": "...any other nostr fields"
+    },
+    "about": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "groups": [
+        {
+            "group": "social",
+            "meta": {
+                "order": 1,
+                "note": "This section can be used to give presentation instructions",
+                "display": "bottom"
+            },
+            "items": [
+                {
+                    "type": "instagram",
+                    "name": "@loremipsum",
+                    "url": "https://instagram.com/loremipsum9872"
+                },
+                {
+                    "type": "x",
+                    "name": "@loremipsum9872",
+                    "url": "https://x.com/loremipsum9872"
+                },
+                {
+                    "type": "youtube",
+                    "name": "@loremipsum9872",
+                    "url": "https://www.youtube.com/@GuitarMelodies2023"
+                }
+            ]
+        }
+    ]
+}

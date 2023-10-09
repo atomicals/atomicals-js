@@ -8,12 +8,13 @@ import {
 import { bitcoin } from '..';
 
 initEccLib(ecc);
-import * as cbor from 'cbor';
+import * as cbor from 'borc';
 import { AtomicalStatus, LocationInfo } from '../interfaces/atomical-status.interface';
 import { detectScriptToAddressType } from "./address-helpers";
 import { ATOMICALS_PROTOCOL_ENVELOPE_ID } from '../types/protocol-tags';
 import { BASE_REQUEST_OPTS_DEFAULTS, BaseRequestOptions } from '../interfaces/api.interface';
 import * as CrockfordBase32 from 'crockford-base32';
+import { fileWriter } from './file-utils';
 const mintnft = 'nft';
 const mintft = 'ft';
 const mintdft = 'dft';
@@ -154,14 +155,14 @@ export function parseAtomicalsDataDefinitionOperation(opType, script, n, hexify 
   catch (err) {
     throw 'parse_atomicals_mint_operation script error';
   }
-  console.log('decodeds', rawdata);
+  console.log('decoded', rawdata);
   let decoded = {}
   try {
     decoded = decodePayloadCBOR(rawdata, hexify, addUtf8);
   } catch (error) {
     console.log('Error for atomical CBOR parsing ', error);
+    throw error;
   }
-  console.log('decoded', decoded, rawdata);
   if (hexify) {
     rawdata = rawdata.toString('hex');
   }
@@ -490,15 +491,17 @@ export function expandDataDecoded(record: any, hexify = true, addUtf8 = false) {
 }
 
 export function expandLocationInfo(record: AtomicalStatus) {
-  if (record && record.location_info) {
-    const location_info: LocationInfo[] = [];
-    for (const locationItem of record.location_info) {
+  if (record && record.location_info_obj) {
+    const location_info: LocationInfo = record.location_info_obj;
+    const locations = location_info.locations;
+    const updatedLocations: any[] = [];
+    for (const locationItem of locations) {
       let detectedAddress;
       try {
         detectedAddress = detectScriptToAddressType(locationItem.script)
       } catch (err) {
       }
-      location_info.push(Object.assign(
+      updatedLocations.push(Object.assign(
         {},
         locationItem,
         {
@@ -506,7 +509,7 @@ export function expandLocationInfo(record: AtomicalStatus) {
         }
       ))
     }
-    record.location_info = location_info;
+    record.location_info_obj.locations = updatedLocations;
   }
   return record;
 }

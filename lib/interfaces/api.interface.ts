@@ -16,6 +16,7 @@ export interface BaseRequestOptions {
     parentOwner?: IWalletRecord;
     disableMiningChalk?: boolean;
 }
+ 
 export const BASE_REQUEST_OPTS_DEFAULTS = {
     satsbyte: 10,
     satsoutput: 1000
@@ -65,6 +66,7 @@ export interface APIInterface {
     setRelationInteractive(atomicalId: string, relationName, values: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     
     // Query and search
+    getAtomicalFtInfo(atomicalId: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     getAtomical(atomicalId: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     getAtomicalLocation(atomicalId: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     getAtomicalHistory(atomicalId: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
@@ -83,6 +85,7 @@ export interface APIInterface {
     getAtomicals(address: string): Promise<CommandResultInterface>;
     getAtomicalsAtLocation(address: string): Promise<CommandResultInterface>;
     getUtxos(address: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
+    broadcast(rawtx: string): Promise<CommandResultInterface>;
     download(locationIdOrTxId: string, name: string): Promise<CommandResultInterface>;
     walletInfo(address: string, verbose: boolean, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     serverVersion(): Promise<CommandResultInterface>;

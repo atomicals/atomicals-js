@@ -10,9 +10,8 @@ bitcoin.initEccLib(ecc);
 const ECPair = ECPairFactory(ecc);
 
 import * as path from 'path';
-
 const walletsPath = path.join(__dirname, '../../wallets');
-const walletPath = path.join(walletsPath, 'wallet.json')
+const walletPath = path.join(walletsPath, process.env.WALLET_PATH || "wallet.json")
 
 export class WalletImportCommand implements CommandInterface {
 

@@ -403,6 +403,8 @@ export class TransferInteractiveFtCommand implements CommandInterface {
       tokenInputsLength++;
     }
 
+
+ 
     for (const output of transferOptions.outputs) {
       psbt.addOutput({
         value: output.value,

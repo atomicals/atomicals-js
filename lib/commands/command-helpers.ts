@@ -1,7 +1,7 @@
 import { AtomicalFileData } from "../interfaces/atomical-file-data";
 import * as mime from 'mime-types';
 import { chunkBuffer, fileReader, jsonFileReader } from "../utils/file-utils";
-import * as cbor from 'cbor';
+import * as cbor from 'borc';
 import {
     networks,
     script,

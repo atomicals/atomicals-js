@@ -78,10 +78,16 @@ export class TransferInteractiveNftCommand implements CommandInterface {
     console.log("Requested fee rate satoshis/byte:", this.satsbyte);
     const atomicalInfo = await this.electrumApi.atomicalsGetLocation(atomicalId);
     const atomicalDecorated = decorateAtomical(atomicalInfo.result);
+    console.log(JSON.stringify(atomicalDecorated, null, 2))
     // Check to make sure that the location is controlled by the same address as supplied by the WIF
-    if (!atomicalDecorated.location_info || !atomicalDecorated.location_info.length || atomicalDecorated.location_info[0].address !== p2tr.address) {
-      throw `Atomical is controlled by a different address (${atomicalDecorated.location_info[0].address}) than the provided wallet (${p2tr.address})`;
+    if (!atomicalDecorated.location_info_obj || !atomicalDecorated.location_info_obj.locations || !atomicalDecorated.location_info_obj.locations.length || atomicalDecorated.location_info_obj.locations[0].address !== p2tr.address) {
+      throw `Atomical is controlled by a different address (${atomicalDecorated.location_info_obj.locations[0].address}) than the provided wallet (${p2tr.address})`;
     }
+
+    if (atomicalDecorated.location_info_obj.locations[0].atomicals_at_location.length > 1) {
+      throw `Multiple atomicals are located at the same address as the NFT. Use the splat command to seperate them first.`;
+    }
+
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout
@@ -134,56 +140,62 @@ export class TransferInteractiveNftCommand implements CommandInterface {
     if (atomical.type !== 'NFT') {
       throw 'Atomical is not an NFT. It is expected to be an NFT type';
     }
-    if (atomical.location_info && atomical.location_info[0].address !== keypairAtomical.address) {
+
+    if (!atomical.location_info_obj || !atomical.location_info_obj.locations || !atomical.location_info_obj.locations.length || atomical.location_info_obj.locations[0].address !== keypairAtomical.address) {
       throw "Provided atomical WIF does not match the location address of the Atomical"
     }
     const keypairFundingInfo: KeyPairInfo = getKeypairInfo(fundingKeypair)
     console.log('Funding address of the funding private key (WIF) provided: ', keypairFundingInfo.address);
     logBanner('Preparing Funding Fees...');
 
-    if (!atomical.location_info || atomical.location_info.length !== 1) {
+    if (!atomical.location_info_obj || atomical.location_info_obj.locations.length !== 1) {
       throw 'expected exactly one location_info for NFT Atomical';
     }
-    const location_info = atomical.location_info[0];
-    const { expectedSatoshisDeposit } = calculateFundsRequired(location_info.value, satsoutput, satsbyte, 0);
+    const location = atomical.location_info_obj.locations[0];
+    const { expectedSatoshisDeposit } = calculateFundsRequired(location.value, satsoutput, satsbyte, 0);
     const psbt = new bitcoin.Psbt({ network: networks.bitcoin })
     // Add the atomical input, the value from the input counts towards the total satoshi amount required
     psbt.addInput({
-      hash: location_info.txid,
-      index: location_info.index,
-      witnessUtxo: { value: location_info.value, script: Buffer.from(location_info.script, 'hex') },
+      hash: location.txid,
+      index: location.index,
+      witnessUtxo: { value: location.value, script: Buffer.from(location.script, 'hex') },
       tapInternalKey: keypairAtomical.childNodeXOnlyPubkey,
     })
     // There is a funding deficit
-    const requiresDeposit = expectedSatoshisDeposit > 0;
-    if (requiresDeposit) {
-      logBanner(`DEPOSIT ${expectedSatoshisDeposit / 100000000} BTC to ${keypairFundingInfo.address}`);
-      qrcode.generate(keypairFundingInfo.address, { small: false });
-      console.log(`...`)
-      console.log(`...`)
-      console.log(`WAITING UNTIL ${expectedSatoshisDeposit / 100000000} BTC RECEIVED AT ${keypairFundingInfo.address}`)
-      console.log(`...`)
-      console.log(`...`)
-      let utxo = await this.electrumApi.waitUntilUTXO(keypairFundingInfo.address, expectedSatoshisDeposit, 5, true);
-      console.log(`Detected UTXO (${utxo.txid}:${utxo.vout}) with value ${utxo.value} for funding the transfer operation...`);
-      // Add the funding input
-      psbt.addInput({
-        hash: utxo.txid,
-        index: utxo.outputIndex,
-        witnessUtxo: { value: utxo.value, script: keypairFundingInfo.output },
-        tapInternalKey: keypairFundingInfo.childNodeXOnlyPubkey,
-      })
-    } else {
-      logBanner(`DEPOSIT IS NOT REQUIRED SINCE THE ATOMICAL INPUT VALUE IS SUFFICIENT TO COVER THE FEE`);
-    }
+    // Could fund with the atomical input value, but we wont
+    // const requiresDeposit = expectedSatoshisDeposit > 0;
+  
+    logBanner(`DEPOSIT ${expectedSatoshisDeposit / 100000000} BTC to ${keypairFundingInfo.address}`);
+    qrcode.generate(keypairFundingInfo.address, { small: false });
+    console.log(`...`)
+    console.log(`...`)
+    console.log(`WAITING UNTIL ${expectedSatoshisDeposit / 100000000} BTC RECEIVED AT ${keypairFundingInfo.address}`)
+    console.log(`...`)
+    console.log(`...`)
+    let utxo = await this.electrumApi.waitUntilUTXO(keypairFundingInfo.address, expectedSatoshisDeposit, 5, false);
+    console.log(`Detected UTXO (${utxo.txid}:${utxo.vout}) with value ${utxo.value} for funding the transfer operation...`);
+    // Add the funding input
+    psbt.addInput({
+      hash: utxo.txid,
+      index: utxo.outputIndex,
+      witnessUtxo: { value: utxo.value, script: keypairFundingInfo.output },
+      tapInternalKey: keypairFundingInfo.childNodeXOnlyPubkey,
+    })
     psbt.addOutput({
       value: this.satsoutput,
       address: receiveAddress,
     })
-    psbt.signInput(0, keypairAtomical.tweakedChildNode)
-    if (requiresDeposit) {
-      psbt.signInput(1, keypairFundingInfo.tweakedChildNode)
+    const isMoreThanDustChangeRemaining = utxo.value - expectedSatoshisDeposit >= 546;
+    if (isMoreThanDustChangeRemaining) {
+      // Add change output
+      console.log(`Adding change output, remaining: ${utxo.value - expectedSatoshisDeposit}`)
+      psbt.addOutput({
+        value: utxo.value - expectedSatoshisDeposit,
+        address: keypairFundingInfo.address
+      })
     }
+    psbt.signInput(0, keypairAtomical.tweakedChildNode)
+    psbt.signInput(1, keypairFundingInfo.tweakedChildNode)
     psbt.finalizeAllInputs();
     const tx = psbt.extractTransaction();
     const rawtx = tx.toHex();

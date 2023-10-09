@@ -28,6 +28,7 @@ export const writeFiles = async (inputIndexToFilesMap: any, txDir: string): Prom
     const fulldecodedPath = inputTxDir + `/_rawdata.json`;
     const objectDecoded = Object.assign({}, {}, decoded);
     const copiedObjectDecoded = cloneDeep(objectDecoded);
+    console.log('decoded', copiedObjectDecoded);
     await fileWriter(fulldecodedPath, JSON.stringify(hexifyObjectWithUtf8(copiedObjectDecoded, false), null, 2));
     if (decoded) {
       for (const filename in decoded) {
@@ -56,7 +57,7 @@ export const writeFiles = async (inputIndexToFilesMap: any, txDir: string): Prom
             contentLength,
             body: body.toString('hex')
           }
-        } else {
+        } else if (fileEntry['$b']) {
           // when there is not explicit content type with 'ct' then assume it is json
           const contentType = 'application/json'
           const fileNameWithExtension = `${filename}.property.json`;
@@ -72,6 +73,23 @@ export const writeFiles = async (inputIndexToFilesMap: any, txDir: string): Prom
             contentType,
             contentLength,
             body: body.toString('hex')
+          }
+        } else {
+          // when there is not explicit content type with 'ct' then assume it is json
+          const contentType = 'application/json'
+          const fileNameWithExtension = `${filename}.property.json`;
+          const fullPath = inputTxDir + `/${fileNameWithExtension}`
+          await fileWriter(fullPath, JSON.stringify(fileEntry, null, 2));
+          const contentLength = fileEntry.length;
+          const body = fileEntry 
+          fileSummary[inputIndex]['files'][filename] = {
+            filename,
+            fileNameWithExtension,
+            detectedExtension: '.json',
+            fullPath,
+            contentType,
+            contentLength,
+            body: body
           }
         }
       }
@@ -104,7 +122,6 @@ export class DownloadCommand implements CommandInterface {
     }
     await fileWriter(txDir + `/${txid}.hex`, tx)
     const filemap = buildAtomicalsFileMapFromRawTx(tx, false, false)
-    console.log('filemap', JSON.stringify(filemap))
     const writeResult = await writeFiles(filemap, txDir);
     return {
       success: true,

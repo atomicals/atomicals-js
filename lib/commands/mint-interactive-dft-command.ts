@@ -33,6 +33,7 @@ export class MintInteractiveDftCommand implements CommandInterface {
       this.fundingWIF,
     );
     const keypair = getKeypairInfo(keypairRaw);
+    
     const filesData: any[] = await prepareArgsMetaCtx(
       {
         mint_ticker: this.ticker,
@@ -43,7 +44,7 @@ export class MintInteractiveDftCommand implements CommandInterface {
     console.log("Mint for ticker: ", this.ticker);
 
     const atomicalIdResult = await this.electrumApi.atomicalsGetByTicker(this.ticker);
-    const atomicalResponse = await this.electrumApi.atomicalsGet(atomicalIdResult.result.atomical_id);
+    const atomicalResponse = await this.electrumApi.atomicalsGetFtInfo(atomicalIdResult.result.atomical_id);
     const globalInfo = atomicalResponse.global;
     const atomicalInfo = atomicalResponse.result;
     const atomicalDecorated = decorateAtomical(atomicalInfo);
@@ -58,7 +59,7 @@ export class MintInteractiveDftCommand implements CommandInterface {
       throw new Error('Subtype must be decentralized fungible token type')
     }
 
-    if (atomicalDecorated['$mint_height'] > globalInfo['height']) {
+    if (atomicalDecorated['$mint_height'] > (globalInfo['height'] + 1)) {
       throw new Error(`Mint height is invalid. height=${globalInfo['height']}, $mint_height=${atomicalDecorated['$mint_height']}`)
     }
     const perAmountMint = atomicalDecorated['$mint_amount'];
@@ -67,6 +68,20 @@ export class MintInteractiveDftCommand implements CommandInterface {
     }
     console.log("Per mint amount:", perAmountMint);
 
+    if (!atomicalDecorated['dft_info']) {
+      throw new Error(`General error no dft_info found`)
+    }
+
+    const max_mints = atomicalDecorated['$max_mints']
+    const mint_count = atomicalDecorated['dft_info']['mint_count'];
+    const ticker = atomicalDecorated['$ticker'];
+    if (atomicalDecorated['dft_info']['mint_count'] >= atomicalDecorated['$max_mints']) {
+      throw new Error(`Decentralized mint for ${ticker} completely minted out!`)
+    } else {
+      console.log(`There are already ${mint_count} mints of ${ticker} out of a max total of ${max_mints}.`)
+    }
+ 
+    console.log('atomicalDecorated', atomicalResponse, atomicalDecorated);
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
       satsbyte: this.options.satsbyte,

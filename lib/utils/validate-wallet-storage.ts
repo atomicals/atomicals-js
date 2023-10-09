@@ -12,8 +12,9 @@ import { jsonFileReader } from './file-utils';
 import { toXOnly } from './create-key-pair';
 const bip32 = BIP32Factory(ecc);
 
+import * as path from 'path';
 const walletsPath = path.join(__dirname, '../../wallets');
-const WALLET_FILE = path.join(walletsPath, 'wallet.json')
+const walletPath = path.join(walletsPath, process.env.WALLET_PATH || "wallet.json")
 
 export interface IWalletRecord {
   address: string,
@@ -54,7 +55,7 @@ export const validateWalletStorage = async (): Promise<IValidatedWalletInfo> => 
     }
 
     // Validate paths
-    if (wallet.primary.path !== `m/44'/0'/0'/0/0`) {
+    /*if (wallet.primary.path !== `m/44'/0'/0'/0/0`) {
       console.log(`Primary path must be m/44'/0'/0'/0/0`);
       throw new Error(`Primary path must be m/44'/0'/0'/0/0`);
     }
@@ -62,7 +63,7 @@ export const validateWalletStorage = async (): Promise<IValidatedWalletInfo> => 
     if (wallet.funding.path !== `m/44'/0'/0'/1/0`) {
       console.log(`Funding path must be m/44'/0'/0'/1/0`);
       throw new Error(`Funding path must be m/44'/0'/0'/1/0`);
-    }
+    }*/
 
     // Validate WIF
     if (!wallet.primary.WIF) {
@@ -86,8 +87,10 @@ export const validateWalletStorage = async (): Promise<IValidatedWalletInfo> => 
 
     const seed = await bip39.mnemonicToSeed(wallet.phrase);
     const rootKey = bip32.fromSeed(seed);
-    const derivePathPrimary = `m/44'/0'/0'/0/0`;
+    const derivePathPrimary = wallet.primary.path; //`m/44'/0'/0'/0/0`;
+
     const childNodePrimary = rootKey.derivePath(derivePathPrimary);
+
     const childNodeXOnlyPubkeyPrimary = toXOnly(childNodePrimary.publicKey);
     const p2trPrimary = bitcoin.payments.p2tr({
       internalPubkey: childNodeXOnlyPubkeyPrimary
@@ -95,7 +98,7 @@ export const validateWalletStorage = async (): Promise<IValidatedWalletInfo> => 
     if (!p2trPrimary.address || !p2trPrimary.output) {
         throw "error creating p2tr primary"
     }
-    const derivePathFunding = `m/44'/0'/0'/1/0`;
+    const derivePathFunding = wallet.funding.path; //`m/44'/0'/0'/1/0`;
     const childNodeFunding = rootKey.derivePath(derivePathFunding);
     const childNodeXOnlyPubkeyFunding = toXOnly(childNodeFunding.publicKey);
     const p2trFunding = bitcoin.payments.p2tr({
