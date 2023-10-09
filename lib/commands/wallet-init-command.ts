@@ -2,7 +2,11 @@ import { CommandResultInterface } from "./command-result.interface";
 import { CommandInterface } from "./command.interface";
 import { createPrimaryAndFundingKeyPairs } from "../utils/create-key-pair";
 import { jsonFileExists, jsonFileWriter } from "../utils/file-utils";
-const walletPath = process.env.WALLET_PATH || "wallet.json";
+
+import * as path from 'path';
+const walletsPath = path.join(__dirname, '../../wallets');
+const walletPath = path.join(walletsPath, process.env.WALLET_PATH || "wallet.json")
+
 export class WalletInitCommand implements CommandInterface {
     async run(): Promise<CommandResultInterface> {
         if (await this.walletExists()) {
