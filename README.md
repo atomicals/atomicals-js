@@ -13,7 +13,7 @@
 Download the github repo and then run:
 
 npm install
-npm build
+npm run build
 
 See all commands at:
 
