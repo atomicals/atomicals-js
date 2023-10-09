@@ -263,7 +263,7 @@ program.command('address')
       const history = options.history ? true : false;
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(config, ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-      const receive: { output: any, address: string } = performAddressAliasReplacement(walletInfo, options.address || undefined);
+      const receive: { output: any, address: string } = performAddressAliasReplacement(walletInfo, address || undefined);
       const result: any = await atomicals.addressInfo(receive.address, history);
       qrcode.generate(result.data?.address, { small: false });
       handleResultLogging(result);
