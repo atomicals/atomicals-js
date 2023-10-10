@@ -87,7 +87,7 @@
     "rpc-websockets": "^7.5.0",
     "terminal-image": "^2.0.0",
     "terminal-image-cli": "^2.0.0",
-    "tiny-secp256k1": "^2.2.1",
+    "tiny-secp256k1": "git+https://github.com/AstroxNetwork/tiny-secp256k1#8e7819d",
     "varuint-bitcoin": "^1.1.2"
   },
   "files": [
