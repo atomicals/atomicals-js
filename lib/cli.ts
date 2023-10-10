@@ -1559,7 +1559,7 @@ program.command('tx-history')
 
 program.command('list')
   .description('List feed of Atomicals minted globally')
-  .option('--limit <number>', 'Limit the number of results', '15')
+  .option('--limit <number>', 'Limit the number of results', '20')
   .option('--offset <number>', 'Offset for pagination', '-20')
   .option('--asc <string>', 'Whether to sort by ascending or descending', 'true')
   .action(async (options) => {
