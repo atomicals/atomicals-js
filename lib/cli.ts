@@ -5,7 +5,7 @@ import { ConfigurationInterface } from './interfaces/configuration.interface';
 import { ElectrumApi } from './api/electrum-api';
 import { validateCliInputs } from './utils/validate-cli-inputs';
 import { IValidatedWalletInfo, IWalletRecord, validateWalletStorage } from './utils/validate-wallet-storage';
-import * as qrcode from 'qrcode-terminal';
+import * as qrcode from 'terminal-qr';
 import { performAddressAliasReplacement } from './utils/address-helpers';
 import { AtomicalsGetFetchType } from './commands/command.interface';
 import { fileReader } from './utils/file-utils';

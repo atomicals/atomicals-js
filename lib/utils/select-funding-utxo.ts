@@ -2,7 +2,7 @@ import { ElectrumApiInterface } from "../api/electrum-api.interface";
 const bitcoin = require('bitcoinjs-lib');
 import ECPairFactory from 'ecpair';
 import * as ecc from '@bitcoinerlab/secp256k1';
-import * as qrcode from 'qrcode-terminal';
+import * as qrcode from 'terminal-qr';
 bitcoin.initEccLib(ecc);
 const ECPair = ECPairFactory(ecc);
 

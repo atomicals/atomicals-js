@@ -8,7 +8,7 @@ import { logBanner } from "./command-helpers";
 import * as ecc from '@bitcoinerlab/secp256k1';
 const bitcoin = require('bitcoinjs-lib');
 bitcoin.initEccLib(ecc);
-import * as qrcode from 'qrcode-terminal';
+import * as qrcode from 'terminal-qr';
 import {
   initEccLib,
   networks,

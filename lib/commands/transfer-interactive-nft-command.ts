@@ -5,7 +5,7 @@ import { ECPairFactory, ECPairAPI, TinySecp256k1Interface } from 'ecpair';
 import * as readline from 'readline';
 const bitcoin = require('bitcoinjs-lib');
 bitcoin.initEccLib(ecc);
-import * as qrcode from 'qrcode-terminal';
+import * as qrcode from 'terminal-qr';
 import {
   initEccLib,
   networks,
