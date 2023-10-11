@@ -1,6 +1,6 @@
 import { ElectrumApiInterface } from "../api/electrum-api.interface";
 import { CommandInterface } from "./command.interface";
-import * as ecc from 'tiny-secp256k1';
+import * as ecc from '@bitcoinerlab/secp256k1';
 import {  TinySecp256k1Interface } from 'ecpair';
 const bitcoin = require('bitcoinjs-lib');
 bitcoin.initEccLib(ecc);
@@ -12,7 +12,7 @@ import { getAndCheckAtomicalInfo, logBanner } from "./command-helpers";
 import { IWalletRecord } from "../utils/validate-wallet-storage";
 import { BaseRequestOptions } from "../interfaces/api.interface";
 import { AtomicalOperationBuilder } from "../utils/atomical-operation-builder";
-const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
+const tinysecp: TinySecp256k1Interface = require('@bitcoinerlab/secp256k1');
 initEccLib(tinysecp as any);
 
 export class SealInteractiveCommand implements CommandInterface {

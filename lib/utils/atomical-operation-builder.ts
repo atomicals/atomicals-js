@@ -1,9 +1,9 @@
 import { ElectrumApiInterface } from "../api/electrum-api.interface";
 import { KeyPairInfo, getKeypairInfo } from "./address-keypair-path";
 import { BitworkInfo, hasValidBitwork, isAtomicalId, isValidBitworkString, isValidContainerName, isValidRealmName, isValidSubRealmName, isValidTickerName } from "./atomical-format-helpers";
-import * as ecc from 'tiny-secp256k1';
+import * as ecc from '@bitcoinerlab/secp256k1';
 import { ECPairFactory, ECPairAPI, TinySecp256k1Interface } from 'ecpair';
-const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
+const tinysecp: TinySecp256k1Interface = require('@bitcoinerlab/secp256k1');
 const bitcoin = require('bitcoinjs-lib');
 import * as chalk from 'chalk';
 bitcoin.initEccLib(ecc);

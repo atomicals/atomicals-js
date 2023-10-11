@@ -1,6 +1,6 @@
 import { APIInterface, BaseRequestOptions } from "./interfaces/api.interface";
 const bitcoin = require('bitcoinjs-lib');
-import * as ecc from 'tiny-secp256k1';
+import * as ecc from '@bitcoinerlab/secp256k1';
 bitcoin.initEccLib(ecc);
 export { ElectrumApiMock } from "./api/electrum-api-mock";
 import { ConfigurationInterface } from "./interfaces/configuration.interface";

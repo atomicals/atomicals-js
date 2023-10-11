@@ -1,7 +1,7 @@
 import { ElectrumApiInterface } from "../api/electrum-api.interface";
 
 import { AtomicalsGetFetchType, CommandInterface } from "./command.interface";
-import * as ecc from 'tiny-secp256k1';
+import * as ecc from '@bitcoinerlab/secp256k1';
 import { hydrateConfig } from "../utils/hydrate-config";
 import { TinySecp256k1Interface } from 'ecpair';
 const bitcoin = require('bitcoinjs-lib');
@@ -14,7 +14,7 @@ import { BaseRequestOptions } from "../interfaces/api.interface";
 import { checkBaseRequestOptions, isValidBitworkMinimum, isValidBitworkString, isValidTickerName } from "../utils/atomical-format-helpers";
 import { AtomicalOperationBuilder } from "../utils/atomical-operation-builder";
 import { prepareFilesDataAsObject } from "./command-helpers";
-const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
+const tinysecp: TinySecp256k1Interface = require('@bitcoinerlab/secp256k1');
 initEccLib(tinysecp as any);
 export class MintInteractiveFtCommand implements CommandInterface {
   constructor(

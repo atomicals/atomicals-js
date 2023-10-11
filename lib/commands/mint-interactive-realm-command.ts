@@ -1,7 +1,7 @@
 import { ElectrumApiInterface } from "../api/electrum-api.interface";
 
 import { AtomicalsGetFetchType, CommandInterface } from "./command.interface";
-import * as ecc from 'tiny-secp256k1';
+import * as ecc from '@bitcoinerlab/secp256k1';
 import { hydrateConfig } from "../utils/hydrate-config";
 import { ECPairFactory, ECPairAPI, TinySecp256k1Interface } from 'ecpair';
 const bitcoin = require('bitcoinjs-lib');
@@ -13,7 +13,7 @@ import { BaseRequestOptions } from "../interfaces/api.interface";
 import { GetByRealmCommand } from "./get-by-realm-command";
 import { checkBaseRequestOptions, isValidBitworkMinimum, isValidBitworkString } from "../utils/atomical-format-helpers";
 import { AtomicalOperationBuilder } from "../utils/atomical-operation-builder";
-const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
+const tinysecp: TinySecp256k1Interface = require('@bitcoinerlab/secp256k1');
 initEccLib(tinysecp as any);
 const ECPair: ECPairAPI = ECPairFactory(tinysecp);
 export class MintInteractiveRealmCommand implements CommandInterface {

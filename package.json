@@ -55,6 +55,7 @@
     "vinyl-source-stream": "^2.0.0"
   },
   "dependencies": {
+    "@bitcoinerlab/secp256k1": "^1.0.5",
     "@cmdcode/tapscript": "^1.2.2",
     "axios": "^1.5.1",
     "base32": "^0.0.7",
@@ -87,7 +88,6 @@
     "rpc-websockets": "^7.5.0",
     "terminal-image": "^2.0.0",
     "terminal-image-cli": "^2.0.0",
-    "tiny-secp256k1": "git+https://github.com/AstroxNetwork/tiny-secp256k1#8e7819d",
     "varuint-bitcoin": "^1.1.2"
   },
   "files": [

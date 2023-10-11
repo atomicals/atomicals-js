@@ -1,6 +1,6 @@
 import * as bs58check from "bs58check";
 import { sha256 } from "js-sha256";
-import * as ecc from 'tiny-secp256k1';
+import * as ecc from '@bitcoinerlab/secp256k1';
 import { IValidatedWalletInfo, IWalletRecord } from "./validate-wallet-storage";
 import { AtomicalStatus, Location, LocationInfo } from "../interfaces/atomical-status.interface";
 import { IInputUtxoPartial } from "../types/UTXO.interface";

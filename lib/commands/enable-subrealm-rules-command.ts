@@ -1,6 +1,6 @@
 import { ElectrumApiInterface } from "../api/electrum-api.interface";
 import { AtomicalsGetFetchType, CommandInterface } from "./command.interface";
-import * as ecc from 'tiny-secp256k1';
+import * as ecc from '@bitcoinerlab/secp256k1';
 import { TinySecp256k1Interface } from 'ecpair';
 const bitcoin = require('bitcoinjs-lib');
 bitcoin.initEccLib(ecc);
@@ -13,7 +13,7 @@ import { BaseRequestOptions } from "../interfaces/api.interface";
 import { IWalletRecord } from "../utils/validate-wallet-storage";
 import { AtomicalIdentifierType, validateSubrealmRulesObject } from "../utils/atomical-format-helpers";
 
-const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
+const tinysecp: TinySecp256k1Interface = require('@bitcoinerlab/secp256k1');
 initEccLib(tinysecp as any);
 
 export class EnableSubrealmRulesCommand implements CommandInterface {

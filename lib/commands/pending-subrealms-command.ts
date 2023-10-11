@@ -5,7 +5,7 @@ import * as readline from 'readline';
 import * as chalk from 'chalk';
 import { KeyPairInfo, getKeypairInfo } from "../utils/address-keypair-path";
 import { logBanner } from "./command-helpers";
-import * as ecc from 'tiny-secp256k1';
+import * as ecc from '@bitcoinerlab/secp256k1';
 const bitcoin = require('bitcoinjs-lib');
 bitcoin.initEccLib(ecc);
 import * as qrcode from 'qrcode-terminal';
@@ -15,7 +15,7 @@ import {
 } from "bitcoinjs-lib";
 
 ; import { ECPairFactory, ECPairAPI, TinySecp256k1Interface } from 'ecpair';
-const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
+const tinysecp: TinySecp256k1Interface = require('@bitcoinerlab/secp256k1');
 initEccLib(tinysecp as any);
 const ECPair: ECPairAPI = ECPairFactory(tinysecp);
 

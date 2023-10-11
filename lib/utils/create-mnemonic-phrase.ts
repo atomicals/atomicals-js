@@ -1,5 +1,5 @@
 const bitcoin = require('bitcoinjs-lib');
-import * as ecc from 'tiny-secp256k1';
+import * as ecc from '@bitcoinerlab/secp256k1';
 bitcoin.initEccLib(ecc);
 const crypto = require('crypto');
 const bip39 = require('bip39');

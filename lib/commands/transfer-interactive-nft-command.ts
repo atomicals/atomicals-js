@@ -1,6 +1,6 @@
 import { ElectrumApiInterface } from "../api/electrum-api.interface";
 import { AtomicalsGetFetchType, CommandInterface } from "./command.interface";
-import * as ecc from 'tiny-secp256k1';
+import * as ecc from '@bitcoinerlab/secp256k1';
 import { ECPairFactory, ECPairAPI, TinySecp256k1Interface } from 'ecpair';
 import * as readline from 'readline';
 const bitcoin = require('bitcoinjs-lib');
@@ -21,7 +21,7 @@ import { calculateFundsRequired, logBanner } from "./command-helpers";
 import { GetCommand } from "./get-command";
 import { GetByRealmCommand } from "./get-by-realm-command";
 import { GetByContainerCommand } from "./get-by-container-command";
-const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
+const tinysecp: TinySecp256k1Interface = require('@bitcoinerlab/secp256k1');
 initEccLib(tinysecp as any);
 const ECPair: ECPairAPI = ECPairFactory(tinysecp);
 

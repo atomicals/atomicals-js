@@ -5,7 +5,7 @@ import { jsonFileExists, jsonFileReader, jsonFileWriter } from "../utils/file-ut
 import { IValidatedWalletInfo } from "../utils/validate-wallet-storage";
 const bitcoin = require('bitcoinjs-lib');
 import ECPairFactory from 'ecpair';
-import * as ecc from 'tiny-secp256k1';
+import * as ecc from '@bitcoinerlab/secp256k1';
 import { walletPathResolver } from "../utils/wallet-path-resolver";
 
 bitcoin.initEccLib(ecc);
