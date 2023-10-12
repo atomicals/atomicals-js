@@ -90,9 +90,24 @@ export enum REQUEST_NAME_TYPE {
     SUBREALM = 'SUBREALM'
 }
 
+export interface OperationSetup {
+    parentAtomicalInfo: any;
+    performBitworkForRevealTx: any;
+    performBitworkForCommitTx: any;
+    scriptP2TR: any;
+    hashLockP2TR: any;
+    unixtime: any;
+    nonce: any;
+    noncesGenerated: any;
+    commitMinedWithBitwork: any;
+    fees: any;
+    copiedData: any;
+    fundingKeypair: any;
+}
+
 export interface AtomicalOperationBuilderOptions {
     electrumApi: ElectrumApiInterface;
-    satsbyte?: number; // satoshis                    
+    satsbyte?: number; // satoshis
     address: string;
     opType: 'nft' | 'ft' | 'dft' | 'dmt' | 'dat' | 'mod' | 'evt' | 'sl' | 'x' | 'y'
     requestContainerMembership?: string;
@@ -250,9 +265,9 @@ export class AtomicalOperationBuilder {
 
     /**
      * For each array element do:
-     * 
+     *
      * - determine if it's a file, or a file with an alias, or a scalar/json object type
-     * 
+     *
      * @param fieldTypeHints The type hint string array
      */
     static async getDataObjectFromStringTypeHints(fieldTypeHints: string[]) {
@@ -346,7 +361,7 @@ export class AtomicalOperationBuilder {
     }
 
     /**
-     * 
+     *
      * @param utxoPartial The UTXO to spend in the constructed tx
      * @param wif The signing WIF key for the utxo
      */
@@ -389,101 +404,141 @@ export class AtomicalOperationBuilder {
         return Object.keys(obj).length === 0;
     }
 
-    async start(fundingWIF: string): Promise<any> {
+    static async prepareStartSetup(
+      op: AtomicalOperationBuilder,
+      fundingWIF: string
+    ): Promise<OperationSetup> {
         const fundingKeypairRaw = ECPair.fromWIF(fundingWIF);
         const fundingKeypair = getKeypairInfo(fundingKeypairRaw);
-        let performBitworkForRevealTx = !!this.bitworkInfoReveal;
-        let performBitworkForCommitTx = !!this.bitworkInfoCommit;
+        let performBitworkForRevealTx = !!op.bitworkInfoReveal;
+        let performBitworkForCommitTx = !!op.bitworkInfoCommit;
         let scriptP2TR: any = null;
         let hashLockP2TR: any = null;
+        let copiedData = Object.assign({}, op.userDefinedData);
 
-        if (this.options.meta) {
-            this.setMeta(await AtomicalOperationBuilder.getDataObjectFromStringTypeHints(this.options.meta));
-        }
-        if (this.options.init) {
-            this.setInit(await AtomicalOperationBuilder.getDataObjectFromStringTypeHints(this.options.init));
-        }
-        if (this.options.ctx) {
-            this.setCtx(await AtomicalOperationBuilder.getDataObjectFromStringTypeHints(this.options.ctx));
+        if (!op.isEmpty(op.getArgs())) {
+            copiedData['args'] = op.getArgs();
         }
 
-        let copiedData = Object.assign({}, this.userDefinedData);//
-
-        if (!this.isEmpty(this.getArgs())) {
-            copiedData['args'] = this.getArgs()
+        if (op.options.meta) {
+            copiedData['meta'] = await AtomicalOperationBuilder.getDataObjectFromStringTypeHints(
+              op.options.meta
+            );
         }
-
-        if (!this.isEmpty(this.getCtx())) {
-            copiedData['ctx'] = this.getCtx()
+        if (op.options.init) {
+            copiedData['init'] = await AtomicalOperationBuilder.getDataObjectFromStringTypeHints(
+              op.options.init
+            );
         }
-
-        if (!this.isEmpty(this.getMeta())) {
-            copiedData['meta'] = this.getMeta()
+        if (op.options.ctx) {
+            copiedData['ctx'] = await AtomicalOperationBuilder.getDataObjectFromStringTypeHints(
+              op.options.ctx
+            );
         }
-
-        if (!this.isEmpty(this.getInit())) {
-            copiedData['init'] = this.getInit()
+        if (op.options.meta) {
+            copiedData['meta'] = await AtomicalOperationBuilder.getDataObjectFromStringTypeHints(
+              op.options.meta
+            );
         }
 
         // If it's a container membership request, add it in
-        if (this.containerMembership) {
-            copiedData['in'] = `["#${this.containerMembership}"]`;
+        if (op.containerMembership) {
+            copiedData['in'] = `["#${op.containerMembership}"]`;
         }
 
-        switch (this.requestNameType) {
+        switch (op.requestNameType) {
             case REQUEST_NAME_TYPE.TICKER:
                 copiedData['args'] = copiedData['args'] || {};
-                copiedData['args']['request_ticker'] = this.requestName;
+                copiedData['args']['request_ticker'] = op.requestName;
                 break;
             case REQUEST_NAME_TYPE.REALM:
                 copiedData['args'] = copiedData['args'] || {};
-                copiedData['args']['request_realm'] = this.requestName;
+                copiedData['args']['request_realm'] = op.requestName;
                 break;
             case REQUEST_NAME_TYPE.SUBREALM:
                 copiedData['args'] = copiedData['args'] || {};
-                copiedData['args']['request_subrealm'] = this.requestName;
-                copiedData['args']['parent_realm'] = this.requestSubrealmPid;
+                copiedData['args']['request_subrealm'] = op.requestName;
+                copiedData['args']['parent_realm'] = op.requestSubrealmPid;
                 break;
             case REQUEST_NAME_TYPE.CONTAINER:
                 copiedData['args'] = copiedData['args'] || {};
-                copiedData['args']['request_container'] = this.requestName;
+                copiedData['args']['request_container'] = op.requestName;
+                break;
             default:
                 break;
         }
 
         if (performBitworkForCommitTx) {
             copiedData['args'] = copiedData['args'] || {};
-            copiedData['args']['bitworkc'] = this.bitworkInfoCommit?.hex_bitwork;
+            copiedData['args']['bitworkc'] = op.bitworkInfoCommit?.hex_bitwork;
         }
 
         if (performBitworkForRevealTx) {
             copiedData['args'] = copiedData['args'] || {};
-            copiedData['args']['bitworkr'] = this.bitworkInfoReveal?.hex_bitwork
+            copiedData['args']['bitworkr'] = op.bitworkInfoReveal?.hex_bitwork;
         }
 
-        if (this.options.opType === 'dmt') {
+        if (op.options.opType === 'dmt') {
             copiedData['args'] = copiedData['args'] || {};
-            copiedData['args']['mint_ticker'] = this.options.dmtOptions?.ticker;
+            copiedData['args']['mint_ticker'] = op.options.dmtOptions?.ticker;
         }
 
-        let parentAtomicalInfo: ParentInputAtomical | null | any = this.getInputParent();
+        let parentAtomicalInfo: ParentInputAtomical | null | any = op.getInputParent();
         if (parentAtomicalInfo) {
             copiedData['args'] = copiedData['args'] || {};
             copiedData['args']['parents'] = { [parentAtomicalInfo.parentId]: 0 }; // Also supports one parent for now
         }
-        //parentAtomicalInfo = null;
         console.log('Payload Encoded: ', copiedData);
-
         let unixtime = Math.floor(Date.now() / 1000);
         let nonce = Math.floor(Math.random() * 10000000);
         let noncesGenerated = 0;
+        let commitMinedWithBitwork = false;
+
+        const mockAtomPayload = new AtomicalsPayload(copiedData);
+        const mockBaseCommitForFeeCalculation: { scriptP2TR; hashLockP2TR } = prepareCommitRevealConfig(
+          op.options.opType,
+          fundingKeypair,
+          mockAtomPayload
+        );
+        const fees: FeeCalculations = this.calculateFeesRequiredForAccumulatedCommitAndReveal(
+          op,
+          mockBaseCommitForFeeCalculation.hashLockP2TR.redeem.output.length,
+        );
+        return {
+            parentAtomicalInfo,
+            performBitworkForRevealTx,
+            performBitworkForCommitTx,
+            scriptP2TR,
+            hashLockP2TR,
+            unixtime,
+            nonce,
+            noncesGenerated,
+            commitMinedWithBitwork,
+            fees,
+            copiedData,
+            fundingKeypair,
+        };
+    }
+
+    async start(fundingWIF: string): Promise<any> {
         let atomicalId: string | null = null;
         let commitTxid: string | null = null;
         let revealTxid: string | null = null;
-        let commitMinedWithBitwork = false;
-        const mockAtomPayload = new AtomicalsPayload(copiedData);
-        const mockBaseCommitForFeeCalculation: { scriptP2TR, hashLockP2TR } = prepareCommitRevealConfig(this.options.opType, fundingKeypair, mockAtomPayload)
-        const fees: FeeCalculations = this.calculateFeesRequiredForAccumulatedCommitAndReveal(mockBaseCommitForFeeCalculation.hashLockP2TR.redeem.output.length);
+
+        let {
+            parentAtomicalInfo,
+            performBitworkForRevealTx,
+            performBitworkForCommitTx,
+            scriptP2TR,
+            hashLockP2TR,
+            unixtime,
+            nonce,
+            noncesGenerated,
+            commitMinedWithBitwork,
+            fees,
+            copiedData,
+            fundingKeypair,
+        } = await AtomicalOperationBuilder.prepareStartSetup(this, fundingWIF)
         ////////////////////////////////////////////////////////////////////////
         // Begin Reveal Transaction
         ////////////////////////////////////////////////////////////////////////
@@ -535,7 +590,7 @@ export class AtomicalOperationBuilder {
                     process.stdout.cursorTo(0);
                     process.stdout.write(chalk.green(checkTxid, ' nonces: ' + noncesGenerated));
                     console.log('\nBitwork matches commit txid! ', prelimTx.getId(), '@ time: ' + Math.floor(Date.now() / 1000))
-                    // We found a solution, therefore broadcast it 
+                    // We found a solution, therefore broadcast it
                     const interTx = psbtStart.extractTransaction();
                     const rawtx = interTx.toHex();
                     AtomicalOperationBuilder.finalSafetyCheckForExcessiveFee(psbtStart, interTx);
@@ -725,7 +780,6 @@ export class AtomicalOperationBuilder {
         do {
             try {
                 console.log('rawtx', rawtx);
-               
                 result = await this.options.electrumApi.broadcast(rawtx);
                 if (result) {
                     break;
@@ -747,9 +801,9 @@ export class AtomicalOperationBuilder {
         return bitwork;
     }
 
-    totalOutputSum(): number {
+    static totalOutputSum(operation: AtomicalOperationBuilder): number {
         let sum = 0;
-        for (const additionalOutput of this.additionalOutputs) {
+        for (const additionalOutput of operation.additionalOutputs) {
             sum += additionalOutput.value;
         }
         return sum
@@ -772,15 +826,18 @@ export class AtomicalOperationBuilder {
         return sum;
     }
 
-    calculateAmountRequiredForReveal(hashLockP2TROutputLen: number = 0): number {
+    static calculateAmountRequiredForReveal(
+      operation: AtomicalOperationBuilder,
+      hashLockP2TROutputLen: number = 0
+    ): number {
         const ARGS_BYTES = 20;
         const BITWORK_BYTES = 5 + 10 + 4 + 10 + 4 + 10 + 1 + 10;
         const EXTRA_BUFFER = 10;
 
-        return (this.options.satsbyte as any) *
+        return (operation.options.satsbyte as any) *
             (BASE_BYTES +
-                ((1 + this.inputUtxos.length) * INPUT_BYTES_BASE) +
-                (this.additionalOutputs.length * OUTPUT_BYTES_BASE) +
+                ((1 + operation.inputUtxos.length) * INPUT_BYTES_BASE) +
+                (operation.additionalOutputs.length * OUTPUT_BYTES_BASE) +
                 OP_RETURN_BYTES +
                 ARGS_BYTES +
                 BITWORK_BYTES +
@@ -789,8 +846,8 @@ export class AtomicalOperationBuilder {
             )
     }
 
-    calculateFeesRequiredForCommit(): number {
-        return (this.options.satsbyte as any) *
+    static calculateFeesRequiredForCommit(satsbyte: any): number {
+        return satsbyte *
             (BASE_BYTES +
                 (1 * INPUT_BYTES_BASE) +
                 (1 * OUTPUT_BYTES_BASE)
@@ -803,14 +860,17 @@ export class AtomicalOperationBuilder {
 
     /**
      * Get the commit and reveal fee. The commit fee assumes it is chained together
-     * @returns 
+     * @returns
      */
-    calculateFeesRequiredForAccumulatedCommitAndReveal(hashLockP2TROutputLen: number = 0): FeeCalculations {
-        const revealFee = this.calculateAmountRequiredForReveal(hashLockP2TROutputLen);
-        const commitFee = this.calculateFeesRequiredForCommit();
+    static calculateFeesRequiredForAccumulatedCommitAndReveal(
+      operation: AtomicalOperationBuilder,
+      hashLockP2TROutputLen: number = 0
+    ): FeeCalculations {
+        const revealFee = this.calculateAmountRequiredForReveal(operation, hashLockP2TROutputLen);
+        const commitFee = this.calculateFeesRequiredForCommit(operation.options.satsbyte);
         const commitAndRevealFee = commitFee + revealFee;
-        const commitAndRevealFeePlusOutputs = commitFee + revealFee + this.totalOutputSum();
-        const revealFeePlusOutputs = revealFee + this.totalOutputSum();
+        const commitAndRevealFeePlusOutputs = commitFee + revealFee + this.totalOutputSum(operation);
+        const revealFeePlusOutputs = revealFee + this.totalOutputSum(operation);
         const ret = {
             commitAndRevealFee,
             commitAndRevealFeePlusOutputs,
