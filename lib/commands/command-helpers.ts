@@ -440,13 +440,17 @@ export class AtomicalsPayload {
 
         function validateWhitelistedDatatypes(x, allowBuffer = true) {
             const ok = Object.keys;
-            const tx = typeof x;
+            const tx = x === null ? 'null' : typeof x;
             const isAllowed = isAllowedtype(tx, allowBuffer);
             if (!isAllowed) {
                 return false;
             }
             if (tx === 'object') {
-                return ok(x).every(key => validateWhitelistedDatatypes(x[key], allowBuffer));
+                        const keys = ok(x)
+                        if (!keys)  {
+                    return true;
+                        }
+                return keys.every(key => validateWhitelistedDatatypes(x[key], allowBuffer));
             }
             return true;
         }
