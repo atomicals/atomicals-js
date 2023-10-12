@@ -1,10 +1,11 @@
-const bitcoin = require('bitcoinjs-lib');
+import * as bitcoin from 'bitcoinjs-lib';
 import * as ecc from '@bitcoinerlab/secp256k1';
-bitcoin.initEccLib(ecc);
-const bip39 = require('bip39');
+import { mnemonicToSeed } from 'bip39';
 import BIP32Factory from 'bip32';
 import { toXOnly } from './create-key-pair';
 const bip32 = BIP32Factory(ecc);
+
+bitcoin.initEccLib(ecc);
 
 export interface ExtendTaprootAddressScriptKeyPairInfo {
   address: string;
@@ -16,7 +17,7 @@ export interface ExtendTaprootAddressScriptKeyPairInfo {
 }
 
 export const getExtendTaprootAddressKeypairPath = async (phrase: string, path: string): Promise<ExtendTaprootAddressScriptKeyPairInfo> => {
-  const seed = await bip39.mnemonicToSeed(phrase);
+  const seed = await mnemonicToSeed(phrase);
   const rootKey = bip32.fromSeed(seed);
   const childNode = rootKey.derivePath(path);
   const childNodeXOnlyPubkey = childNode.publicKey.slice(1, 33);
@@ -34,7 +35,7 @@ export const getExtendTaprootAddressKeypairPath = async (phrase: string, path: s
   );
 
   return {
-    address,
+    address: address!,
     tweakedChildNode,
     childNodeXOnlyPubkey,
     output,
@@ -45,7 +46,7 @@ export const getExtendTaprootAddressKeypairPath = async (phrase: string, path: s
 
 export interface KeyPairInfo {
   address: string;
-  output: string;
+  output: Buffer;
   childNodeXOnlyPubkey: any;
   tweakedChildNode: any;
   childNode: any;
@@ -67,10 +68,10 @@ export const getKeypairInfo = (childNode: any): KeyPairInfo => {
   );
 
   return {
-    address,
+    address: address!,
     tweakedChildNode,
     childNodeXOnlyPubkey,
-    output,
+    output: output!,
     childNode
   }
 }

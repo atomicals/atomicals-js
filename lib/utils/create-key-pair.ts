@@ -1,8 +1,8 @@
-
-const bitcoin = require('bitcoinjs-lib');
+import * as bitcoin from 'bitcoinjs-lib';
 import ECPairFactory from 'ecpair';
 import * as ecc from '@bitcoinerlab/secp256k1';
 import { createMnemonicPhrase } from './create-mnemonic-phrase';
+
 bitcoin.initEccLib(ecc);
 
 const ECPair = ECPairFactory(ecc);
@@ -12,14 +12,14 @@ const bip32 = BIP32Factory(ecc);
 export const toXOnly = (publicKey) => {
     return publicKey.slice(1, 33);
 }
-const bip39 = require('bip39');
+import {mnemonicToSeed} from 'bip39';
 
 export const createKeyPair = async (phrase: string = '', path = `m/44'/0'/0'/0/0`) => {
     if (!phrase || phrase === '') {
         const phraseResult = await createMnemonicPhrase();
         phrase = phraseResult.phrase;
     }
-    const seed = await bip39.mnemonicToSeed(phrase);
+    const seed = await mnemonicToSeed(phrase);
     const rootKey = bip32.fromSeed(seed);
     const childNodePrimary = rootKey.derivePath(path);
     // const p2pkh = bitcoin.payments.p2pkh({ pubkey: childNodePrimary.publicKey });

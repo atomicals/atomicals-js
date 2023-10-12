@@ -4,7 +4,7 @@ import { ElectrumApiInterface } from "../api/electrum-api.interface";
 import { CommandInterface } from "./command.interface";
 import * as ecc from '@bitcoinerlab/secp256k1';
 import { TinySecp256k1Interface } from 'ecpair';
-const bitcoin = require('bitcoinjs-lib');
+import * as bitcoin from 'bitcoinjs-lib';
 bitcoin.initEccLib(ecc);
 import {
   initEccLib,
@@ -14,8 +14,7 @@ import { AtomicalOperationBuilder } from "../utils/atomical-operation-builder";
 import { BaseRequestOptions } from "../interfaces/api.interface";
 import { IWalletRecord } from "../utils/validate-wallet-storage";
 
-const tinysecp: TinySecp256k1Interface = require('@bitcoinerlab/secp256k1');
-initEccLib(tinysecp as any);
+
 
 export class DeleteInteractiveCommand implements CommandInterface {
   constructor(

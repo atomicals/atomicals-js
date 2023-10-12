@@ -1,4 +1,4 @@
-const bitcoin = require('bitcoinjs-lib');
+import * as bitcoin from 'bitcoinjs-lib';
 import ECPairFactory from 'ecpair';
 import * as ecc from '@bitcoinerlab/secp256k1';
 bitcoin.initEccLib(ecc);
@@ -10,13 +10,13 @@ const bip32 = BIP32Factory(ecc);
 const toXOnly = (publicKey) => {
     return publicKey.slice(1, 33);
 }
-const bip39 = require('bip39');
+import {mnemonicToSeed, validateMnemonic} from 'bip39';
 
 export const decodeMnemonicPhrase = async (phrase: string, path: string) => {
-    if (!bip39.validateMnemonic(phrase)) {
+    if (!validateMnemonic(phrase)) {
         throw new Error("Invalid mnemonic phrase provided!");
     }
-    const seed = await bip39.mnemonicToSeed(phrase);
+    const seed = await mnemonicToSeed(phrase);
     const rootKey = bip32.fromSeed(seed);
     const childNode = rootKey.derivePath(path);
     // const { address } = bitcoin.payments.p2pkh({ pubkey: childNode.publicKey });

@@ -3,7 +3,7 @@ import { CommandInterface } from "./command.interface";
 import { toXOnly } from "../utils/create-key-pair";
 import { jsonFileExists, jsonFileReader, jsonFileWriter } from "../utils/file-utils";
 import { IValidatedWalletInfo } from "../utils/validate-wallet-storage";
-const bitcoin = require('bitcoinjs-lib');
+import * as bitcoin from 'bitcoinjs-lib';
 import ECPairFactory from 'ecpair';
 import * as ecc from '@bitcoinerlab/secp256k1';
 import { walletPathResolver } from "../utils/wallet-path-resolver";

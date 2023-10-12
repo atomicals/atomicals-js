@@ -2,7 +2,7 @@ import { ElectrumApiInterface } from "../api/electrum-api.interface";
 import { CommandInterface } from "./command.interface";
 import * as ecc from '@bitcoinerlab/secp256k1';
 import { ECPairFactory, ECPairAPI, TinySecp256k1Interface } from 'ecpair';
-const bitcoin = require('bitcoinjs-lib');
+import * as bitcoin from 'bitcoinjs-lib';
 bitcoin.initEccLib(ecc);
 import {
   initEccLib,
@@ -12,9 +12,7 @@ import { getKeypairInfo } from "../utils/address-keypair-path";
 import { checkBaseRequestOptions, decorateAtomical } from "../utils/atomical-format-helpers";
 import { BaseRequestOptions } from "../interfaces/api.interface";
 import { AtomicalOperationBuilder } from "../utils/atomical-operation-builder";
-const tinysecp: TinySecp256k1Interface = require('@bitcoinerlab/secp256k1');
-initEccLib(tinysecp as any);
-const ECPair: ECPairAPI = ECPairFactory(tinysecp);
+const ECPair: ECPairAPI = ECPairFactory(ecc);
 export class MintInteractiveDftCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,

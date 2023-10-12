@@ -1,4 +1,4 @@
-const bitcoin = require('bitcoinjs-lib');
+import * as bitcoin from 'bitcoinjs-lib';
 import ECPairFactory from 'ecpair';
 import * as ecc from '@bitcoinerlab/secp256k1';
 import { ConfigurationInterface } from '../interfaces/configuration.interface';

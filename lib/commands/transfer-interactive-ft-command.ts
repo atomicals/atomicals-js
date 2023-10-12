@@ -5,7 +5,7 @@ import * as ecc from '@bitcoinerlab/secp256k1';
 import { hydrateConfig } from "../utils/hydrate-config";
 import { ECPairFactory, ECPairAPI, TinySecp256k1Interface } from 'ecpair';
 import * as readline from 'readline';
-const bitcoin = require('bitcoinjs-lib');
+import * as bitcoin from 'bitcoinjs-lib';
 bitcoin.initEccLib(ecc);
 import * as qrcode from 'terminal-qr';
 import {
@@ -23,9 +23,7 @@ import { IValidatedWalletInfo } from "../utils/validate-wallet-storage";
 import { AtomicalIdentifierType, AtomicalResolvedIdentifierReturn, getAtomicalIdentifierType } from "../utils/atomical-format-helpers";
 import { GetCommand } from "./get-command";
 import { GetByTickerCommand } from "./get-by-ticker-command";
-const tinysecp: TinySecp256k1Interface = require('@bitcoinerlab/secp256k1');
-initEccLib(tinysecp as any);
-const ECPair: ECPairAPI = ECPairFactory(tinysecp);
+const ECPair: ECPairAPI = ECPairFactory(ecc);
 
 
 export interface IAtomicalBalanceSummary {
@@ -396,7 +394,7 @@ export class TransferInteractiveFtCommand implements CommandInterface {
       psbt.addInput({
         hash: utxo.txid,
         index: utxo.index,
-        witnessUtxo: { value: utxo.value, script: Buffer.from(output, 'hex') },
+        witnessUtxo: { value: utxo.value, script: output },
         tapInternalKey: keyPairAtomical.childNodeXOnlyPubkey,
       })
       tokenBalanceIn += utxo.value;

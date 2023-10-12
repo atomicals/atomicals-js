@@ -3,7 +3,7 @@ import { AtomicalsGetFetchType, CommandInterface } from "./command.interface";
 import * as ecc from '@bitcoinerlab/secp256k1';
 import { ECPairFactory, ECPairAPI, TinySecp256k1Interface } from 'ecpair';
 import * as readline from 'readline';
-const bitcoin = require('bitcoinjs-lib');
+import * as bitcoin from 'bitcoinjs-lib';
 bitcoin.initEccLib(ecc);
 import * as qrcode from 'terminal-qr';
 import {
@@ -21,9 +21,7 @@ import { calculateFundsRequired, logBanner } from "./command-helpers";
 import { GetCommand } from "./get-command";
 import { GetByRealmCommand } from "./get-by-realm-command";
 import { GetByContainerCommand } from "./get-by-container-command";
-const tinysecp: TinySecp256k1Interface = require('@bitcoinerlab/secp256k1');
-initEccLib(tinysecp as any);
-const ECPair: ECPairAPI = ECPairFactory(tinysecp);
+const ECPair: ECPairAPI = ECPairFactory(ecc);
 
 export class TransferInteractiveNftCommand implements CommandInterface {
   constructor(

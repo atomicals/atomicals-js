@@ -3,8 +3,7 @@ import { KeyPairInfo, getKeypairInfo } from "./address-keypair-path";
 import { BitworkInfo, hasValidBitwork, isAtomicalId, isValidBitworkString, isValidContainerName, isValidRealmName, isValidSubRealmName, isValidTickerName } from "./atomical-format-helpers";
 import * as ecc from '@bitcoinerlab/secp256k1';
 import { ECPairFactory, ECPairAPI, TinySecp256k1Interface } from 'ecpair';
-const tinysecp: TinySecp256k1Interface = require('@bitcoinerlab/secp256k1');
-const bitcoin = require('bitcoinjs-lib');
+import * as bitcoin from 'bitcoinjs-lib';
 import * as chalk from 'chalk';
 bitcoin.initEccLib(ecc);
 import {
@@ -12,14 +11,13 @@ import {
     networks,
     Psbt,
 } from "bitcoinjs-lib";
-initEccLib(tinysecp as any);
 import { AtomicalsPayload, calculateFundsRequired, getAndCheckAtomicalInfo, prepareCommitRevealConfig, prepareFilesDataAsObject } from "../commands/command-helpers";
 import { getFundingUtxo } from "./select-funding-utxo";
 import { sleeper } from "./utils";
 import { witnessStackToScriptWitness } from "../commands/witness_stack_to_script_witness";
 import { IInputUtxoPartial } from "../types/UTXO.interface";
 import { IWalletRecord } from "./validate-wallet-storage";
-const ECPair: ECPairAPI = ECPairFactory(tinysecp);
+const ECPair: ECPairAPI = ECPairFactory(ecc);
 const DEFAULT_SATS_BYTE = 10;
 const DEFAULT_SATS_ATOMICAL_UTXO = 1000;
 const SEND_RETRY_SLEEP_SECONDS = 10;

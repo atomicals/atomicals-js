@@ -4,17 +4,17 @@ import * as ecc from '@bitcoinerlab/secp256k1';
 import { IValidatedWalletInfo, IWalletRecord } from "./validate-wallet-storage";
 import { AtomicalStatus, Location, LocationInfo } from "../interfaces/atomical-status.interface";
 import { IInputUtxoPartial } from "../types/UTXO.interface";
-const bitcoin = require('bitcoinjs-lib');
+import * as bitcoin from 'bitcoinjs-lib';
 bitcoin.initEccLib(ecc);
 
-export function detectAddressTypeToScripthash(address: string): { output: string, scripthash: string, address: string } {
+export function detectAddressTypeToScripthash(address: string): { output: Buffer, scripthash: string, address: string } {
   // Detect legacy address
   try {
     bitcoin.address.fromBase58Check(address);
     const p2pkh = addressToP2PKH(address);
     const p2pkhBuf = Buffer.from(p2pkh, "hex");
     return {
-      output: p2pkh,
+      output: p2pkhBuf,
       scripthash: Buffer.from(sha256(p2pkhBuf), "hex").reverse().toString("hex"),
       address
     }

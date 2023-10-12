@@ -2,7 +2,7 @@ import { ElectrumApiInterface } from "../api/electrum-api.interface";
 import { CommandInterface } from "./command.interface";
 import * as ecc from '@bitcoinerlab/secp256k1';
 import { TinySecp256k1Interface } from 'ecpair';
-const bitcoin = require('bitcoinjs-lib');
+import * as bitcoin from 'bitcoinjs-lib';
 bitcoin.initEccLib(ecc);
 import {
   initEccLib,
@@ -16,8 +16,7 @@ import { GetUtxoPartialFromLocation } from "../utils/address-helpers";
 import { IInputUtxoPartial } from "../types/UTXO.interface";
 import { hasAtomicalType, isAtomicalId } from "../utils/atomical-format-helpers";
 
-const tinysecp: TinySecp256k1Interface = require('@bitcoinerlab/secp256k1');
-initEccLib(tinysecp as any);
+
 
 export class SplitInteractiveCommand implements CommandInterface {
   constructor(

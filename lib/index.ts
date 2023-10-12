@@ -1,5 +1,5 @@
 import { APIInterface, BaseRequestOptions } from "./interfaces/api.interface";
-const bitcoin = require('bitcoinjs-lib');
+import * as bitcoin from 'bitcoinjs-lib';
 import * as ecc from '@bitcoinerlab/secp256k1';
 bitcoin.initEccLib(ecc);
 export { ElectrumApiMock } from "./api/electrum-api-mock";
