@@ -50,6 +50,8 @@ export interface MintInfo {
   $request_ticker?: string;
   $pid?: string;
   $bitwork?: {
+    bitworkc?: string;
+    bitworkr?: string;
     $bitworkc?: string;
     $bitworkr?: string;
   }
@@ -137,6 +139,8 @@ export interface AtomicalStatus {
   $relns?: { [key: string]: any };
   // Bitwork proof of work
   $bitwork?: {
+    bitworkc?: string;
+    bitworkr?: string;
     $bitworkc?: string;
     $bitworkr?: string;
   };
