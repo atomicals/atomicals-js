@@ -7,6 +7,7 @@ bitcoin.initEccLib(ecc);
 
 const ECPair = ECPairFactory(ecc);
 import BIP32Factory from 'bip32';
+import { NETWORK } from '../commands/command-helpers';
 const bip32 = BIP32Factory(ecc);
 
 export const toXOnly = (publicKey) => {
@@ -25,7 +26,8 @@ export const createKeyPair = async (phrase: string = '', path = `m/44'/0'/0'/0/0
     // const p2pkh = bitcoin.payments.p2pkh({ pubkey: childNodePrimary.publicKey });
     const childNodeXOnlyPubkeyPrimary = toXOnly(childNodePrimary.publicKey);
     const p2trPrimary = bitcoin.payments.p2tr({
-        internalPubkey: childNodeXOnlyPubkeyPrimary
+        internalPubkey: childNodeXOnlyPubkeyPrimary,
+        network: NETWORK
     });
     if (!p2trPrimary.address || !p2trPrimary.output) {
         throw "error creating p2tr"

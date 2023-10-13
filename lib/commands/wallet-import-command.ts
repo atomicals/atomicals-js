@@ -7,6 +7,7 @@ const bitcoin = require('bitcoinjs-lib');
 import ECPairFactory from 'ecpair';
 import * as ecc from 'tiny-secp256k1';
 import { walletPathResolver } from "../utils/wallet-path-resolver";
+import { NETWORK } from "./command-helpers";
 
 bitcoin.initEccLib(ecc);
 const ECPair = ECPairFactory(ecc);
@@ -34,7 +35,8 @@ export class WalletImportCommand implements CommandInterface {
         // Get the wif and the address and ensure they match
         const importedKeypair = ECPair.fromWIF(this.wif);
         const { address, output } = bitcoin.payments.p2tr({
-            internalPubkey: toXOnly(importedKeypair.publicKey)
+            internalPubkey: toXOnly(importedKeypair.publicKey),
+            network: NETWORK
         });
         const walletImportedField = Object.assign({}, walletFileData.imported, {
             [this.alias]: {

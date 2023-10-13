@@ -9,6 +9,7 @@ import BIP32Factory from 'bip32';
 import { jsonFileReader } from './file-utils';
 import { toXOnly } from './create-key-pair';
 import { walletPathResolver } from './wallet-path-resolver';
+import { NETWORK } from '../commands/command-helpers';
 const bip32 = BIP32Factory(ecc);
 const walletPath = walletPathResolver();
 
@@ -90,7 +91,8 @@ export const validateWalletStorage = async (): Promise<IValidatedWalletInfo> => 
 
     const childNodeXOnlyPubkeyPrimary = toXOnly(childNodePrimary.publicKey);
     const p2trPrimary = bitcoin.payments.p2tr({
-      internalPubkey: childNodeXOnlyPubkeyPrimary
+      internalPubkey: childNodeXOnlyPubkeyPrimary,
+      network: NETWORK
     });
     if (!p2trPrimary.address || !p2trPrimary.output) {
         throw "error creating p2tr primary"
@@ -99,7 +101,8 @@ export const validateWalletStorage = async (): Promise<IValidatedWalletInfo> => 
     const childNodeFunding = rootKey.derivePath(derivePathFunding);
     const childNodeXOnlyPubkeyFunding = toXOnly(childNodeFunding.publicKey);
     const p2trFunding = bitcoin.payments.p2tr({
-      internalPubkey: childNodeXOnlyPubkeyFunding
+      internalPubkey: childNodeXOnlyPubkeyFunding,
+      network: NETWORK
     });
     if (!p2trFunding.address || !p2trFunding.output) {
         throw "error creating p2tr funding"
@@ -115,7 +118,8 @@ export const validateWalletStorage = async (): Promise<IValidatedWalletInfo> => 
     }
 
     const p2trPrimaryCheck = bitcoin.payments.p2tr({
-      internalPubkey: toXOnly(keypairPrimary.publicKey)
+      internalPubkey: toXOnly(keypairPrimary.publicKey),
+      network: NETWORK
     });
 
     if (p2trPrimaryCheck.address !== p2trPrimary.address && p2trPrimary.address !== wallet.primary.address) {
@@ -131,7 +135,8 @@ export const validateWalletStorage = async (): Promise<IValidatedWalletInfo> => 
     }
 
     const p2trFundingCheck = bitcoin.payments.p2tr({
-      internalPubkey: toXOnly(keypairFunding.publicKey)
+      internalPubkey: toXOnly(keypairFunding.publicKey),
+      network: NETWORK
     });
 
     if (p2trFundingCheck.address !== p2trFundingCheck.address && p2trFundingCheck.address !== wallet.funding.address) {
@@ -154,7 +159,8 @@ export const validateWalletStorage = async (): Promise<IValidatedWalletInfo> => 
       }
 
       const p2trImported = bitcoin.payments.p2tr({
-        internalPubkey: toXOnly(importedKeypair.publicKey)
+        internalPubkey: toXOnly(importedKeypair.publicKey),
+        network: NETWORK
       });
 
       if (p2trImported.address !== wallet.imported[prop].address) {

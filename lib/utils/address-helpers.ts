@@ -4,10 +4,12 @@ import * as ecc from 'tiny-secp256k1';
 import { IValidatedWalletInfo, IWalletRecord } from "./validate-wallet-storage";
 import { AtomicalStatus, Location, LocationInfo } from "../interfaces/atomical-status.interface";
 import { IInputUtxoPartial } from "../types/UTXO.interface";
+import { NETWORK } from "../commands/command-helpers";
 const bitcoin = require('bitcoinjs-lib');
 bitcoin.initEccLib(ecc);
 
 export function detectAddressTypeToScripthash(address: string): { output: string, scripthash: string, address: string } {
+  console.log('address', address);
   // Detect legacy address
   try {
     bitcoin.address.fromBase58Check(address);
@@ -22,22 +24,30 @@ export function detectAddressTypeToScripthash(address: string): { output: string
   }
 
   // Detect segwit or taproot
-  const detected = bitcoin.address.fromBech32(address);
+  // const detected = bitcoin.address.fromBech32(address);
   if (address.indexOf('bc1p') === 0) {
-    const output = bitcoin.address.toOutputScript(address);
+    const output = bitcoin.address.toOutputScript(address, NETWORK);
     return {
       output,
       scripthash: Buffer.from(sha256(output), "hex").reverse().toString("hex"),
       address
     }
   } else if (address.indexOf('bc1') === 0) {
-    const output = bitcoin.address.toOutputScript(address);
+    const output = bitcoin.address.toOutputScript(address, NETWORK);
     return {
       output,
       scripthash: Buffer.from(sha256(output), "hex").reverse().toString("hex"),
       address
     }
-  } else {
+  } else if (address.indexOf('tb1') === 0) {
+    const output = bitcoin.address.toOutputScript(address, NETWORK);
+    return {
+      output,
+      scripthash: Buffer.from(sha256(output), "hex").reverse().toString("hex"),
+      address
+    }
+  } 
+  else {
     throw "unrecognized address";
   }
 }

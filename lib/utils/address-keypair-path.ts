@@ -4,6 +4,7 @@ bitcoin.initEccLib(ecc);
 const bip39 = require('bip39');
 import BIP32Factory from 'bip32';
 import { toXOnly } from './create-key-pair';
+import { NETWORK } from '../commands/command-helpers';
 const bip32 = BIP32Factory(ecc);
 
 export interface ExtendTaprootAddressScriptKeyPairInfo {
@@ -24,7 +25,8 @@ export const getExtendTaprootAddressKeypairPath = async (phrase: string, path: s
   // Note: we are using mainnet here to get the correct address
   // The output is the same no matter what the network is.
   const { address, output } = bitcoin.payments.p2tr({
-    internalPubkey: childNodeXOnlyPubkey
+    internalPubkey: childNodeXOnlyPubkey,
+    network: NETWORK
   });
 
   // Used for signing, since the output and address are using a tweaked key
@@ -57,7 +59,8 @@ export const getKeypairInfo = (childNode: any): KeyPairInfo => {
   // Note: we are using mainnet here to get the correct address
   // The output is the same no matter what the network is.
   const { address, output } = bitcoin.payments.p2tr({
-    internalPubkey: childNodeXOnlyPubkey
+    internalPubkey: childNodeXOnlyPubkey,
+    network: NETWORK
   });
 
   // Used for signing, since the output and address are using a tweaked key

@@ -17,7 +17,7 @@ import { AtomicalIdentifierType, AtomicalResolvedIdentifierReturn, decorateAtomi
 import { toXOnly } from "../utils/create-key-pair";
 import { AtomicalStatus } from "../interfaces/atomical-status.interface";
 import { getKeypairInfo, KeyPairInfo } from "../utils/address-keypair-path";
-import { calculateFundsRequired, logBanner } from "./command-helpers";
+import { NETWORK, calculateFundsRequired, logBanner } from "./command-helpers";
 import { GetCommand } from "./get-command";
 import { GetByRealmCommand } from "./get-by-realm-command";
 import { GetByContainerCommand } from "./get-by-container-command";
@@ -41,7 +41,8 @@ export class TransferInteractiveNftCommand implements CommandInterface {
     const keypairAtomical = ECPair.fromWIF(this.currentOwnerAtomicalWIF);
     const keypairFunding = ECPair.fromWIF(this.fundingWIF);
     const p2tr = bitcoin.payments.p2tr({
-      internalPubkey: toXOnly(keypairAtomical.publicKey)
+      internalPubkey: toXOnly(keypairAtomical.publicKey),
+      network: NETWORK
     });
 
     const atomicalType: AtomicalResolvedIdentifierReturn = getAtomicalIdentifierType(this.atomicalAliasOrId);
