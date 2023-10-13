@@ -830,17 +830,18 @@ export class AtomicalOperationBuilder {
       hashLockP2TROutputLen: number = 0
     ): number {
         const ARGS_BYTES = 20;
-        const BITWORK_BYTES = 5 + 10 + 4 + 10 + 4 + 10 + 1 + 10;
+        // const BITWORK_BYTES = 5 + 10 + 4 + 10 + 4 + 10 + 1 + 10;
+        const BITWORK_BYTES = 0;
         const EXTRA_BUFFER = 10;
 
         return (operation.options.satsbyte as any) *
             (BASE_BYTES +
                 ((1 + operation.inputUtxos.length) * INPUT_BYTES_BASE) +
                 (operation.additionalOutputs.length * OUTPUT_BYTES_BASE) +
-                OP_RETURN_BYTES +
-                ARGS_BYTES +
+                // OP_RETURN_BYTES +
+                // ARGS_BYTES +
                 BITWORK_BYTES +
-                EXTRA_BUFFER +
+                // EXTRA_BUFFER +
                 hashLockP2TROutputLen
             )
     }
