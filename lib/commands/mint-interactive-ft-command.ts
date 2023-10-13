@@ -4,6 +4,7 @@ import { AtomicalsGetFetchType, CommandInterface } from "./command.interface";
 import * as ecc from 'tiny-secp256k1';
 import { hydrateConfig } from "../utils/hydrate-config";
 import { TinySecp256k1Interface } from 'ecpair';
+import * as readline from 'readline';
 const bitcoin = require('bitcoinjs-lib');
 bitcoin.initEccLib(ecc);
 import {
@@ -16,6 +17,32 @@ import { AtomicalOperationBuilder } from "../utils/atomical-operation-builder";
 import { prepareFilesDataAsObject } from "./command-helpers";
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 initEccLib(tinysecp as any);
+
+const promptContinue = async (): Promise<any>  => {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  try {
+    let reply: string = '';
+    const prompt = (query) => new Promise((resolve) => rl.question(query, resolve));
+    while (reply !== 'q') {
+      console.log(`Are you sure you want to continue with the details above? (y/n)`)
+      console.log('-')
+      reply = (await prompt("Enter your selection: ") as any);
+      switch (reply) {
+        case 'y':
+          return true;
+        default:
+        throw new Error("user aborted")
+      }
+    }
+  } finally {
+    rl.close();
+  }
+}
+
 export class MintInteractiveFtCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
@@ -32,6 +59,14 @@ export class MintInteractiveFtCommand implements CommandInterface {
     isValidBitworkMinimum(this.options.bitworkc);
   }
   async run(): Promise<any> {
+
+    console.log('Initializing Direct FT Token')
+    console.log('-----------------------')
+    console.log('Total Supply: ', this.supply);
+    console.log('-----------------------')
+    
+    await promptContinue();
+
     const getExistingNameCommand = new GetByTickerCommand(this.electrumApi, this.requestTicker, AtomicalsGetFetchType.GET, undefined);
     try {
       const getExistingNameResult = await getExistingNameCommand.run();

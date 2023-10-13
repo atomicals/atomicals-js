@@ -14,7 +14,7 @@ import { jsonFileWriter } from "../utils/file-utils";
 import { detectAddressTypeToScripthash, performAddressAliasReplacement } from "../utils/address-helpers";
 import { toXOnly } from "../utils/create-key-pair";
 import { getKeypairInfo, KeyPairInfo } from "../utils/address-keypair-path";
-import { calculateUtxoFundsRequired, logBanner } from "./command-helpers";
+import { NETWORK, calculateUtxoFundsRequired, logBanner } from "./command-helpers";
 import { onlyUnique } from "../utils/utils";
 import { IValidatedWalletInfo } from "../utils/validate-wallet-storage";
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
@@ -72,7 +72,8 @@ export class MergeInteractiveUtxosCommand implements CommandInterface {
     const keypairAtomicalInfo: KeyPairInfo = getKeypairInfo(keypairAtomical)
 
     const p2tr = bitcoin.payments.p2tr({
-      internalPubkey: toXOnly(keypairAtomical.publicKey)
+      internalPubkey: toXOnly(keypairAtomical.publicKey),
+      network: NETWORK
     });
     console.log("====================================================================")
     console.log("Merge Interactive (UTXOs)")

@@ -15,6 +15,10 @@ import { AtomicalsGetFetchType } from "./command.interface";
 import { AtomicalIdentifierType, decorateAtomical } from "../utils/atomical-format-helpers";
 import { IsAtomicalOwnedByWalletRecord } from "../utils/address-helpers";
 import { IInputUtxoPartial } from "../types/UTXO.interface";
+import * as dotenv from 'dotenv'
+dotenv.config();
+
+export const NETWORK = process.env.NETWORK === 'testnet' ? networks.testnet : networks.bitcoin;
 
 function basename(path) {
     return path.split('/').reverse()[0];
@@ -125,14 +129,14 @@ export const prepareCommitRevealConfig2 = (opType: 'nft' | 'ft' | 'dft' | 'dmt' 
     const scriptP2TR = payments.p2tr({
         internalPubkey: keypair.childNodeXOnlyPubkey,
         scriptTree,
-        network: networks.bitcoin
+        network: NETWORK
     });
 
     const hashLockP2TR = payments.p2tr({
         internalPubkey: keypair.childNodeXOnlyPubkey,
         scriptTree,
         redeem: hashLockRedeem,
-        network: networks.bitcoin
+        network: NETWORK
     });
     return {
         scriptP2TR,
@@ -154,14 +158,14 @@ export const prepareCommitRevealConfig = (opType: 'nft' | 'ft' | 'dft' | 'dmt' |
     const scriptP2TR = payments.p2tr({
         internalPubkey: keypair.childNodeXOnlyPubkey,
         scriptTree,
-        network: networks.bitcoin
+        network: NETWORK
     });
 
     const hashLockP2TR = payments.p2tr({
         internalPubkey: keypair.childNodeXOnlyPubkey,
         scriptTree,
         redeem: hashLockRedeem,
-        network: networks.bitcoin
+        network: NETWORK
     });
     return {
         scriptP2TR,

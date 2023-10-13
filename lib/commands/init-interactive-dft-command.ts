@@ -3,6 +3,7 @@ import { AtomicalsGetFetchType, CommandInterface } from "./command.interface";
 import * as ecc from 'tiny-secp256k1';
 import { TinySecp256k1Interface } from 'ecpair';
 const bitcoin = require('bitcoinjs-lib');
+import * as readline from 'readline';
 bitcoin.initEccLib(ecc);
 import {
   initEccLib,
@@ -14,6 +15,32 @@ import { BitworkInfo, checkBaseRequestOptions, isValidBitworkMinimum, isValidBit
 import { prepareFilesDataAsObject } from "./command-helpers";
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 initEccLib(tinysecp as any);
+
+const promptContinue = async (): Promise<any>  => {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  try {
+    let reply: string = '';
+    const prompt = (query) => new Promise((resolve) => rl.question(query, resolve));
+    while (reply !== 'q') {
+      console.log(`Are you sure you want to continue with the details above? (y/n)`)
+      console.log('-')
+      reply = (await prompt("Enter your selection: ") as any);
+      switch (reply) {
+        case 'y':
+          return true;
+        default:
+        throw new Error("user aborted")
+      }
+    }
+  } finally {
+    rl.close();
+  }
+}
+
 export class InitInteractiveDftCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
@@ -41,6 +68,16 @@ export class InitInteractiveDftCommand implements CommandInterface {
     }
   }
   async run(): Promise<any> {
+
+    console.log('Initializing Decentralized FT Token')
+    console.log('-----------------------')
+    console.log('Total Supply: ', this.maxMints * this.mintAmount);
+    console.log('Max mints', this.maxMints);
+    console.log('Mint Amount', this.mintAmount);
+    console.log('-----------------------')
+
+    await promptContinue();
+
     const getExistingNameCommand = new GetByTickerCommand(this.electrumApi, this.requestTicker, AtomicalsGetFetchType.GET, undefined);
     try {
       const getExistingNameResult = await getExistingNameCommand.run();
