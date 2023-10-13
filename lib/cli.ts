@@ -355,6 +355,7 @@ program.command('wallets')
       } else {
         // Just show the primary and funding address
         let result: any = await atomicals.walletInfo(walletInfo.primary.address, history, keepElectrumAlive);
+        console.log('walletInfo result', result)
         console.log("\n========================================================================================================")
         console.log(`1. Wallet Information - Primary Address - ${result.data?.address}`)
         console.log("========================================================================================================")
