@@ -13,7 +13,7 @@ import {
     Psbt,
 } from "bitcoinjs-lib";
 initEccLib(tinysecp as any);
-import { AtomicalsPayload, calculateFundsRequired, getAndCheckAtomicalInfo, prepareCommitRevealConfig, prepareFilesDataAsObject } from "../commands/command-helpers";
+import { AtomicalsPayload, NETWORK, calculateFundsRequired, getAndCheckAtomicalInfo, prepareCommitRevealConfig, prepareFilesDataAsObject } from "../commands/command-helpers";
 import { getFundingUtxo } from "./select-funding-utxo";
 import { sleeper } from "./utils";
 import { witnessStackToScriptWitness } from "../commands/witness_stack_to_script_witness";
@@ -507,8 +507,7 @@ export class AtomicalOperationBuilder {
                 }
                 const atomPayload = new AtomicalsPayload(copiedData);
                 const updatedBaseCommit: { scriptP2TR, hashLockP2TR, hashscript } = prepareCommitRevealConfig(this.options.opType, fundingKeypair, atomPayload)
-
-                let psbtStart = new Psbt({ network: networks.bitcoin });
+                let psbtStart = new Psbt({ network: NETWORK });
                 psbtStart.setVersion(1);
                 psbtStart.addInput({
                     hash: fundingUtxo.txid,
@@ -586,7 +585,7 @@ export class AtomicalOperationBuilder {
         do {
             let nonce = Math.floor(Math.random() * 100000000);
             let unixTime = Math.floor(Date.now() / 1000)
-            let psbt = new Psbt({ network: networks.bitcoin });
+            let psbt = new Psbt({ network: NETWORK });
             psbt.setVersion(1);
             psbt.addInput({
                 hash: utxoOfCommitAddress.txid,

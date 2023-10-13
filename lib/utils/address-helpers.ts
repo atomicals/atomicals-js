@@ -9,7 +9,6 @@ const bitcoin = require('bitcoinjs-lib');
 bitcoin.initEccLib(ecc);
 
 export function detectAddressTypeToScripthash(address: string): { output: string, scripthash: string, address: string } {
-  console.log('address', address);
   // Detect legacy address
   try {
     bitcoin.address.fromBase58Check(address);
