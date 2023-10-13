@@ -17,7 +17,7 @@ import { jsonFileWriter } from "../utils/file-utils";
 import { detectAddressTypeToScripthash, performAddressAliasReplacement } from "../utils/address-helpers";
 import { toXOnly } from "../utils/create-key-pair";
 import { getKeypairInfo, KeyPairInfo } from "../utils/address-keypair-path";
-import { calculateFTFundsRequired, calculateFundsRequired, logBanner } from "./command-helpers";
+import { NETWORK, calculateFTFundsRequired, calculateFundsRequired, logBanner } from "./command-helpers";
 import { onlyUnique } from "../utils/utils";
 import { IValidatedWalletInfo } from "../utils/validate-wallet-storage";
 import { AtomicalIdentifierType, AtomicalResolvedIdentifierReturn, getAtomicalIdentifierType } from "../utils/atomical-format-helpers";
@@ -367,7 +367,7 @@ export class TransferInteractiveFtCommand implements CommandInterface {
           console.log('Invalid address')
           continue;
         }
-
+        console.log('arabbita')
         amountsToSend.push({
           address: addressPart.address,
           value: valuePart
@@ -385,7 +385,7 @@ export class TransferInteractiveFtCommand implements CommandInterface {
       throw 'Atomical is not an FT. It is expected to be an FT type';
     }
 
-    const psbt = new bitcoin.Psbt({ network: networks.bitcoin });
+    const psbt = new bitcoin.Psbt({ network: NETWORK });
     let tokenBalanceIn = 0;
     let tokenBalanceOut = 0;
     let tokenInputsLength = 0;
@@ -420,7 +420,7 @@ export class TransferInteractiveFtCommand implements CommandInterface {
     }
 
     const { expectedSatoshisDeposit } = calculateFTFundsRequired(transferOptions.selectedUtxos.length, transferOptions.outputs.length, satsbyte, 0);
-    if (expectedSatoshisDeposit <= 546) {
+    if (expectedSatoshisDeposit < 546) {
       throw 'Invalid expectedSatoshisDeposit. Developer Error.'
     }
 

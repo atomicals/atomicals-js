@@ -9,7 +9,6 @@ export class GetByContainerCommand implements CommandInterface {
     private electrumApi: ElectrumApiInterface,
     private container: string,
     private fetchType: AtomicalsGetFetchType = AtomicalsGetFetchType.GET,
-    private path?: string,
     private verbose?: boolean
   ) {
  
@@ -24,7 +23,7 @@ export class GetByContainerCommand implements CommandInterface {
         data: responseResult.result
       }
     }
-    const getDefaultCommand = new GetCommand(this.electrumApi, responseResult.result.atomical_id, this.fetchType, this.path, this.verbose);
+    const getDefaultCommand = new GetCommand(this.electrumApi, responseResult.result.atomical_id, this.fetchType, this.verbose);
     const getDefaultCommandResponse = await getDefaultCommand.run();
     const updatedRes = Object.assign({},
       getDefaultCommandResponse.data,

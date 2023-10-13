@@ -8,7 +8,6 @@ export class GetByRealmCommand implements CommandInterface {
   constructor(private electrumApi: ElectrumApiInterface,
     private realm: string,
     private fetchType: AtomicalsGetFetchType = AtomicalsGetFetchType.GET,
-    private path?: string,
     private verbose?: boolean
   ) {
  
@@ -21,7 +20,7 @@ export class GetByRealmCommand implements CommandInterface {
         data: responseResult.result
       }
     }
-    const getDefaultCommand = new GetCommand( this.electrumApi, responseResult.result.atomical_id, this.fetchType, this.path, this.verbose);
+    const getDefaultCommand = new GetCommand( this.electrumApi, responseResult.result.atomical_id, this.fetchType, this.verbose);
     const getDefaultCommandResponse = await getDefaultCommand.run();
     const updatedRes = Object.assign({},
       getDefaultCommandResponse.data,

@@ -13,7 +13,7 @@ import { BaseRequestOptions } from "../interfaces/api.interface";
 import { GetByRealmCommand } from "./get-by-realm-command";
 import { detectScriptToAddressType } from "../utils/address-helpers";
 import { GetCommand } from "./get-command";
-import { checkBaseRequestOptions } from "../utils/atomical-format-helpers";
+import { checkBaseRequestOptions, isAtomicalId } from "../utils/atomical-format-helpers";
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 initEccLib(tinysecp as any);
 const ECPair: ECPairAPI = ECPairFactory(tinysecp);
@@ -37,7 +37,7 @@ export class MintInteractiveSubrealmWithRulesCommand implements CommandInterface
     const finalSubrealmPart = realmParts[realmParts.length - 1];
 
     // Step 1. Query the full realm and determine if it's already claimed
-    const getSubrealmCommand = new GetByRealmCommand(this.electrumApi, this.requestSubrealm, AtomicalsGetFetchType.LOCATION, undefined, true);
+    const getSubrealmCommand = new GetByRealmCommand(this.electrumApi, this.requestSubrealm, AtomicalsGetFetchType.LOCATION, true);
     const getSubrealmReponse = await getSubrealmCommand.run();
     if (getSubrealmReponse.data.atomical_id) {
       return {
@@ -67,11 +67,17 @@ export class MintInteractiveSubrealmWithRulesCommand implements CommandInterface
     console.log('IMPORTANT NOTE: At anytime you may review the complete active subrealm mint rules with the command: ')
     console.log(`% npm cli realm-info ${this.requestSubrealm}`)
     console.log('getSubrealmReponse', getSubrealmReponse);
-    console.log(`*** We detected that the expected active rules list for the next block (${getSubrealmReponse.data.nearest_parent_realm_subrealm_mint_rules.next_height}) are: ***`)
-    console.log(getSubrealmReponse.data.nearest_parent_realm_subrealm_mint_rules.next_height_rules);
+    console.log(`*** We detected that the expected active rules list for the next block (${getSubrealmReponse.data.nearest_parent_realm_subrealm_mint_rules.current_height}) are: ***`)
+    console.log(getSubrealmReponse.data.nearest_parent_realm_subrealm_mint_rules.current_height_rules);
     let index = 0;
     let matchedAtLeastOneRule = false
-    for (const price_point of getSubrealmReponse.data.nearest_parent_realm_subrealm_mint_rules.next_height_rules.rules) {
+
+    if (!getSubrealmReponse.data.nearest_parent_realm_subrealm_mint_rules.current_height_rules ||
+      !Object.keys(getSubrealmReponse.data.nearest_parent_realm_subrealm_mint_rules.current_height_rules).length) {
+      throw new Error('The requested subrealm does not have any rules for the current height. Aborting...')
+    }
+
+    for (const price_point of getSubrealmReponse.data.nearest_parent_realm_subrealm_mint_rules.current_height_rules) {
       console.log('price_point', price_point);
       const regexRule = price_point.p;
       const outputRulesMap = price_point.o;
@@ -94,7 +100,8 @@ export class MintInteractiveSubrealmWithRulesCommand implements CommandInterface
           if (!outputRulesMap.hasOwnProperty(propScript)) {
             continue;
           }
-          const priceRule = outputRulesMap[propScript]
+          const priceRule = outputRulesMap[propScript]['v']
+          const priceRuleTokenType = outputRulesMap[propScript]['id']
           if (priceRule < 0) {
             throw new Error('Aborting minting because price is less than 0')
           }
@@ -105,6 +112,11 @@ export class MintInteractiveSubrealmWithRulesCommand implements CommandInterface
           if (isNaN(priceRule)) {
             throw new Error('Price is not a valid number')
           }
+          
+          if (priceRuleTokenType && !isAtomicalId(priceRuleTokenType)) {
+            throw new Error('id parameter must be a compact atomical id: ' + priceRuleTokenType);
+          }
+
           try {
             const result = detectScriptToAddressType(propScript);
             console.log('Detected payment address: ', result)

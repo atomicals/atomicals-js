@@ -264,9 +264,9 @@ export class ElectrumApi implements ElectrumApiInterface {
         return p;
     }
 
-    public async atomicalsGetState(atomicalAliasOrId: string | number, path: string, verbose: boolean): Promise<any> {
+    public async atomicalsGetState(atomicalAliasOrId: string | number, verbose: boolean): Promise<any> {
         const p = new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.get_state_by_path', [atomicalAliasOrId, path, verbose ? 1 : 0]).then(function (result: any) {
+            this.call('blockchain.atomicals.get_state', [atomicalAliasOrId, verbose ? 1 : 0]).then(function (result: any) {
                 resolve(result);
             }).catch((error) => {
                 console.log('error ', error)

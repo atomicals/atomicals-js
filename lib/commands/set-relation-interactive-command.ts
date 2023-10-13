@@ -49,11 +49,6 @@ export class SetRelationInteractiveCommand implements CommandInterface {
       [this.relationName]: this.values
     });
     
-
-    // Add the atomical to update
-    const inputUtxoPartial2 = Object.assign({}, inputUtxoPartial, {
-      hash: 'f5e7eef272f3de73c8b1def6ca5bc4495ee7d2d7a4ad2b3cc664c536b2d527f3'
-    })
     atomicalBuilder.addInputUtxo(inputUtxoPartial, this.owner.WIF)
 
      // The receiver output

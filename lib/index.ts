@@ -74,7 +74,7 @@ export { detectAddressTypeToScripthash, detectScriptToAddressType } from "./util
 
 export { bitcoin };
 export class Atomicals implements APIInterface {
-  constructor(private config: ConfigurationInterface, private electrumApi: ElectrumApiInterface) {
+  constructor(private electrumApi: ElectrumApiInterface) {
   }
   static async renderPreviews(filesmap: FileMap, body: boolean): Promise<any> {
     try {
@@ -302,10 +302,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async enableSubrealmRules(realmOrSubrealm: string, rules: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async enableSubrealmRules(realmOrSubrealm: string, files: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new EnableSubrealmRulesCommand(this.electrumApi, realmOrSubrealm, rules, funding, atomicalOwner, options);
+      const command: CommandInterface = new EnableSubrealmRulesCommand(this.electrumApi, realmOrSubrealm, files, funding, atomicalOwner, options);
       return await command.run();
     } catch (error: any) {
       return {
@@ -366,10 +366,10 @@ export class Atomicals implements APIInterface {
       this.electrumApi.close();
     }
   }
-  async emitInteractive(atomicalId: string, path, files: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async emitInteractive(atomicalId: string, files: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new EmitInteractiveCommand(this.electrumApi, atomicalId, path, files, atomicalOwner, funding, options);
+      const command: CommandInterface = new EmitInteractiveCommand(this.electrumApi, atomicalId, files, atomicalOwner, funding, options);
       return await command.run();
     } catch (error: any) {
       return {
@@ -382,10 +382,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async setInteractive(atomicalId: string, path, files: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async setInteractive(atomicalId: string, files: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new SetInteractiveCommand(this.electrumApi, atomicalId, path, files, atomicalOwner, funding, options);
+      const command: CommandInterface = new SetInteractiveCommand(this.electrumApi, atomicalId, files, atomicalOwner, funding, options);
       return await command.run();
     } catch (error: any) {
       return {
@@ -398,10 +398,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async deleteInteractive(atomicalId: string, path, keysToDelete: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async deleteInteractive(atomicalId: string, filesToDelete: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new DeleteInteractiveCommand(this.electrumApi, atomicalId, path, keysToDelete, funding, atomicalOwner, options);
+      const command: CommandInterface = new DeleteInteractiveCommand(this.electrumApi, atomicalId, filesToDelete, funding, atomicalOwner, options);
       return await command.run();
     } catch (error: any) {
       return {
@@ -532,10 +532,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async resolveAtomical(atomicalIdOrNumberOrVariousName: string, atomicalsGetFetchType: AtomicalsGetFetchType, path = '/', verbose = false, keepElectrumAlive = false): Promise<CommandResultInterface> {
+  async resolveAtomical(atomicalIdOrNumberOrVariousName: string, atomicalsGetFetchType: AtomicalsGetFetchType, verbose = false, keepElectrumAlive = false): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new ResolveCommand(this.electrumApi, atomicalIdOrNumberOrVariousName, atomicalsGetFetchType, path, verbose);
+      const command: CommandInterface = new ResolveCommand(this.electrumApi, atomicalIdOrNumberOrVariousName, atomicalsGetFetchType, verbose);
       return await command.run();
     } catch (error: any) {
       return {
@@ -622,10 +622,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async getAtomicalState(atomicalAliasOrId: string, path: string, verbose: boolean = false, keepElectrumAlive = false): Promise<CommandResultInterface> {
+  async getAtomicalState(atomicalAliasOrId: string, verbose: boolean = false, keepElectrumAlive = false): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new GetCommand(this.electrumApi, atomicalAliasOrId, AtomicalsGetFetchType.STATE, path, verbose);
+      const command: CommandInterface = new GetCommand(this.electrumApi, atomicalAliasOrId, AtomicalsGetFetchType.STATE, verbose);
       return await command.run();
     } catch (error: any) {
       return {
@@ -1082,7 +1082,7 @@ export class Atomicals implements APIInterface {
 }
 
 export function instance(config: ConfigurationInterface, electrumUrl: string): APIInterface {
-  return new Atomicals(config, ElectrumApi.createClient(electrumUrl));
+  return new Atomicals(ElectrumApi.createClient(electrumUrl));
 }
 
 try {

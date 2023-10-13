@@ -7,7 +7,6 @@ var index = require('../../dist/index.js');
 
 describe('create-mnemonic-phrase', () => {
    it('success', async () => {
-      console.log('index', index);
       const result = index.createMnemonicPhrase();
       expect(result.phrase).to.not.be.null
    });

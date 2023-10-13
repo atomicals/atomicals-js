@@ -256,14 +256,9 @@ export const prepareFilesDataAsObject = async (fields: string[]) => {
             const alternateName = entrySplit[0]
             const isInlineJson = filePath.endsWith('.json') ? true : false;
             if (isInlineJson) {
-                console.log('case 2a')
                 const jsonFileContents = await jsonFileReader(filePath);
                 fieldDataObject[alternateName] = jsonFileContents;
-                console.log('fieldDataObject', fieldDataObject);
             } else {
-                console.log('case 2b')
-
-      
                 const fileInfo = await readAsAtomicalFileData(entrySplit[1], alternateName);
                 fieldDataObject[(fileInfo.name)] = {
                     '$ct': fileInfo.contentType,
@@ -550,7 +545,12 @@ export const getAndCheckAtomicalInfo = async (electrumApi: ElectrumApiInterface,
         throw new Error(`Error: Unable to get location. ${getLocationResponse}`)
     }
     const atomicalInfo = getLocationResponse.data.result;
-    if (expectedType && atomicalInfo.type !== expectedType) {
+    if (expectedType === 'NFT' && atomicalInfo.type !== expectedType) {
+        console.log('atomicalInfo', atomicalInfo);
+        throw `Atomical is not an type ${expectedType}. It is expected to be an ${expectedType} type. atomicalAliasOrId=${atomicalAliasOrId}`;
+    }
+
+    if (expectedType === 'FT' && atomicalInfo.type !== expectedType) {
         console.log('atomicalInfo', atomicalInfo);
         throw `Atomical is not an type ${expectedType}. It is expected to be an ${expectedType} type. atomicalAliasOrId=${atomicalAliasOrId}`;
     }
@@ -561,7 +561,8 @@ export const getAndCheckAtomicalInfo = async (electrumApi: ElectrumApiInterface,
     }
 
     const atomicalDecorated = decorateAtomical(atomicalInfo);
-    let locationInfo = atomicalDecorated.location_info;
+    let locationInfoObj = atomicalDecorated.location_info_obj;
+    let locationInfo = locationInfoObj.locations;
     // Check to make sure that the location is controlled by the same address as supplied by the WIF
     if (!locationInfo || !locationInfo.length || locationInfo[0].address !== expectedOwnerAddress) {
         locationInfo = locationInfo[0];

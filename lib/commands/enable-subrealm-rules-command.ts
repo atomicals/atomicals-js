@@ -20,7 +20,7 @@ export class EnableSubrealmRulesCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
     private atomicalId: string,
-    private rules: string[],
+    private files: string[],
     private funding: IWalletRecord,
     private owner: IWalletRecord,
     private options: BaseRequestOptions
@@ -30,13 +30,8 @@ export class EnableSubrealmRulesCommand implements CommandInterface {
   async run(): Promise<any> {
     logBanner(`Enable Subrealm Rules Interactive`);
     // Attach any default data
-    let filesData = await prepareFilesDataAsObject(this.rules);
-    const updatedFilesWithPath = Object.assign({}, filesData, {
-      $path: '/subrealms'
-    });
-    validateSubrealmRulesObject(filesData);
-    AtomicalsGetFetchType
-    console.log('realm', this.owner.address)
+    let filesData = await prepareFilesDataAsObject(this.files);
+    // validateSubrealmRulesObject(filesData);
     const { atomicalInfo, locationInfo, inputUtxoPartial } = await getAndCheckAtomicalInfo(this.electrumApi, this.atomicalId, this.owner.address, 'NFT', null);
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
@@ -51,7 +46,7 @@ export class EnableSubrealmRulesCommand implements CommandInterface {
       ctx: this.options.ctx,
       init: this.options.init,
     });
-    await atomicalBuilder.setData(updatedFilesWithPath);
+    await atomicalBuilder.setData(filesData);
     // Add the atomical to update
     atomicalBuilder.addInputUtxo(inputUtxoPartial, this.owner.WIF)
     // The receiver output
