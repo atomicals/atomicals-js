@@ -8,7 +8,6 @@ var index = require('../../dist/index.js');
 describe('wallet-create', () => {
    it('success', async () => {
       const result = await index.Atomicals.walletCreate();
-      console.log('result', result);
       expect(result.success).to.be.true;
       expect(result.data.phrase).to.not.equal(undefined)
       expect(result.data.primary.WIF).to.not.equal(undefined)
@@ -17,7 +16,6 @@ describe('wallet-create', () => {
       expect(result.data.primary.publicKey).to.not.equal(undefined)
       expect(result.data.primary.publicKeyXOnly).to.not.equal(undefined)
       expect(result.data.primary.path).to.not.equal(undefined)
- 
       expect(result.data.funding.WIF).to.not.equal(undefined)
       expect(result.data.funding.address).to.not.equal(undefined)
       expect(result.data.funding.privateKey).to.not.equal(undefined)

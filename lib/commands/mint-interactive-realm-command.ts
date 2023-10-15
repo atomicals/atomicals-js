@@ -30,7 +30,7 @@ export class MintInteractiveRealmCommand implements CommandInterface {
   }
   async run(): Promise<any> {
     // Check if the request already exists
-    const getExistingNameCommand = new GetByRealmCommand(this.electrumApi, this.requestRealm, AtomicalsGetFetchType.GET, undefined);
+    const getExistingNameCommand = new GetByRealmCommand(this.electrumApi, this.requestRealm, AtomicalsGetFetchType.GET);
     try {
       const getExistingNameResult = await getExistingNameCommand.run();
       if (getExistingNameResult.success && getExistingNameResult.data) {

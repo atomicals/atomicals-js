@@ -50,9 +50,8 @@ export class DisableSubrealmRulesInteractiveCommand implements CommandInterface 
     });
  
     await atomicalBuilder.setData({
-      rules: true,
-      $action: 'delete',
-      $path: '/subrealms'
+      subrealms: true,
+      $a: 1
     });
     // Add the atomical to update
     atomicalBuilder.addInputUtxo(inputUtxoPartial, this.owner.WIF)

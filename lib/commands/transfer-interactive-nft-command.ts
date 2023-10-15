@@ -122,7 +122,8 @@ export class TransferInteractiveNftCommand implements CommandInterface {
       console.log('e', e.toString())
       return {
         success: false,
-        message: e
+        message: e,
+        e: e.toString()
       }
     } finally {
       rl.close();
@@ -154,7 +155,7 @@ export class TransferInteractiveNftCommand implements CommandInterface {
     }
     const location = atomical.location_info_obj.locations[0];
     const { expectedSatoshisDeposit } = calculateFundsRequired(location.value, satsoutput, satsbyte, 0);
-    const psbt = new bitcoin.Psbt({ network: networks.bitcoin })
+    const psbt = new bitcoin.Psbt({ network: NETWORK })
     // Add the atomical input, the value from the input counts towards the total satoshi amount required
     psbt.addInput({
       hash: location.txid,

@@ -9,7 +9,7 @@ bitcoin.initEccLib(ecc);
 import {
   initEccLib,
 } from "bitcoinjs-lib";
-import { getAndCheckAtomicalInfo, logBanner } from "./command-helpers";
+import { getAndCheckAtomicalInfo, logBanner, prepareFilesDataAsObject } from "./command-helpers";
 import { AtomicalOperationBuilder } from "../utils/atomical-operation-builder";
 import { BaseRequestOptions } from "../interfaces/api.interface";
 import { IWalletRecord } from "../utils/validate-wallet-storage";
@@ -21,8 +21,7 @@ export class DeleteInteractiveCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
     private atomicalId: string,
-    private path: string,
-    private keysToDelete: string[],
+    private files: string[],
     private owner: IWalletRecord,
     private funding: IWalletRecord,
     private options: BaseRequestOptions
@@ -30,10 +29,7 @@ export class DeleteInteractiveCommand implements CommandInterface {
   }
   async run(): Promise<any> {
     logBanner(`Delete Interactive`);
-    if (!this.path || this.path.trim().length === 0 || typeof this.path !== 'string') {
-      throw new Error(`Error: Path must be set and a valid string`)
-    }
-
+   
     const { atomicalInfo, locationInfo, inputUtxoPartial } = await getAndCheckAtomicalInfo(this.electrumApi, this.atomicalId, this.owner.address);
 
     const atomicalBuilder = new AtomicalOperationBuilder({
@@ -49,21 +45,19 @@ export class DeleteInteractiveCommand implements CommandInterface {
       ctx: this.options.ctx,
       init: this.options.init,
     });
-    const keysToDeleteWithTrue = {}
-    for (const item of this.keysToDelete) {
-      keysToDeleteWithTrue[item] = true;
-    }
+
+    let filesData = await prepareFilesDataAsObject(this.files);
     await atomicalBuilder.setData({
-      ...keysToDeleteWithTrue,
-      $action: 'delete',
-      $path: this.path,
+      ...filesData,
+      $a: 1,
     });
 
     // Add the atomical to update
     const inputUtxoPartial2 = Object.assign({}, inputUtxoPartial, {
-      hash: 'ad11617660b9c7d0bef6e9f723d5a85f5b1a60dd2e34f0144371fd61c0c76c43'
+      hash: '5155288adc0a5ca78103ff5f097d6084151f5ffc2d554d5c7bd132efa4ef81d7'
     })
-    atomicalBuilder.addInputUtxo(inputUtxoPartial2, this.owner.WIF)
+
+    atomicalBuilder.addInputUtxo(inputUtxoPartial, this.owner.WIF)
 
     // The receiver output
     atomicalBuilder.addOutput({

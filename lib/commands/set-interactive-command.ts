@@ -19,7 +19,6 @@ export class SetInteractiveCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
     private atomicalId: string,
-    private path: string,
     private files: string[],
     private owner: IWalletRecord,
     private funding: IWalletRecord,
@@ -29,15 +28,9 @@ export class SetInteractiveCommand implements CommandInterface {
   }
   async run(): Promise<any> {
     logBanner(`Set Interactive`);
-    if (!this.path || this.path.trim().length === 0 || typeof this.path !== 'string') {
-      throw new Error(`Error: Path must be set and a valid string`)
-    }
+  
     // Attach any default data
-
     let filesData = await prepareFilesDataAsObject(this.files);
-    const updatedFilesWithPath = Object.assign({}, filesData, {
-      $path: this.path
-    });
     const { atomicalInfo, locationInfo, inputUtxoPartial } = await getAndCheckAtomicalInfo(this.electrumApi, this.atomicalId, this.owner.address);
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
@@ -52,10 +45,13 @@ export class SetInteractiveCommand implements CommandInterface {
       ctx: this.options.ctx,
       init: this.options.init,
     });
-    await atomicalBuilder.setData(updatedFilesWithPath);
+    await atomicalBuilder.setData(filesData);
+
+
+    // Add the atomical to update
     // Add the atomical to update
     const inputUtxoPartial2 = Object.assign({}, inputUtxoPartial, {
-      hash: 'f44b6df6312b775cd923d3430bf2f12221072e6aa47dd11467f5a1b9971d24a8'
+      hash: '4a526d18c76f58cee080647747e76f38544abe2f270452573a8b10ec4b705f2f'
     })
     atomicalBuilder.addInputUtxo(inputUtxoPartial, this.owner.WIF)
 

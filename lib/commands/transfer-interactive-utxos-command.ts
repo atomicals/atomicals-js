@@ -335,7 +335,7 @@ export class TransferInteractiveUtxosCommand implements CommandInterface {
   }
   async buildAndSendTransaction(transferOptions: TransferConfigInterface, keyPairAtomical: KeyPairInfo, keyPairFunding: KeyPairInfo, satsbyte): Promise<any> {
 
-    const psbt = new bitcoin.Psbt({ network: networks.bitcoin });
+    const psbt = new bitcoin.Psbt({ network: NETWORK });
     let tokenBalanceIn = 0;
     let tokenBalanceOut = 0;
     let tokenInputsLength = 0;
@@ -368,7 +368,7 @@ export class TransferInteractiveUtxosCommand implements CommandInterface {
     }
 
     const { expectedSatoshisDeposit } = calculateUtxoFundsRequired(transferOptions.selectedUtxos.length, transferOptions.outputs.length, satsbyte, 0);
-    if (expectedSatoshisDeposit <= 546) {
+    if (expectedSatoshisDeposit < 546) {
       throw 'Invalid expectedSatoshisDeposit. Developer Error.'
     }
 

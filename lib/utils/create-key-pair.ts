@@ -58,7 +58,6 @@ export const createKeyPair = async (phrase: string = '', path = `m/44'/0'/0'/0/0
 
 export const createPrimaryAndFundingKeyPairs = async () => {
     const phraseResult = await createMnemonicPhrase();
-    //const seed = await bip39.mnemonicToSeed(phraseResult.phrase);
 
     return {
         phrase: phraseResult.phrase,
