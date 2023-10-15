@@ -103,6 +103,13 @@ export class MintInteractiveSubrealmDirectCommand implements CommandInterface {
 
     // For direct mints we must spent the parent realm atomical in the same transaction
     atomicalBuilder.addInputUtxo(utxoLocation, this.owner.WIF)
+    
+    // The first output will be the location of the subrealm minted
+    atomicalBuilder.addOutput({
+      address: this.address,
+      value: this.options.satsoutput as number,
+    });
+
     // ... and make sure to assign an output to capture the spent parent realm atomical
     atomicalBuilder.addOutput({
       address: utxoLocation.address,
