@@ -521,7 +521,7 @@ export class AtomicalOperationBuilder {
                     value: fees.revealFeePlusOutputs
                 });
 
-                this.addCommitChangeOutputIfRequired(fundingUtxo.value, fees, psbtStart, updatedBaseCommit.hashscript.length, fundingKeypair.address);
+                this.addCommitChangeOutputIfRequired(fundingUtxo.value, fees, psbtStart, fundingKeypair.address);
 
                 psbtStart.signInput(0, fundingKeypair.tweakedChildNode);
                 psbtStart.finalizeAllInputs()
@@ -583,6 +583,8 @@ export class AtomicalOperationBuilder {
         }
         noncesGenerated = 0;
         do {
+            let totalInputsforReveal = 0; // We calculate the total inputs for the reveal to determine to make change output or not
+            let totalOutputsForReveal = 0; // Calculate total outputs for the reveal and compare to totalInputsforReveal and reveal fee
             let nonce = Math.floor(Math.random() * 100000000);
             let unixTime = Math.floor(Date.now() / 1000)
             let psbt = new Psbt({ network: NETWORK });
@@ -595,6 +597,8 @@ export class AtomicalOperationBuilder {
                     tapLeafScript
                 ]
             });
+            totalInputsforReveal += utxoOfCommitAddress.value;
+
             // Add any additional inputs that were assigned
             for (const additionalInput of this.inputUtxos) {
                 psbt.addInput({
@@ -603,6 +607,7 @@ export class AtomicalOperationBuilder {
                     witnessUtxo: additionalInput.utxo.witnessUtxo,
                     tapInternalKey: additionalInput.keypairInfo.childNodeXOnlyPubkey
                 });
+                totalInputsforReveal += additionalInput.utxo.witnessUtxo.value;
             }
 
             // Note, we do not assign any outputs by default.
@@ -614,6 +619,7 @@ export class AtomicalOperationBuilder {
                     address: additionalOutput.address,
                     value: additionalOutput.value,
                 });
+                totalOutputsForReveal += additionalOutput.value
             }
 
             if (parentAtomicalInfo) {
@@ -623,10 +629,12 @@ export class AtomicalOperationBuilder {
                     witnessUtxo: parentAtomicalInfo.parentUtxoPartial.witnessUtxo,
                     tapInternalKey: parentAtomicalInfo.parentKeyInfo.childNodeXOnlyPubkey
                 });
+                totalInputsforReveal += parentAtomicalInfo.parentUtxoPartial.witnessUtxo.value;
                 psbt.addOutput({
                     address: parentAtomicalInfo.parentKeyInfo.address,
                     value: parentAtomicalInfo.parentUtxoPartial.witnessUtxo.value,
                 });
+                totalOutputsForReveal += parentAtomicalInfo.parentUtxoPartial.witnessUtxo.value;
             }
 
             if (noncesGenerated % 10000 == 0) {
@@ -641,7 +649,7 @@ export class AtomicalOperationBuilder {
                     value: 0,
                 })
             }
-            this.addRevealOutputIfChangeRequired(fees);
+            this.addRevealOutputIfChangeRequired(totalInputsforReveal, totalOutputsForReveal, fees.revealFeeOnly, fundingKeypair.address);
 
             psbt.signInput(0, fundingKeypair.childNode);
             // Sign all the additional inputs, if there were any
@@ -827,13 +835,13 @@ export class AtomicalOperationBuilder {
      * @param fee Fee calculations
      * @returns 
      */
-    addRevealOutputIfChangeRequired(fee: FeeCalculations) {
-        const currentSatoshisFeePlanned = this.getTotalAdditionalInputValues() - this.getTotalAdditionalOutputValues();
+    addRevealOutputIfChangeRequired(totalInputsValue: number, totalOutputsValue: number, revealFee: number, address: string) {
+        const currentSatoshisFeePlanned = totalInputsValue - totalOutputsValue;
         // It will be invalid, but at least we know we don't need to add change
         if (currentSatoshisFeePlanned <= 0) {
             return;
         }
-        const excessSatoshisFound = currentSatoshisFeePlanned - fee.revealFeePlusOutputs;
+        const excessSatoshisFound = currentSatoshisFeePlanned - revealFee;
         // There were no excess satoshis, therefore no change is due
         if (excessSatoshisFound <= 0) {
             return;
@@ -842,7 +850,7 @@ export class AtomicalOperationBuilder {
         if (excessSatoshisFound >= DUST_AMOUNT) {
 
             this.addOutput({
-                address: this.options.address,
+                address: address,
                 value: excessSatoshisFound
             })
         }
@@ -853,17 +861,10 @@ export class AtomicalOperationBuilder {
     * @param fee Fee calculations
     * @returns 
     */
-    addCommitChangeOutputIfRequired(extraInputValue: number, fee: FeeCalculations, pbst: any, hashScriptLen: number, address: string) {
-        // console.log('-----------addChangeOutputIfRequired----------');
-        // console.log('extraInputValue', extraInputValue);
-        // console.log('fee', JSON.stringify(fee, null, 2));
-        // console.log('address', address);
+    addCommitChangeOutputIfRequired(extraInputValue: number, fee: FeeCalculations, pbst: any, address: string) {
         const totalInputsValue = extraInputValue + this.getTotalAdditionalInputValues();
         const totalOutputsValue = this.getTotalAdditionalOutputValues() + fee.revealFeePlusOutputs;
         const calculatedFee = totalInputsValue - totalOutputsValue;
-        // console.log('totalInputsValue', totalInputsValue);
-        // console.log('totalOutputsValue', totalOutputsValue);
-        // console.log('calculatedFee', calculatedFee);
         // It will be invalid, but at least we know we don't need to add change
         if (calculatedFee <= 0) {
             //  console.log('calculatedFee <= 0', calculatedFee);
@@ -873,11 +874,8 @@ export class AtomicalOperationBuilder {
         // console.log('expectedFee', expectedFee);
         const differenceBetweenCalculatedAndExpected = calculatedFee - expectedFee;
         if (differenceBetweenCalculatedAndExpected <= 0) {
-            //  console.log('differenceBetweenCalculatedAndExpected <= 0');
             return;
         }
-        // console.log('differenceBetweenCalculatedAndExpected', differenceBetweenCalculatedAndExpected);
-        // console.log('excessSatoshisFound', excessSatoshisFound);
         // There were some excess satoshis, but let's verify that it meets the dust threshold to make change
         if (differenceBetweenCalculatedAndExpected >= DUST_AMOUNT) {
             pbst.addOutput({
@@ -885,8 +883,6 @@ export class AtomicalOperationBuilder {
                 value: differenceBetweenCalculatedAndExpected
             })
         }
-        // console.log('differenceBetweenCalculatedAndExpected', differenceBetweenCalculatedAndExpected);
-        // console.log('pbst', pbst);
     }
 
     /**

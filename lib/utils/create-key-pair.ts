@@ -56,13 +56,20 @@ export const createKeyPair = async (phrase: string = '', path = `m/44'/0'/0'/0/0
     }
 }
 
-export const createPrimaryAndFundingKeyPairs = async () => {
-    const phraseResult = await createMnemonicPhrase();
-
+export const createPrimaryAndFundingKeyPairs = async (phrase?: string | undefined, path?: string | undefined) => {
+    let phraseResult: any = phrase;
+    if (!phraseResult) {
+        phraseResult = await createMnemonicPhrase();
+        phraseResult = phraseResult.phrase;
+    }
+    let pathUsed = `m/44'/0'/0'`;
+    if (path) {
+        pathUsed = path;
+    }
     return {
-        phrase: phraseResult.phrase,
-        primary: await createKeyPair(phraseResult.phrase, `m/44'/0'/0'/0/0`),
-        funding: await createKeyPair(phraseResult.phrase, `m/44'/0'/0'/1/0`)
+        phrase: phraseResult,
+        primary: await createKeyPair(phraseResult, `${pathUsed}/0/0`),
+        funding: await createKeyPair(phraseResult, `${pathUsed}/1/0`)
     }
 }
 

@@ -128,9 +128,9 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  static async walletInit(): Promise<any> {
+  static async walletInit(phrase: string | undefined, path: string): Promise<any> {
     try {
-      const command: CommandInterface = new WalletInitCommand();
+      const command: CommandInterface = new WalletInitCommand(phrase, path);
       return command.run();
     } catch (error: any) {
       return {

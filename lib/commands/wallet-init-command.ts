@@ -7,11 +7,15 @@ import { walletPathResolver } from "../utils/wallet-path-resolver";
 const walletPath = walletPathResolver();
 
 export class WalletInitCommand implements CommandInterface {
+    constructor(private phrase: string | undefined, private path: string) {
+
+    }
     async run(): Promise<CommandResultInterface> {
         if (await this.walletExists()) {
             throw "wallet.json exists, please remove it first to initialize another wallet. You may also use 'wallet-create' command to generate a new wallet."
         }
-        const wallet = await createPrimaryAndFundingKeyPairs();
+
+        const wallet = await createPrimaryAndFundingKeyPairs(this.phrase, this.path);
 
         await jsonFileWriter(walletPath, {
             phrase: wallet.phrase,
