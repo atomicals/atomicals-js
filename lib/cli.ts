@@ -6,7 +6,7 @@ import { ElectrumApi } from './api/electrum-api';
 import { validateCliInputs } from './utils/validate-cli-inputs';
 import { IValidatedWalletInfo, IWalletRecord, validateWalletStorage } from './utils/validate-wallet-storage';
 import * as qrcode from 'qrcode-terminal';
-import { performAddressAliasReplacement } from './utils/address-helpers';
+import { detectAddressTypeToScripthash, performAddressAliasReplacement } from './utils/address-helpers';
 import { AtomicalsGetFetchType } from './commands/command.interface';
 import { fileReader } from './utils/file-utils';
 dotenv.config();
@@ -138,8 +138,32 @@ function resolveWalletAliasNew(walletInfo: IValidatedWalletInfo, alias: string |
   if (walletInfo.imported[alias]) {
     return walletInfo.imported[alias]
   }
-  throw 'No wallet alias found by name ' + alias;
+  throw 'No wallet alias or valid address found: ' + alias;
 }
+
+
+function resolveAddress(walletInfo: IValidatedWalletInfo, alias: string | undefined, defaultValue: any): string {
+  if (!alias) {
+    return defaultValue;
+  }
+  if (walletInfo[alias]) {
+    return walletInfo[alias].address;
+  }
+  if (walletInfo.imported[alias]) {
+    return walletInfo.imported[alias].address;
+  }
+
+  // As a last effort try and return the address
+  try {
+    detectAddressTypeToScripthash(alias)
+    return alias;
+  } catch (err) {
+    // Do nothing, but at least we tried
+  }
+
+  throw 'No wallet alias or valid address found: ' + alias;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Start of Command Line Options Definitions
@@ -1177,11 +1201,11 @@ program.command('mint-ft')
       let parentOwnerRecord = resolveWalletAliasNew(walletInfo, options.parentowner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-      let walletRecord = resolveWalletAliasNew(walletInfo, options.initialowner, walletInfo.primary);
+      let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
       if (isNaN(supply)) {
         throw 'supply must be an integer';
       }
-      const result: any = await atomicals.mintFtInteractive(files, parseInt(supply), walletRecord.address, requestTicker, fundingRecord.WIF, {
+      const result: any = await atomicals.mintFtInteractive(files, parseInt(supply), initialOwnerAddress, requestTicker, fundingRecord.WIF, {
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
@@ -1291,10 +1315,10 @@ program.command('mint-nft')
       const walletInfo = await validateWalletStorage();
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-      let walletRecord = resolveWalletAliasNew(walletInfo, options.initialowner, walletInfo.primary);
+      let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
       let parentOwnerRecord = resolveWalletAliasNew(walletInfo, options.parentowner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result: any = await atomicals.mintNftInteractive(files, walletRecord.address, fundingRecord.WIF, {
+      const result: any = await atomicals.mintNftInteractive(files, initialOwnerAddress, fundingRecord.WIF, {
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
@@ -1331,10 +1355,10 @@ program.command('mint-realm')
       const walletInfo = await validateWalletStorage();
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-      let walletRecord = resolveWalletAliasNew(walletInfo, options.initialowner, walletInfo.primary);
+      let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
       let parentOwnerRecord = resolveWalletAliasNew(walletInfo, options.parentowner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result: any = await atomicals.mintRealmInteractive(realm, walletRecord.address, fundingRecord.WIF, {
+      const result: any = await atomicals.mintRealmInteractive(realm, initialOwnerAddress, fundingRecord.WIF, {
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
@@ -1370,10 +1394,10 @@ program.command('mint-subrealm')
       const walletInfo = await validateWalletStorage();
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-      let walletRecord = resolveWalletAliasNew(walletInfo, options.initialowner, walletInfo.primary);
+      let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result: any = await atomicals.mintSubrealmInteractive(subrealm, walletRecord.address, fundingRecord.WIF, ownerWalletRecord, {
+      const result: any = await atomicals.mintSubrealmInteractive(subrealm, initialOwnerAddress, fundingRecord.WIF, ownerWalletRecord, {
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
@@ -1408,10 +1432,10 @@ program.command('mint-container')
       const walletInfo = await validateWalletStorage();
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-      let walletRecord = resolveWalletAliasNew(walletInfo, options.initialowner, walletInfo.primary);
+      let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
       let parentOwnerRecord = resolveWalletAliasNew(walletInfo, options.parentowner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result: any = await atomicals.mintContainerInteractive(container, walletRecord.address, fundingRecord.WIF, {
+      const result: any = await atomicals.mintContainerInteractive(container, initialOwnerAddress, fundingRecord.WIF, {
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
