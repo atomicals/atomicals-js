@@ -91,6 +91,9 @@ export function performAddressAliasReplacement(walletInfo: IValidatedWalletInfo,
   else if (address === 'funding') {
     addressToReturn = walletInfo.funding.address;
   }
+  else if (address === 'selected') {
+    addressToReturn = walletInfo.selected?.address;
+  }
   else if (walletInfo.imported && walletInfo.imported[address]) {
     addressToReturn = walletInfo.imported[address].address;
   } else {
@@ -105,8 +108,8 @@ export function performAddressAliasReplacement(walletInfo: IValidatedWalletInfo,
 /**
  * Whether the atomical for the mint is owned by the provided wallet or not
  * @param ownerRecord The proposed wallet that owns the atomical
- * @param atomical 
- * @returns 
+ * @param atomical
+ * @returns
  */
 export function IsAtomicalOwnedByWalletRecord(address: string, atomical: AtomicalStatus): IInputUtxoPartial | null {
   if (!(atomical.location_info_obj as any).length) {

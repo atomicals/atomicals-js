@@ -22,6 +22,7 @@ export interface IWalletRecord {
 export interface IValidatedWalletInfo {
   primary: IWalletRecord;
   funding: IWalletRecord;
+  selected?: IWalletRecord;
   imported: {
     [alias: string]: IWalletRecord;
   }
