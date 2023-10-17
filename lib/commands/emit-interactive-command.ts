@@ -18,7 +18,6 @@ export class EmitInteractiveCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
     private atomicalId: string,
-    private path: string,
     private files: string[],
     private owner: IWalletRecord,
     private funding: IWalletRecord,
@@ -27,16 +26,12 @@ export class EmitInteractiveCommand implements CommandInterface {
 
   }
   async run(): Promise<any> {
-    logBanner(`emit Interactive`);
-    if (!this.path || this.path.trim().length === 0 || typeof this.path !== 'string') {
-      throw new Error(`Error: Path must be set and a valid string`)
-    }
+    logBanner(`Emit Interactive`);
+    
     // Attach any default data
     let filesData = await prepareFilesDataAsObject(this.files);
-    const updatedFilesWithPath = Object.assign({}, filesData, {
-      $path: this.path
-    });
-    const { atomicalInfo, locationInfo, inputUtxoPartial } = await getAndCheckAtomicalInfo(this.electrumApi, this.atomicalId, this.owner.address);
+ 
+    const { atomicalInfo, locationInfo, inputUtxoPartial } = await getAndCheckAtomicalInfo(this.electrumApi, this.atomicalId, this.owner.address, 'NFT');
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
       satsbyte: this.options.satsbyte,
@@ -51,7 +46,7 @@ export class EmitInteractiveCommand implements CommandInterface {
       init: this.options.init,
     });
 
-    await atomicalBuilder.setData(updatedFilesWithPath);
+    await atomicalBuilder.setData(filesData);
 
     // Add the atomical to update
     atomicalBuilder.addInputUtxo(inputUtxoPartial, this.owner.WIF)

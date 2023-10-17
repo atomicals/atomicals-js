@@ -4,7 +4,7 @@ import { detectAddressTypeToScripthash, detectScriptToAddressType } from "../uti
 import * as readline from 'readline';
 import * as chalk from 'chalk';
 import { KeyPairInfo, getKeypairInfo } from "../utils/address-keypair-path";
-import { logBanner } from "./command-helpers";
+import { NETWORK, logBanner } from "./command-helpers";
 import * as ecc from '@bitcoinerlab/secp256k1';
 import * as bitcoin from 'bitcoinjs-lib';
 bitcoin.initEccLib(ecc);
@@ -156,14 +156,24 @@ export class PendingSubrealmsCommand implements CommandInterface {
       if (!expectedPaymentOutputsMap.hasOwnProperty(propScript)) {
         continue;
       }
-      const outputValue = expectedPaymentOutputsMap[propScript];
+      const outputValue = expectedPaymentOutputsMap[propScript]['v']
+      const outputArc20 = expectedPaymentOutputsMap[propScript]['id']
       const expectedAddress = detectScriptToAddressType(propScript);
       paymentOutputs.push({
         address: expectedAddress,
         value: outputValue
       });
       console.log('Output #' + num);
-      console.log('Price: ', outputValue / 100000000);
+
+      if (outputArc20) {
+        console.log('Price: ', outputValue / 100000000, `ARC20: (${outputArc20})`);
+      } else {
+        console.log('Price: ', outputValue / 100000000);
+      }
+
+      if (outputArc20) {
+        console.log(`WARNING: You must send ARC20: (${outputArc20}) for this output`);
+      }
       console.log('Payment Address:', expectedAddress);
       num++;
     }
@@ -198,7 +208,7 @@ export class PendingSubrealmsCommand implements CommandInterface {
     });
     console.log('paymentOutputs', paymentOutputs);
     const expectedSatoshisDeposit = this.calculateFundsRequired(price, satsbyte);
-    const psbt = new bitcoin.Psbt({ network: networks.bitcoin })
+    const psbt = new bitcoin.Psbt({ network: NETWORK })
     logBanner(`DEPOSIT ${expectedSatoshisDeposit / 100000000} BTC to ${keypairFundingInfo.address}`);
     qrcode.generate(keypairFundingInfo.address, { small: false });
     console.log(`...`)
@@ -248,7 +258,6 @@ export class PendingSubrealmsCommand implements CommandInterface {
   }
 
   makePrettyMenu(statusReturn) {
-    // console.log('Status Map: ', JSON.stringify(statusReturn, null, 2));
     console.log(chalk.blue.bold('GENERAL INFORMATION'));
     console.log(chalk.blue.bold('------------------------------------------------------'));
     console.log('Current Block Height: ', chalk.bold(statusReturn.current_block_height));
@@ -279,9 +288,16 @@ export class PendingSubrealmsCommand implements CommandInterface {
           const expectedOutputScript = propScript;
           const expectedAddress = detectScriptToAddressType(expectedOutputScript);
           console.log('Expected Payment Outputs For Rule: ');
-          const applicableRulePrice = expectedPaymentOutputs[propScript];
-          const price = applicableRulePrice / 100000000;
-          console.log(`Payment output #${i} to address ${expectedAddress} for amount ${price}`);
+          //const applicableRulePrice = expectedPaymentOutputs[propScript];
+          const outputValue = expectedPaymentOutputs[propScript]['v']
+          const outputArc20 = expectedPaymentOutputs[propScript]['id']
+          const price = outputValue / 100000000;
+          if (outputArc20) {
+            console.log(`Payment output #${i} to address ${expectedAddress} for amount ${price} in ARC20: ${outputArc20}`);
+          } else {
+            console.log(`Payment output #${i} to address ${expectedAddress} for amount ${price}`);
+          }
+
           i++;
         }
         const outpoint = compactIdToOutpoint(subrealm_pending['atomical_id']);

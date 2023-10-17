@@ -26,7 +26,7 @@ export interface ElectrumApiInterface {
     atomicalsGet: (atomicalAliasOrId: string | number) => Promise<any>;
     atomicalsGetFtInfo: (atomicalAliasOrId: string | number) => Promise<any>;
     atomicalsGetLocation: (atomicalAliasOrId: string | number) => Promise<any>;
-    atomicalsGetState: (atomicalAliasOrId: string | number, path: string, verbose: boolean) => Promise<any>;
+    atomicalsGetState: (atomicalAliasOrId: string | number, verbose: boolean) => Promise<any>;
     atomicalsGetStateHistory: (atomicalAliasOrId: string | number) => Promise<any>;
     atomicalsGetEventHistory: (atomicalAliasOrId: string | number) => Promise<any>;
     atomicalsGetTxHistory: (atomicalAliasOrId: string | number) => Promise<any>;

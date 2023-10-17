@@ -7,11 +7,13 @@ import { IInputUtxoPartial } from "../types/UTXO.interface";
 import { NETWORK } from "../commands/command-helpers";
 import * as bitcoin from 'bitcoinjs-lib';
 bitcoin.initEccLib(ecc);
+import * as dotenv from 'dotenv'
+dotenv.config();
 
 export function detectAddressTypeToScripthash(address: string): { output: Buffer, scripthash: string, address: string } {
   // Detect legacy address
   try {
-    bitcoin.address.fromBase58Check(address);
+    bitcoin.address.fromBase58Check(address, NETWORK);
     const p2pkh = addressToP2PKH(address);
     const p2pkhBuf = Buffer.from(p2pkh, "hex");
     return {
@@ -21,7 +23,6 @@ export function detectAddressTypeToScripthash(address: string): { output: Buffer
     }
   } catch (err) {
   }
-
   // Detect segwit or taproot
   // const detected = bitcoin.address.fromBech32(address);
   if (address.indexOf('bc1p') === 0) {
@@ -39,6 +40,7 @@ export function detectAddressTypeToScripthash(address: string): { output: Buffer
       address
     }
   } else if (address.indexOf('tb1') === 0) {
+
     const output = bitcoin.address.toOutputScript(address, NETWORK);
     return {
       output,
@@ -51,7 +53,7 @@ export function detectAddressTypeToScripthash(address: string): { output: Buffer
 }
 
 export function detectScriptToAddressType(script: string): string {
-  const address = bitcoin.address.fromOutputScript(Buffer.from(script, 'hex'))
+  const address = bitcoin.address.fromOutputScript(Buffer.from(script, 'hex'), NETWORK)
   return address;
 }
 
@@ -112,7 +114,8 @@ export function performAddressAliasReplacement(walletInfo: IValidatedWalletInfo,
  * @returns
  */
 export function IsAtomicalOwnedByWalletRecord(address: string, atomical: AtomicalStatus): IInputUtxoPartial | null {
-  if (!(atomical.location_info_obj as any).length) {
+  if (!(atomical.location_info_obj as any)) {
+    console.log(atomical)
     throw new Error('Error: location_info_obj not found');
   }
   const locationInfo: any = atomical.location_info_obj;

@@ -40,8 +40,8 @@ export interface APIInterface {
     // Modify methods
     enableSubrealmRules(realmOrSubrealm: string, rules: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     disableSubrealmRules(realmOrSubrealm: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    setInteractive(atomicalId: string,  path, files: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    deleteInteractive(atomicalId: string, path, keysToDelete: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
+    setInteractive(atomicalId: string, files: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
+    deleteInteractive(atomicalId: string, keysToDelete: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     sealInteractive(atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     splatInteractive(atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     splitItneractive(atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
@@ -52,7 +52,6 @@ export interface APIInterface {
     transferInteractiveFt(atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number): Promise<CommandResultInterface>;
     transferInteractiveUtxos(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number): Promise<CommandResultInterface>;
     mergeInteractiveUtxos(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number): Promise<CommandResultInterface>;
-
 
     // Summaries of specific types of tokens such as: Realm, Container, and Tickers
     summarySubrealms(address: string, filter: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
@@ -70,7 +69,7 @@ export interface APIInterface {
     getAtomical(atomicalId: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     getAtomicalLocation(atomicalId: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     getAtomicalHistory(atomicalId: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
-    getAtomicalState(atomicalId: string, path: string, verbose: boolean, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
+    getAtomicalState(atomicalId: string, verbose: boolean, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     getAtomicalStateHistory(atomicalId: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     getAtomicalEventHistory(atomicalId: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     searchTickers(prefix: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
@@ -79,7 +78,7 @@ export interface APIInterface {
     getAtomicalByRealm(realm: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     getAtomicalByTicker(ticker: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     getAtomicalByContainer(container: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
-    resolveAtomical(atomicalIdOrNumberOrVariousName: string, atomicalsGetFetchType: AtomicalsGetFetchType, path: string | undefined, verbose: boolean, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
+    resolveAtomical(atomicalIdOrNumberOrVariousName: string, atomicalsGetFetchType: AtomicalsGetFetchType, verbose: boolean, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     getRealmInfo(atomicalIdOrNumberOrVariousName: string, verbose: boolean, keepElectrumAlive: boolean): Promise<GetSubrealmInfoCommandResultInterface>;
     list(offset: number, limit: number, asc: boolean, verbose: boolean): Promise<CommandResultInterface>;
     getAtomicals(address: string): Promise<CommandResultInterface>;

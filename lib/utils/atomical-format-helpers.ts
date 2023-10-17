@@ -6,7 +6,8 @@ import {
   Transaction
 } from "bitcoinjs-lib";
 import { bitcoin } from '..';
-
+import * as dotenv from 'dotenv'
+dotenv.config();
 initEccLib(ecc);
 import * as cbor from 'borc';
 import { AtomicalStatus, LocationInfo } from '../interfaces/atomical-status.interface';
@@ -557,9 +558,12 @@ export function decorateAtomical(item: any, addUtf8 = false) {
  * validates that the rules matches a valid format
  * @param object The object which contains the 'rules' field
  */
-export function validateSubrealmRulesObject(object) {
+export function validateSubrealmRulesObject(topobject) {
+  if (!topobject || !topobject.subrealms) {
+    throw new Error(`File path does not contain top level 'subrealms' object element`);
+  }
+  const object = topobject.subrealms;
   if (!object || !object.rules || !Array.isArray(object.rules) || !object.rules.length) {
-    console.log('object', object);
     throw new Error(`File path does not contain top level 'rules' array element with at least one rule set`);
   }
   for (const ruleset of object.rules) {
@@ -575,15 +579,21 @@ export function validateSubrealmRulesObject(object) {
       if (!outputRulesMap.hasOwnProperty(propScript)) {
         continue;
       }
-      const priceRule = outputRulesMap[propScript]
-      if (priceRule < 0) {
+      const priceRuleObject = outputRulesMap[propScript]
+      const priceRuleValue = priceRuleObject.v;
+      const priceRuleTokenType = priceRuleObject['id'];
+
+      if (priceRuleValue < 0) {
         throw new Error('Aborting minting because price is less than 0')
       }
-      if (priceRule > 1000000000) {
-        throw new Error('Aborting minting because price is greater than 10')
+      if (priceRuleValue > 100000000000) {
+        throw new Error('Aborting minting because price is greater than 1000')
       }
-      if (isNaN(priceRule)) {
+      if (isNaN(priceRuleValue)) {
         throw new Error('Price is not a valid number')
+      }
+      if (priceRuleTokenType && !isAtomicalId(priceRuleTokenType)) {
+        throw new Error('id parameter must be a compact atomical id: ' + priceRuleTokenType);
       }
       try {
         const result = detectScriptToAddressType(propScript);
