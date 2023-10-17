@@ -13,7 +13,7 @@ dotenv.config();
 export function detectAddressTypeToScripthash(address: string): { output: Buffer, scripthash: string, address: string } {
   // Detect legacy address
   try {
-    bitcoin.address.fromBase58Check(address, NETWORK);
+    bitcoin.address.fromBase58Check(address);
     const p2pkh = addressToP2PKH(address);
     const p2pkhBuf = Buffer.from(p2pkh, "hex");
     return {
