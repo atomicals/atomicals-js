@@ -12,7 +12,7 @@ import { ATOMICALS_PROTOCOL_ENVELOPE_ID } from "../types/protocol-tags";
 import { ElectrumApiInterface } from "../api/electrum-api.interface";
 import { ResolveCommand } from "./resolve-command";
 import { AtomicalsGetFetchType } from "./command.interface";
-import { AtomicalIdentifierType, decorateAtomical } from "../utils/atomical-format-helpers";
+import { AtomicalIdentifierType, decorateAtomical, encodeAtomicalIdToBuffer, encodeIds } from "../utils/atomical-format-helpers";
 import { IsAtomicalOwnedByWalletRecord } from "../utils/address-helpers";
 import { IInputUtxoPartial } from "../types/UTXO.interface";
 import * as dotenv from 'dotenv'
@@ -229,7 +229,7 @@ export const prepareFilesData = async (fields: string[]) => {
     return filesData;
 }
 
-export const prepareFilesDataAsObject = async (fields: string[]) => {
+export const prepareFilesDataAsObject = async (fields: string[], disableAutoncode = false) => {
     let fieldDataObject = {};
     for (const entry of fields) {
         if (entry.indexOf(',') === -1 && entry.indexOf('=') === -1) {
@@ -245,10 +245,7 @@ export const prepareFilesDataAsObject = async (fields: string[]) => {
                 });
             } else {
                 const fileInfo = await readAsAtomicalFileData(filename);
-                fieldDataObject[basename(fileInfo.name)] = {
-                    '$ct': fileInfo.contentType,
-                    '$b': fileInfo.data
-                }
+                fieldDataObject[basename(fileInfo.name)] = fileInfo.data
             }
         } else if (entry.indexOf(',') !== -1 && entry.indexOf('=') === -1) {
             const entrySplit = entry.split(',');
@@ -292,6 +289,19 @@ export const prepareFilesDataAsObject = async (fields: string[]) => {
         }
     }
     return fieldDataObject;
+}
+
+export const readJsonFileAsCompleteDataObject = async (jsonFile, autoEncode = false) => {
+    if (!jsonFile.endsWith('.json')) {
+        throw new Error('Filename must end in json')
+    }
+    const jsonFileContents: any = await jsonFileReader(jsonFile);
+    if (autoEncode) {
+        const updatedObject = {};
+        encodeIds(jsonFileContents, updatedObject, encodeAtomicalIdToBuffer);
+        return updatedObject;
+    }
+    return jsonFileContents;
 }
 
 export const prepareFilesDataBackup = async (files: string[], names: string[]) => {
@@ -542,7 +552,8 @@ export const getAndCheckAtomicalInfo = async (electrumApi: ElectrumApiInterface,
     const getLocationCommand = new ResolveCommand(electrumApi, atomicalAliasOrId, AtomicalsGetFetchType.LOCATION);
     const getLocationResponse = await getLocationCommand.run();
     if (!getLocationResponse.success) {
-        throw new Error(`Error: Unable to get location. ${getLocationResponse}`)
+        console.log(JSON.stringify(getLocationResponse, null, 2));
+        throw new Error(`Error: Unable to get location.`)
     }
     const atomicalInfo = getLocationResponse.data.result;
     if (expectedType === 'NFT' && atomicalInfo.type !== expectedType) {

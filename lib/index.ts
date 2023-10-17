@@ -2,6 +2,7 @@ import { APIInterface, BaseRequestOptions } from "./interfaces/api.interface";
 const bitcoin = require('bitcoinjs-lib');
 import * as ecc from 'tiny-secp256k1';
 bitcoin.initEccLib(ecc);
+import * as cbor from 'borc';
 export { ElectrumApiMock } from "./api/electrum-api-mock";
 import { ConfigurationInterface } from "./interfaces/configuration.interface";
 import { ElectrumApiInterface } from "./api/electrum-api.interface";
@@ -64,6 +65,8 @@ import { SplitInteractiveCommand } from "./commands/split-interactive-command";
 import { GetGlobalCommand } from "./commands/get-global-command";
 import { GetFtInfoCommand } from "./commands/get-dft-info-command";
 import { BroadcastCommand } from "./commands/broadcast-command";
+import { compactIdToOutpointBytesAndHex, isAtomicalId } from "./utils/atomical-format-helpers";
+import { SetContainerDataInteractiveCommand } from "./commands/set-container-data-interactive-command";
 export { decorateAtomicals } from "./utils/atomical-format-helpers";
 export { addressToP2PKH } from "./utils/address-helpers";
 export { getExtendTaprootAddressKeypairPath } from "./utils/address-keypair-path";
@@ -100,6 +103,81 @@ export class Atomicals implements APIInterface {
         error
       }
     }
+  }
+
+  static isObject(p): boolean {
+    if (
+      typeof p === 'object' &&
+      !Array.isArray(p) &&
+      p !== null
+    ) {
+      return true;
+    }
+    return false
+  }
+
+  static async encodeX(fileContents, updatedObject) {
+    if (!Atomicals.isObject(fileContents)) {
+      return;
+    }
+    const updatedtotal: any = [];
+    const concise: any = [];
+  
+    const traitsArray = [
+      {
+        "trait":  "design",
+        "type": "string",
+        "values": [
+          "Portal Prologue",
+          "La Vista",
+          "X Essence"
+        ]
+      },
+      {
+        "trait": "color",
+        "type": "string",
+        "values": [
+          "Azure Crimson",
+          "Monochrome Elegance",
+          "Blush Velvet Bliss",
+          "Atomicals Nature Illusion",
+          "Golden Satoshi Luster",
+        ]
+      }
+    ];
+
+    function findIndexInMap(index, itemValue) {
+      for (let i = 0; i < traitsArray[index].values.length; i++) {
+        if (itemValue === traitsArray[index].values[i]) {
+          return i;
+        }
+      }
+    }
+
+    for (const prop in fileContents) {
+      if (!fileContents.hasOwnProperty(prop)) {
+        continue;
+      }
+      const obj: any = {
+        id: fileContents[prop]['id'],
+        n: fileContents[prop]['n']
+      };
+      const attrs: any = []
+      let attributeIndex = 0;
+      for (const item of fileContents[prop]['a']) {
+        attrs.push(findIndexInMap(attributeIndex, item['v']));
+        attributeIndex++;
+      }
+      obj['a'] = attrs;
+      updatedtotal[prop] = obj;
+    }
+    const resulting = {
+      "traits": traitsArray,
+      items: {
+        ...updatedtotal
+      }
+    };
+    return resulting;
   }
 
   static async walletImport(wif: string, alias: string): Promise<any> {
@@ -231,6 +309,7 @@ export class Atomicals implements APIInterface {
       return {
         success: false,
         message: error.toString(),
+        stack: error.stack,
         error
       }
     } finally {
@@ -352,7 +431,7 @@ export class Atomicals implements APIInterface {
 
   async splitItneractive(atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
     try {
-    
+
       await this.electrumApi.open();
       const command: CommandInterface = new SplitInteractiveCommand(this.electrumApi, atomicalId, atomicalOwner, funding, options);
       return await command.run();
@@ -382,10 +461,26 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async setInteractive(atomicalId: string, files: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async setInteractive(atomicalId: string, filename: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new SetInteractiveCommand(this.electrumApi, atomicalId, files, atomicalOwner, funding, options);
+      const command: CommandInterface = new SetInteractiveCommand(this.electrumApi, atomicalId, filename, atomicalOwner, funding, options);
+      return await command.run();
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.toString(),
+        error
+      }
+    } finally {
+      this.electrumApi.close();
+    }
+  }
+
+  async setContainerDataInteractive(containerName: string, filename: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+    try {
+      await this.electrumApi.open();
+      const command: CommandInterface = new SetContainerDataInteractiveCommand(this.electrumApi, containerName, filename, atomicalOwner, funding, options);
       return await command.run();
     } catch (error: any) {
       return {
@@ -475,7 +570,7 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async transferInteractiveUtxos(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number): Promise<CommandResultInterface> {
+  async transferInteractiveUtxos(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new TransferInteractiveUtxosCommand(
@@ -483,7 +578,8 @@ export class Atomicals implements APIInterface {
         owner.WIF,
         funding.WIF,
         validatedWalletInfo,
-        satsbyte);
+        satsbyte,
+        nofunding);
       return await command.run();
     } catch (error: any) {
       return {

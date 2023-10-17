@@ -52,11 +52,6 @@ export class DeleteInteractiveCommand implements CommandInterface {
       $a: 1,
     });
 
-    // Add the atomical to update
-    const inputUtxoPartial2 = Object.assign({}, inputUtxoPartial, {
-      hash: '5155288adc0a5ca78103ff5f097d6084151f5ffc2d554d5c7bd132efa4ef81d7'
-    })
-
     atomicalBuilder.addInputUtxo(inputUtxoPartial, this.owner.WIF)
 
     // The receiver output

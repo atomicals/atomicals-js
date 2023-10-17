@@ -22,8 +22,8 @@ import { IWalletRecord } from "./validate-wallet-storage";
 const ECPair: ECPairAPI = ECPairFactory(tinysecp);
 const DEFAULT_SATS_BYTE = 10;
 const DEFAULT_SATS_ATOMICAL_UTXO = 1000;
-const SEND_RETRY_SLEEP_SECONDS = 10;
-const SEND_RETRY_ATTEMPTS = 10;
+const SEND_RETRY_SLEEP_SECONDS = 15;
+const SEND_RETRY_ATTEMPTS = 20;
 const DUST_AMOUNT = 546;
 const BASE_BYTES = 10;
 const INPUT_BYTES_BASE = 148;
@@ -473,8 +473,7 @@ export class AtomicalOperationBuilder {
             copiedData['args'] = copiedData['args'] || {};
             copiedData['args']['parents'] = { [parentAtomicalInfo.parentId]: 0 }; // Also supports one parent for now
         }
-        //parentAtomicalInfo = null;
-        console.log('Payload Encoded: ', copiedData);
+        console.log('Payload Encoded: ', JSON.stringify(copiedData,null, 2));
 
         let unixtime = Math.floor(Date.now() / 1000);
         let nonce = Math.floor(Math.random() * 10000000);
@@ -615,6 +614,7 @@ export class AtomicalOperationBuilder {
             // The reason is the caller knows the context to create them in
             // Add any additional outputs that were assigned
             for (const additionalOutput of this.additionalOutputs) {
+                console.log('additional', additionalOutput);
                 psbt.addOutput({
                     address: additionalOutput.address,
                     value: additionalOutput.value,
@@ -630,6 +630,7 @@ export class AtomicalOperationBuilder {
                     tapInternalKey: parentAtomicalInfo.parentKeyInfo.childNodeXOnlyPubkey
                 });
                 totalInputsforReveal += parentAtomicalInfo.parentUtxoPartial.witnessUtxo.value;
+                //  console.log('parent', parentAtomicalInfo.parentKeyInfo.address, parentAtomicalInfo.parentUtxoPartial.witnessUtxo.value);
                 psbt.addOutput({
                     address: parentAtomicalInfo.parentKeyInfo.address,
                     value: parentAtomicalInfo.parentUtxoPartial.witnessUtxo.value,
@@ -644,6 +645,7 @@ export class AtomicalOperationBuilder {
             const embed = bitcoin.payments.embed({ data: [data] });
 
             if (performBitworkForRevealTx) {
+               
                 psbt.addOutput({
                     script: embed.output!,
                     value: 0,
@@ -734,7 +736,7 @@ export class AtomicalOperationBuilder {
         do {
             try {
                 console.log('rawtx', rawtx);
-               
+
                 result = await this.options.electrumApi.broadcast(rawtx);
                 if (result) {
                     break;
@@ -848,7 +850,6 @@ export class AtomicalOperationBuilder {
         }
         // There were some excess satoshis, but let's verify that it meets the dust threshold to make change
         if (excessSatoshisFound >= DUST_AMOUNT) {
-
             this.addOutput({
                 address: address,
                 value: excessSatoshisFound
@@ -862,13 +863,11 @@ export class AtomicalOperationBuilder {
     * @returns 
     */
     addCommitChangeOutputIfRequired(extraInputValue: number, fee: FeeCalculations, pbst: any, address: string) {
-        console.log('addCommitChangeOutputIfRequired', extraInputValue, fee, address)
         const totalInputsValue = extraInputValue + this.getTotalAdditionalInputValues();
         const totalOutputsValue = this.getTotalAdditionalOutputValues() + fee.revealFeePlusOutputs;
         const calculatedFee = totalInputsValue - totalOutputsValue;
         // It will be invalid, but at least we know we don't need to add change
         if (calculatedFee <= 0) {
-            //  console.log('calculatedFee <= 0', calculatedFee);
             return;
         }
         const expectedFee = fee.commitFeeOnly;

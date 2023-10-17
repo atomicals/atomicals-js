@@ -28,7 +28,6 @@ export const writeFiles = async (inputIndexToFilesMap: any, txDir: string): Prom
     const fulldecodedPath = inputTxDir + `/_rawdata.json`;
     const objectDecoded = Object.assign({}, {}, decoded);
     const copiedObjectDecoded = cloneDeep(objectDecoded);
-    console.log('decoded', copiedObjectDecoded);
     await fileWriter(fulldecodedPath, JSON.stringify(hexifyObjectWithUtf8(copiedObjectDecoded, false), null, 2));
     if (decoded) {
       for (const filename in decoded) {

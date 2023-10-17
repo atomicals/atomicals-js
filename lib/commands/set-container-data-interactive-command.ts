@@ -15,10 +15,10 @@ import { IWalletRecord } from "../utils/validate-wallet-storage";
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 initEccLib(tinysecp as any);
 
-export class SetInteractiveCommand implements CommandInterface {
+export class SetContainerDataInteractiveCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
-    private atomicalId: string,
+    private containerName: string,
     private filename: string,
     private owner: IWalletRecord,
     private funding: IWalletRecord,
@@ -27,10 +27,11 @@ export class SetInteractiveCommand implements CommandInterface {
 
   }
   async run(): Promise<any> {
-    logBanner(`Set Interactive`);
+    logBanner(`Set Container Data Interactive`);
     // Attach any default data
-    let filesData = await readJsonFileAsCompleteDataObject(this.filename);
-    const { atomicalInfo, locationInfo, inputUtxoPartial } = await getAndCheckAtomicalInfo(this.electrumApi, this.atomicalId, this.owner.address);
+    let filesData = await readJsonFileAsCompleteDataObject(this.filename, true);
+    console.log('filesData', filesData);
+    const { atomicalInfo, locationInfo, inputUtxoPartial } = await getAndCheckAtomicalInfo(this.electrumApi, this.containerName, this.owner.address, 'NFT', 'container');
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
       satsbyte: this.options.satsbyte,

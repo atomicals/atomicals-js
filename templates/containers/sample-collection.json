@@ -1,0 +1,74 @@
+{
+  "name": "Collection Name",
+  "desc": "Collection description",
+  "image": "atom:btc:id:0b95c7286d9437cc55f3fab6d01e0d2d4ea8a38ed6e6dc570ed516ee8f5c74e7i0/bitcoin.png",
+  "legal": {
+    "terms": "...",
+    "license": "CC"
+  },
+  "links": {
+    "x": "https://x./com/...",
+    "website": "https://...",
+    "realmtree": "atom:btc:realm:mycoolcollection",
+    "discord": "https://discord.gg/..."
+  },
+  "attrs": [
+    {
+      "name": "bodyarmor",
+      "desc": "Type of body armor",
+      "type": "string",
+      "values": [
+        "metal",
+        "leather",
+        "field"
+      ]
+    },
+    {
+      "name": "headcovering",
+      "desc": "The type of head covering",
+      "type": "string",
+      "values": [
+        "bandana",
+        "helmet",
+        "scarf",
+        "baseball cap"
+      ]
+    },
+    {
+      "name": "stamina",
+      "desc": "The stamina of the hero",
+      "type": "integer",
+      "min": 0,
+      "max": 10
+    }
+  ],
+  "items": {
+    "0": {
+      "id": "84718b469c40b1bcc7cb324b8e24e4e442f88cd913687ea2bc7b3e79d4fc4fdei0",
+      "n": "Some Name",
+      "a": [
+        0,
+        3,
+        8
+      ]
+    },
+    "1": {
+      "id": "1070d7c98304bf5ac9a5addceb13e0ce4e840641f82d71d84cebbdac427c1f4fi0",
+      "n": "Another Name",
+      "a": [
+        1,
+        2,
+        10
+      ]
+    },
+    "Signature Series 1": {
+      "id": "14a0d7c98304bf5ac9a5addceb1de0ce4e840641f82d71d84cebbdac427c1fc3i0",
+      "n": "Special",
+      "a": [
+        2,
+        3,
+        7
+      ]
+    }
+  }
+}

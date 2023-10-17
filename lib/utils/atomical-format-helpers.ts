@@ -21,6 +21,7 @@ const mintft = 'ft';
 const mintdft = 'dft';
 const update = 'mod';
 const event = 'evt';
+const storedat = 'dat';
 
 export enum AtomicalIdentifierType {
   ATOMICAL_ID = 'ATOMICAL_ID',
@@ -35,6 +36,53 @@ export interface AtomicalResolvedIdentifierReturn {
   realmName?: string;
   containerName?: string;
   tickerName?: string;
+}
+
+export const isObject = (p): boolean => {
+  if (
+    typeof p === 'object' &&
+    !Array.isArray(p) &&
+    p !== null
+  ) {
+    return true;
+  }
+  return false
+}
+
+export const encodeAtomicalIdToBinaryElementHex = (v) => {
+  if (!isAtomicalId(v)) {
+    throw new Error('Not atomical Id ' + v)
+  }
+  const result = compactIdToOutpointBytesAndHex(v);
+  return {
+    "$b": result.hex
+  };
+}
+
+export const encodeAtomicalIdToBuffer = (v) => {
+  if (!isAtomicalId(v)) {
+    throw new Error('Not atomical Id ' + v)
+  }
+  const result = compactIdToOutpointBytesAndHex(v);
+  return result.buf;
+}
+
+export const encodeIds = (jsonObject, updatedObject, encodingFunc) => {
+  if (!isObject(jsonObject)) {
+    return;
+  }
+  for (const prop in jsonObject) {
+    if (!jsonObject.hasOwnProperty(prop)) {
+      continue;
+    }
+    if (prop === 'id' && isAtomicalId(jsonObject['id'])) {
+      updatedObject[prop] = encodingFunc(jsonObject['id'])
+    } else {
+      updatedObject[prop] = jsonObject[prop]
+      encodeIds(jsonObject[prop], updatedObject[prop], encodingFunc)
+    }
+  }
+  return updatedObject;
 }
 
 /** Checks whether a string is an atomicalId, realm/subrealm name, container or ticker */
@@ -139,6 +187,18 @@ export function compactIdToOutpoint(locationId: string): string {
   return txid.toString('hex') + numberValue.toString('hex');
 }
 
+export function compactIdToOutpointBytesAndHex(locationId: string): { buf: any, hex: string } {
+  let txid: any = getTxIdFromAtomicalId(locationId);
+  txid = Buffer.from(txid, 'hex').reverse();
+  const index = getIndexFromAtomicalId(locationId);
+  let numberValue: any = Buffer.allocUnsafe(4)
+  numberValue.writeUint32LE(index);
+  return {
+    buf: Buffer.concat([txid, numberValue]),
+    hex: txid.toString('hex') + numberValue.toString('hex'),
+  }
+}
+
 export function parseAtomicalsDataDefinitionOperation(opType, script, n, hexify = false, addUtf8 = false) {
   let rawdata: any = Buffer.allocUnsafe(0)
   try {
@@ -185,13 +245,19 @@ export function extractFileFromInputWitness(inputWitness: any[], hexify = false,
         do {
           if (Buffer.isBuffer(witnessScript[i]) && witnessScript[i].toString('utf8') === markerSentinel) {
             for (; i < witnessScript.length; i++) {
-              const opType = witnessScript[i].toString('utf8');
-              if (Buffer.isBuffer(witnessScript[i]) && (opType === mintnft || opType === update || opType === mintft || opType === mintdft || opType === event)) {
-                return parseAtomicalsDataDefinitionOperation(opType, witnessScript, i + 1, hexify, addUtf8);
+              if (Buffer.isBuffer(witnessScript[i])) {
+                const opType = witnessScript[i].toString('utf8');
+                if (Buffer.isBuffer(witnessScript[i]) && (opType === mintnft || opType === update || opType === mintft || opType === mintdft || opType === event || opType == storedat)) {
+                  
+                  return parseAtomicalsDataDefinitionOperation(opType, witnessScript, i + 1, hexify, addUtf8);
+                }
               }
             }
-          }
+          }  
           i++
+          if (i >= witnessScript.length) {
+            break;
+          }
         } while (witnessScript[i] !== bitcoin.opcodes.OP_ENDIF)
       }
     }
@@ -338,7 +404,7 @@ export const isValidBitworkString = (fullstring, safety = true): BitworkInfo | n
         prefix: fullstring,
         ext: undefined
       };
-    } else if (isBitworkRefBase32Prefix(fullstring)) { 
+    } else if (isBitworkRefBase32Prefix(fullstring)) {
       const hex_encoded: string | any = isBitworkRefBase32Prefix(fullstring);
       if (!hex_encoded) {
         throw new Error('invalid base32 encoding: ' + fullstring);
@@ -359,10 +425,10 @@ export const isValidBitworkString = (fullstring, safety = true): BitworkInfo | n
     throw new Error(errMessage)
   }
 
-  let hex_prefix: any = null; 
+  let hex_prefix: any = null;
   if (isBitworkHexPrefix(splitted[0])) {
     hex_prefix = splitted[0];
-  } else if (isBitworkRefBase32Prefix(splitted[0])) { 
+  } else if (isBitworkRefBase32Prefix(splitted[0])) {
     hex_prefix = isBitworkRefBase32Prefix(splitted[0]);
     if (!hex_prefix) {
       throw new Error('invalid base32 encoding: ' + splitted[0]);

@@ -62,7 +62,8 @@ export class TransferInteractiveUtxosCommand implements CommandInterface {
     private currentOwnerAtomicalWIF: string,
     private fundingWIF: string,
     private validatedWalletInfo: IValidatedWalletInfo,
-    private satsbyte: number
+    private satsbyte: number,
+    private nofunding: boolean
   ) {
 
   }
@@ -327,8 +328,10 @@ export class TransferInteractiveUtxosCommand implements CommandInterface {
         });
         remainingBalance -= valuePart;
       }
-      if (remainingBalance > 0) {
-        throw new Error('Remaining balance was not 0')
+      if (!this.nofunding) {
+        if (remainingBalance > 0) {
+          throw new Error('Remaining balance was not 0')
+        }
       }
       console.log('Successfully allocated entire available amounts to recipients...')
       return amountsToSend;
@@ -365,11 +368,12 @@ export class TransferInteractiveUtxosCommand implements CommandInterface {
       tokenOutputsLength++;
     }
 
-    // TODO DETECT THAT THERE NEEDS TO BE CHANGE ADDED AND THEN 
-    if (tokenBalanceIn !== tokenBalanceOut) {
-      throw 'Invalid input and output does not match for token. Developer Error.'
+    if (!this.nofunding) {
+      // TODO DETECT THAT THERE NEEDS TO BE CHANGE ADDED AND THEN 
+      if (tokenBalanceIn !== tokenBalanceOut) {
+        throw 'Invalid input and output does not match for token. Developer Error.'
+      }
     }
-
     const { expectedSatoshisDeposit } = calculateUtxoFundsRequired(transferOptions.selectedUtxos.length, transferOptions.outputs.length, satsbyte, 0);
     if (expectedSatoshisDeposit < 546) {
       throw 'Invalid expectedSatoshisDeposit. Developer Error.'
@@ -384,19 +388,25 @@ export class TransferInteractiveUtxosCommand implements CommandInterface {
     console.log(`...`)
     let utxo = await this.electrumApi.waitUntilUTXO(keyPairFunding.address, expectedSatoshisDeposit, 5, false);
     console.log(`Detected UTXO (${utxo.txid}:${utxo.vout}) with value ${utxo.value} for funding the transfer operation...`);
-    // Add the funding input
-    psbt.addInput({
-      hash: utxo.txid,
-      index: utxo.outputIndex,
-      witnessUtxo: { value: utxo.value, script: keyPairFunding.output },
-      tapInternalKey: keyPairFunding.childNodeXOnlyPubkey,
-    })
-    const isMoreThanDustChangeRemaining = utxo.value - expectedSatoshisDeposit >= 546;
+
+    let basisValue = 0;
+    if (!this.nofunding) {
+      // Add the funding input
+      psbt.addInput({
+        hash: utxo.txid,
+        index: utxo.outputIndex,
+        witnessUtxo: { value: utxo.value, script: keyPairFunding.output },
+        tapInternalKey: keyPairFunding.childNodeXOnlyPubkey,
+      })
+      basisValue = utxo.value;
+    }
+
+    const isMoreThanDustChangeRemaining = basisValue - expectedSatoshisDeposit >= 546;
     if (isMoreThanDustChangeRemaining) {
       // Add change output
-      console.log(`Adding change output, remaining: ${utxo.value - expectedSatoshisDeposit}`)
+      console.log(`Adding change output, remaining: ${basisValue - expectedSatoshisDeposit}`)
       psbt.addOutput({
-        value: utxo.value - expectedSatoshisDeposit,
+        value: basisValue - expectedSatoshisDeposit,
         address: keyPairFunding.address,
       })
     }
@@ -406,9 +416,10 @@ export class TransferInteractiveUtxosCommand implements CommandInterface {
       psbt.signInput(i, keyPairAtomical.tweakedChildNode)
     }
     // Sign the final funding input
-    console.log('Signing funding input...')
-    psbt.signInput(i, keyPairFunding.tweakedChildNode)
-
+    if (!this.nofunding) {
+      console.log('Signing funding input...')
+      psbt.signInput(i, keyPairFunding.tweakedChildNode)
+    }
     psbt.finalizeAllInputs();
     const tx = psbt.extractTransaction();
     const rawtx = tx.toHex();

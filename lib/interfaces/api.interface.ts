@@ -15,6 +15,7 @@ export interface BaseRequestOptions {
     parent?: string;
     parentOwner?: IWalletRecord;
     disableMiningChalk?: boolean;
+    disableautoencode?: boolean;
 }
  
 export const BASE_REQUEST_OPTS_DEFAULTS = {
@@ -40,7 +41,7 @@ export interface APIInterface {
     // Modify methods
     enableSubrealmRules(realmOrSubrealm: string, rules: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     disableSubrealmRules(realmOrSubrealm: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    setInteractive(atomicalId: string, files: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
+    setInteractive(atomicalId: string, jsonFilename: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     deleteInteractive(atomicalId: string, keysToDelete: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     sealInteractive(atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     splatInteractive(atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
@@ -50,7 +51,7 @@ export interface APIInterface {
     // Transfer methods
     transferInteractiveNft(atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, receiveAddress: string, satsbyte: number, satsoutput: number): Promise<CommandResultInterface>;
     transferInteractiveFt(atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number): Promise<CommandResultInterface>;
-    transferInteractiveUtxos(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number): Promise<CommandResultInterface>;
+    transferInteractiveUtxos(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean): Promise<CommandResultInterface>;
     mergeInteractiveUtxos(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number): Promise<CommandResultInterface>;
 
     // Summaries of specific types of tokens such as: Realm, Container, and Tickers

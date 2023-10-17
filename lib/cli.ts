@@ -8,7 +8,8 @@ import { IValidatedWalletInfo, IWalletRecord, validateWalletStorage } from './ut
 import * as qrcode from 'qrcode-terminal';
 import { detectAddressTypeToScripthash, performAddressAliasReplacement } from './utils/address-helpers';
 import { AtomicalsGetFetchType } from './commands/command.interface';
-import { fileReader } from './utils/file-utils';
+import { fileReader, jsonFileReader, jsonFileWriter } from './utils/file-utils';
+import * as cbor from 'borc';
 dotenv.config();
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -141,22 +142,28 @@ function resolveWalletAliasNew(walletInfo: IValidatedWalletInfo, alias: string |
   throw 'No wallet alias or valid address found: ' + alias;
 }
 
-
-function resolveAddress(walletInfo: IValidatedWalletInfo, alias: string | undefined, defaultValue: any): string {
+function resolveAddress(walletInfo: IValidatedWalletInfo, alias: string | undefined, defaultValue: any): IWalletRecord | any {
+ 
   if (!alias) {
     return defaultValue;
   }
+ 
   if (walletInfo[alias]) {
-    return walletInfo[alias].address;
+ 
+    return walletInfo[alias];
   }
   if (walletInfo.imported[alias]) {
-    return walletInfo.imported[alias].address;
+
+    return walletInfo.imported[alias];
   }
 
   // As a last effort try and return the address
   try {
+ 
     detectAddressTypeToScripthash(alias)
-    return alias;
+    return {
+      address: alias
+    }
   } catch (err) {
     // Do nothing, but at least we tried
   }
@@ -242,7 +249,7 @@ program.command('wallet-init')
       console.log(`Funding address WIF: ${result.data.funding.WIF}`);
       console.log(`Funding address path: ${result.data.funding.path}`);
       console.log(`------------------------------------------------------`);
-    } catch (err) {
+    } catch (err: any) {
       console.log('Error', err);
     }
   });
@@ -271,7 +278,30 @@ program.command('address-script')
     console.log('Script:', result.output.toString('hex'))
     console.log(`------------------------------------------------------`);
   });
+/*
+program.command('encode-ids')
+  .description('Encodes all id fields in JSON document to compatible form')
+  .argument('<filename>', 'string')
+  .action(async (filename, options) => {
+    const jsonFileContents = await jsonFileReader(filename);
+    const convertedJsonFileContents = await Atomicals.encodeIds(jsonFileContents, {});
+    const c = cbor.encode(convertedJsonFileContents);
+    console.log('c', c.toString('hex').length)
+    await jsonFileWriter(filename + '.converted.json', convertedJsonFileContents);
+    console.log(`------------------------------------------------------`);
+  });*/
 
+/*
+program.command('encode-x')
+  .description('')
+  .argument('<filename>', 'string')
+  .action(async (filename, options) => {
+    const jsonFileContents = await jsonFileReader(filename);
+    const convertedJsonFileContents = await Atomicals.encodeX(jsonFileContents, {});
+    await jsonFileWriter(filename + '.x.converted.json', convertedJsonFileContents);
+    console.log(`------------------------------------------------------`);
+  });
+  */
 
 program.command('address')
   .description('Get balances and Atomicals stored at an address')
@@ -778,22 +808,23 @@ program.command('find-containers')
 program.command('set')
   .description('Set (update) an existing Atomical with data.')
   .argument('<atomicalIdAlias>', 'string')
-  .argument('<data...>', 'string')
+  .argument('<jsonFilename>', 'string')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
   .option('--satsoutput <number>', 'Satoshis to put into output', '1000')
-  .action(async (atomicalId, data, options) => {
+  .option('--disableautoencode', 'Disables auto encoding of $b variables')
+  .action(async (atomicalId, jsonFilename, options) => {
     try {
       const walletInfo = await validateWalletStorage();
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
-      console.log('ownerWalletRecord', ownerWalletRecord);
-      const result: any = await atomicals.setInteractive(atomicalId, data, fundingWalletRecord, ownerWalletRecord, {
+      const result: any = await atomicals.setInteractive(atomicalId, jsonFilename, fundingWalletRecord, ownerWalletRecord, {
         satsbyte: parseInt(options.satsbyte, 10),
-        satsoutput: parseInt(options.satsoutput, 10)
+        satsoutput: parseInt(options.satsoutput, 10),
+        disableautoencode: !!options.disableautoencode
       });
       handleResultLogging(result);
     } catch (error) {
@@ -801,6 +832,34 @@ program.command('set')
     }
   });
 
+  program.command('set-container-data')
+  .description('Update container data with json file contents')
+  .argument('<containerName>', 'string')
+  .argument('<jsonFilename>', 'string')
+  .option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
+  .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
+  .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
+  .option('--satsoutput <number>', 'Satoshis to put into output', '1000')
+  .option('--disableautoencode', 'Disables auto encoding of $b variables')
+  .action(async (containerName, jsonFilename, options) => {
+    try {
+      const walletInfo = await validateWalletStorage();
+      const config: ConfigurationInterface = validateCliInputs();
+      const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
+      let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
+      let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
+      containerName = containerName.startsWith('#') ? containerName : '#' + containerName;
+      const result: any = await atomicals.setContainerDataInteractive(containerName, jsonFilename, fundingWalletRecord, ownerWalletRecord, {
+        satsbyte: parseInt(options.satsbyte, 10),
+        satsoutput: parseInt(options.satsoutput, 10),
+        disableautoencode: !!options.disableautoencode
+      });
+      handleResultLogging(result);
+    } catch (error) {
+      console.log(error);
+    }
+  });
+ 
 program.command('emit')
   .description('Emit an event for an existing Atomical with data.')
   .argument('<atomicalIdAlias>', 'string')
@@ -1203,11 +1262,11 @@ program.command('mint-ft')
       let parentOwnerRecord = resolveWalletAliasNew(walletInfo, options.parentowner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-      let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
+      let initialOwnerRecord = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
       if (isNaN(supply)) {
         throw 'supply must be an integer';
       }
-      const result: any = await atomicals.mintFtInteractive(files, parseInt(supply), initialOwnerAddress, requestTicker, fundingRecord.WIF, {
+      const result: any = await atomicals.mintFtInteractive(files, parseInt(supply), initialOwnerRecord.address, requestTicker, fundingRecord.WIF, {
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
@@ -1320,7 +1379,7 @@ program.command('mint-nft')
       let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
       let parentOwnerRecord = resolveWalletAliasNew(walletInfo, options.parentowner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result: any = await atomicals.mintNftInteractive(files, initialOwnerAddress, fundingRecord.WIF, {
+      const result: any = await atomicals.mintNftInteractive(files, initialOwnerAddress.address, fundingRecord.WIF, {
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
@@ -1360,7 +1419,7 @@ program.command('mint-realm')
       let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
       let parentOwnerRecord = resolveWalletAliasNew(walletInfo, options.parentowner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result: any = await atomicals.mintRealmInteractive(realm, initialOwnerAddress, fundingRecord.WIF, {
+      const result: any = await atomicals.mintRealmInteractive(realm, initialOwnerAddress.address, fundingRecord.WIF, {
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
@@ -1399,7 +1458,7 @@ program.command('mint-subrealm')
       let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result: any = await atomicals.mintSubrealmInteractive(subrealm, initialOwnerAddress, fundingRecord.WIF, ownerWalletRecord, {
+      const result: any = await atomicals.mintSubrealmInteractive(subrealm, initialOwnerAddress.address, fundingRecord.WIF, ownerWalletRecord, {
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
@@ -1437,7 +1496,7 @@ program.command('mint-container')
       let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
       let parentOwnerRecord = resolveWalletAliasNew(walletInfo, options.parentowner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result: any = await atomicals.mintContainerInteractive(container, initialOwnerAddress, fundingRecord.WIF, {
+      const result: any = await atomicals.mintContainerInteractive(container, initialOwnerAddress.address, fundingRecord.WIF, {
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
@@ -1451,7 +1510,7 @@ program.command('mint-container')
         disableMiningChalk: options.disablechalk
       });
       handleResultLogging(result);
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
     }
   });
@@ -1507,25 +1566,27 @@ program.command('transfer-ft')
     }
   });
 
+// temporarily remove so people don't accidentally burn arc20
 program.command('transfer-utxos')
-  .description('Transfer plain regular UTXOs to another addresses')
-  .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
-  .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
-  .option('--satsbyte <number>', 'Satoshis per byte in   fees', '15')
-  .action(async (options) => {
-    try {
-      const walletInfo = await validateWalletStorage();
-      const satsbyte = parseInt(options.satsbyte);
-      const config: ConfigurationInterface = validateCliInputs();
-      const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-      let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
-      let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result = await atomicals.transferInteractiveUtxos(ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte);
-      handleResultLogging(result);
-    } catch (error) {
-      console.log(error);
-    }
-  });
+.description('Transfer plain regular UTXOs to another addresses')
+.option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
+.option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
+.option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
+.option('--nofunding', 'Do not ask for seperate funding, use existing utxo')
+.action(async (options) => {
+  try {
+    const walletInfo = await validateWalletStorage();
+    const satsbyte = parseInt(options.satsbyte);
+    const config: ConfigurationInterface = validateCliInputs();
+    const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
+    let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
+    let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
+    const result = await atomicals.transferInteractiveUtxos(ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, options.nofunding);
+    handleResultLogging(result);
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 program.command('merge-atomicals')
   .description('Merge Atomicals UTXOs together for test purposes')
