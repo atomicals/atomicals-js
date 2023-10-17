@@ -862,6 +862,7 @@ export class AtomicalOperationBuilder {
     * @returns 
     */
     addCommitChangeOutputIfRequired(extraInputValue: number, fee: FeeCalculations, pbst: any, address: string) {
+        console.log('addCommitChangeOutputIfRequired', extraInputValue, fee, address)
         const totalInputsValue = extraInputValue + this.getTotalAdditionalInputValues();
         const totalOutputsValue = this.getTotalAdditionalOutputValues() + fee.revealFeePlusOutputs;
         const calculatedFee = totalInputsValue - totalOutputsValue;
