@@ -60,11 +60,28 @@ export class MintInteractiveFtCommand implements CommandInterface {
   }
   async run(): Promise<any> {
 
+    let filesData = await prepareFilesDataAsObject(this.files);
+
     console.log('Initializing Direct FT Token')
     console.log('-----------------------')
-    console.log('Total Supply: ', this.supply);
+    console.log('Total Supply (Satoshis): ', this.supply);
+    console.log('Total Supply (BTC): ', this.supply / 100000000);
+    let supply = this.supply;
+    let decimals = 0;
+    if (filesData['meta'] && filesData['meta']['decimals']) {
+      decimals = parseInt(filesData['meta']['decimals'], 10);
+    }
+    console.log('Decimals: ', decimals);
+    let expandedSupply = supply;
+    if (decimals > 0) {
+      let decimalFactor = Math.pow(10, decimals);
+      expandedSupply = supply / decimalFactor
+    }
+    console.log('Total Supply (With Decimals): ', expandedSupply);
+    console.log('Data objects: ', filesData);
     console.log('-----------------------')
-    
+
+
     await promptContinue();
 
     const getExistingNameCommand = new GetByTickerCommand(this.electrumApi, this.requestTicker, AtomicalsGetFetchType.GET, undefined);
@@ -98,7 +115,6 @@ export class MintInteractiveFtCommand implements CommandInterface {
     });
 
     // Attach any default data
-    let filesData = await prepareFilesDataAsObject(this.files);
     await atomicalBuilder.setData(filesData);
     // Set to request a container
     atomicalBuilder.setRequestTicker(this.requestTicker);
