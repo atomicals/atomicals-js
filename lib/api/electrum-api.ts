@@ -53,15 +53,7 @@ export class ElectrumApi implements ElectrumApiInterface {
     }
 
     public async sendTransaction(signedRawtx: string): Promise<any> {
-        const p = new Promise((resolve, reject) => {
-            this.call('blockchain.transaction.broadcast', [signedRawtx]).then(function (result: any) {
-                resolve(result);
-            }).catch((error) => {
-                console.log('error', error);
-                reject(error);
-            })
-        });
-        return p;
+       return this.broadcast(signedRawtx);
     }
 
     public async getTx(txid: string, verbose = false): Promise<any> {

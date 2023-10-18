@@ -367,12 +367,14 @@ export class TransferInteractiveFtCommand implements CommandInterface {
           console.log('Invalid address')
           continue;
         }
-        console.log('arabbita')
         amountsToSend.push({
           address: addressPart.address,
           value: valuePart
         });
         remainingBalance -= valuePart;
+      }
+      if (remainingBalance > 0) {
+        throw new Error('Remaining balance was not 0')
       }
       console.log('Successfully allocated entire available amounts to recipients...')
       return amountsToSend;
@@ -416,7 +418,7 @@ export class TransferInteractiveFtCommand implements CommandInterface {
 
     // TODO DETECT THAT THERE NEEDS TO BE CHANGE ADDED AND THEN 
     if (tokenBalanceIn !== tokenBalanceOut) {
-      throw 'Invalid input and output does not match for token. Developer Error.'
+      //throw 'Invalid input and output does not match for token. Developer Error.'
     }
 
     const { expectedSatoshisDeposit } = calculateFTFundsRequired(transferOptions.selectedUtxos.length, transferOptions.outputs.length, satsbyte, 0);

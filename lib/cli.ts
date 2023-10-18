@@ -1506,7 +1506,7 @@ program.command('transfer-ft')
       console.log(error);
     }
   });
-/*
+
 program.command('transfer-utxos')
   .description('Transfer plain regular UTXOs to another addresses')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
@@ -1526,7 +1526,7 @@ program.command('transfer-utxos')
       console.log(error);
     }
   });
-*/
+
 program.command('merge-atomicals')
   .description('Merge Atomicals UTXOs together for test purposes')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomicals')

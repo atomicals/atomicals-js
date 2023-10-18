@@ -324,6 +324,9 @@ export class MergeInteractiveUtxosCommand implements CommandInterface {
         });
         remainingBalance -= valuePart;
       }
+      if (remainingBalance > 0) {
+        throw new Error('Remaining balance was not 0')
+      }
       console.log('Successfully allocated entire available amounts to recipients...')
       return amountsToSend;
     } finally {
