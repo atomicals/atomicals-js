@@ -1682,9 +1682,10 @@ program.command('at-location')
 // General Data Storage and Retrieval (Non-Atomicals)
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-program.command('store-dat')
+program.command('store-file')
   .description('Store general immutable data transaction that is not an NFT or FT')
-  .argument('<files...>', 'string')
+  .argument('<filepath>', 'string')
+  .argument('<givenFileName>', 'string')
   .option('--initialowner <string>', 'Initial owner wallet alias to mint the Atomical into')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
   .option('--satsoutput <number>', 'Satoshis to put into output', '1000')
@@ -1693,14 +1694,14 @@ program.command('store-dat')
   .option('--parent <string>', 'Whether to require a parent atomical to be spent along with the mint.')
   .option('--parentowner <string>', 'Wallet owner of the parent to spend along with the mint.')
   .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for mining. Improvements mining performance to set this flag')
-  .action(async (files, options) => {
+  .action(async (filepath, givenFileName, options) => {
     try {
       const walletInfo = await validateWalletStorage();
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       let walletRecord = resolveWalletAliasNew(walletInfo, options.initialowner, walletInfo.primary);
       let parentOwnerRecord = resolveWalletAliasNew(walletInfo, options.parentowner, walletInfo.primary);
-      const result: any = await atomicals.mintDatInteractive(files, walletRecord.address, walletRecord.WIF, {
+      const result: any = await atomicals.mintDatInteractive(filepath, givenFileName, walletRecord.address, walletRecord.WIF, {
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,

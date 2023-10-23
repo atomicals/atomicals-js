@@ -36,7 +36,7 @@ export interface APIInterface {
     initDftInteractive(files: string[], address: string, requestTicker: string, mintAmount: number, maxMints: number, mintHeight: number, mintBitworkc: string, mintBitworkr: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
     
     // Create data transaction (Non-Atomical/Non-Token)
-    mintDatInteractive(files: string[], address: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
+    mintDatInteractive(filepath: string, givenFileName: string, address: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
 
     // Modify methods
     enableSubrealmRules(realmOrSubrealm: string, rules: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;

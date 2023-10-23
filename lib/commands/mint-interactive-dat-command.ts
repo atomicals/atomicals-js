@@ -7,7 +7,7 @@ bitcoin.initEccLib(ecc);
 import {
   initEccLib,
 } from "bitcoinjs-lib";
-import { prepareFilesDataAsObject } from "./command-helpers";
+import { prepareFilesDataAsObject, readFileAsCompleteDataObject } from "./command-helpers";
 import { AtomicalOperationBuilder } from "../utils/atomical-operation-builder";
 import { BaseRequestOptions } from "../interfaces/api.interface";
 import { checkBaseRequestOptions } from "../utils/atomical-format-helpers";
@@ -15,10 +15,10 @@ const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 initEccLib(tinysecp as any);
 const ECPair: ECPairAPI = ECPairFactory(tinysecp);
 export class MintInteractiveDatCommand implements CommandInterface {
-
   constructor(
     private electrumApi: ElectrumApiInterface,
-    private files: string[],
+    private filepath: string,
+    private givenFileName: string,
     private address: string,
     private fundingWIF: string,
     private options: BaseRequestOptions
@@ -40,7 +40,8 @@ export class MintInteractiveDatCommand implements CommandInterface {
       init: this.options.init,
     });
     // Attach any default data
-    let filesData = await prepareFilesDataAsObject(this.files);
+    let filesData = await readFileAsCompleteDataObject(this.filepath, this.givenFileName);
+    console.log('filesData', filesData);
     await atomicalBuilder.setData(filesData);
     // Attach any requested bitwork
     if (this.options.bitworkc) {

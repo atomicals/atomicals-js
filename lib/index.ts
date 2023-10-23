@@ -234,10 +234,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async mintDatInteractive(files: string[], address: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async mintDatInteractive(filepath: string, givenFileName: string, address: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new MintInteractiveDatCommand(this.electrumApi, files, address, WIF, options);
+      const command: CommandInterface = new MintInteractiveDatCommand(this.electrumApi, filepath, givenFileName, address, WIF, options);
       return await command.run();
     } catch (error: any) {
       return {

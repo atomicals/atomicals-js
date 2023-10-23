@@ -229,6 +229,13 @@ export const prepareFilesData = async (fields: string[]) => {
     return filesData;
 }
 
+export const readFileAsCompleteDataObject = async (filePath, givenFileName) => {
+    const fileContents: any = await fileReader(filePath);
+    return {
+        [givenFileName]: fileContents
+    };
+}
+ 
 export const prepareFilesDataAsObject = async (fields: string[], disableAutoncode = false) => {
     let fieldDataObject = {};
     for (const entry of fields) {

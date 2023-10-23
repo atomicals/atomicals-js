@@ -473,7 +473,7 @@ export class AtomicalOperationBuilder {
             copiedData['args'] = copiedData['args'] || {};
             copiedData['args']['parents'] = { [parentAtomicalInfo.parentId]: 0 }; // Also supports one parent for now
         }
-        console.log('Payload Encoded: ', JSON.stringify(copiedData,null, 2));
+        console.log('Payload Encoded: ', copiedData);
 
         let unixtime = Math.floor(Date.now() / 1000);
         let nonce = Math.floor(Math.random() * 10000000);
