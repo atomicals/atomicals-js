@@ -721,11 +721,14 @@ export class AtomicalOperationBuilder {
             success: true,
             data: {
                 commitTxid,
-                revealTxid
+                revealTxid,
             }
         }
         if (this.options.opType === 'nft' || this.options.opType === 'ft' || this.options.opType === 'dft') {
             ret['data']['atomicalId'] = atomicalId;
+        }
+        if (this.options.opType === 'dat') {
+            ret['data']['dataId'] = revealTxid + 'i0';
         }
         return ret;
     }
