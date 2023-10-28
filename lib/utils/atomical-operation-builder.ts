@@ -473,8 +473,8 @@ export class AtomicalOperationBuilder {
             copiedData['args'] = copiedData['args'] || {};
             copiedData['args']['parents'] = { [parentAtomicalInfo.parentId]: 0 }; // Also supports one parent for now
         }
-        console.log('Payload Encoded: ', copiedData);
 
+        
         let unixtime = Math.floor(Date.now() / 1000);
         let nonce = Math.floor(Math.random() * 10000000);
         let noncesGenerated = 0;
@@ -483,6 +483,13 @@ export class AtomicalOperationBuilder {
         let revealTxid: string | null = null;
         let commitMinedWithBitwork = false;
         const mockAtomPayload = new AtomicalsPayload(copiedData);
+        const payloadSize = mockAtomPayload.cbor().length
+        console.log('Payload CBOR Size (bytes): ', payloadSize);
+
+        if (payloadSize <= 1000) {
+            console.log('Payload Encoded: ', copiedData);
+        }
+
         const mockBaseCommitForFeeCalculation: { scriptP2TR, hashLockP2TR } = prepareCommitRevealConfig(this.options.opType, fundingKeypair, mockAtomPayload)
         const fees: FeeCalculations = this.calculateFeesRequiredForAccumulatedCommitAndReveal(mockBaseCommitForFeeCalculation.hashLockP2TR.redeem.output.length);
         ////////////////////////////////////////////////////////////////////////

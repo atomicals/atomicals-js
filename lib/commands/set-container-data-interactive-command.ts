@@ -30,7 +30,6 @@ export class SetContainerDataInteractiveCommand implements CommandInterface {
     logBanner(`Set Container Data Interactive`);
     // Attach any default data
     let filesData = await readJsonFileAsCompleteDataObject(this.filename, true);
-    console.log('filesData', filesData);
     const { atomicalInfo, locationInfo, inputUtxoPartial } = await getAndCheckAtomicalInfo(this.electrumApi, this.containerName, this.owner.address, 'NFT', 'container');
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
