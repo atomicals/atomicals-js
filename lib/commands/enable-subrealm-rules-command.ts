@@ -47,6 +47,8 @@ export class EnableSubrealmRulesCommand implements CommandInterface {
       init: this.options.init,
     });
     await atomicalBuilder.setData(filesData);
+      // Just add some bitwork to make it use the funding address
+      atomicalBuilder.setBitworkCommit('1');
     // Add the atomical to update
     atomicalBuilder.addInputUtxo(inputUtxoPartial, this.owner.WIF)
     // The receiver output

@@ -80,6 +80,10 @@ export class InitInteractiveDftCommand implements CommandInterface {
       decimals = parseInt(filesData['meta']['decimals'], 10);
     }
     console.log('Decimals: ', decimals);
+
+    if (!decimals || decimals === 0) {
+      console.log('RECOMMENDATION: USE AT LEAST DECIMALS 1 OR 2');
+    }
     let expandedSupply = supply;
     if (decimals > 0) {
       let decimalFactor = Math.pow(10, decimals);

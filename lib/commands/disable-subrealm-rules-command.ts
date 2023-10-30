@@ -21,19 +21,15 @@ export class DisableSubrealmRulesInteractiveCommand implements CommandInterface 
   constructor(
     private electrumApi: ElectrumApiInterface,
     private atomicalId: string,
-    private owner: IWalletRecord,
     private funding: IWalletRecord,
+    private owner: IWalletRecord,
     private options: BaseRequestOptions
   ) {
   }
   async run(): Promise<any> {
     logBanner(`Disable Subrealm Minting Rules Interactive`);
     
-    const { atomicalInfo, locationInfo, inputUtxoPartial } = await getAndCheckAtomicalInfo(this.electrumApi, this.atomicalId, this.owner.address);
-
-    if (atomicalInfo.subtype !== 'realm' || atomicalInfo.subtype !== 'subrealm') {
-      throw new Error('Must be realm or subrealm')
-    }
+    const { atomicalInfo, locationInfo, inputUtxoPartial } = await getAndCheckAtomicalInfo(this.electrumApi, this.atomicalId, this.owner.address, 'NFT', null);
 
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
@@ -53,17 +49,19 @@ export class DisableSubrealmRulesInteractiveCommand implements CommandInterface 
       subrealms: true,
       $a: 1
     });
-    // Add the atomical to update
-    atomicalBuilder.addInputUtxo(inputUtxoPartial, this.owner.WIF)
+    // Just add some bitwork to make it use the funding address
+    atomicalBuilder.setBitworkCommit('1');
 
     // Add the atomical to update
     atomicalBuilder.addInputUtxo(inputUtxoPartial, this.owner.WIF)
-    // The receiver output
-      atomicalBuilder.addOutput({
-        address: this.owner.address,
-        value: this.options.satsoutput as any || 1000
-      });
-      
+  // The receiver output
+    atomicalBuilder.addOutput({
+      address: this.owner.address,
+      value: this.options.satsoutput as any || 1000
+    });
+    
+
+
     const result = await atomicalBuilder.start(this.funding.WIF);
     return {
       success: true,

@@ -572,7 +572,7 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async transferInteractiveUtxos(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean): Promise<CommandResultInterface> {
+  async transferInteractiveUtxos(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt?: string): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new TransferInteractiveUtxosCommand(
@@ -581,7 +581,8 @@ export class Atomicals implements APIInterface {
         funding.WIF,
         validatedWalletInfo,
         satsbyte,
-        nofunding);
+        nofunding,
+        atomicalIdReceipt);
       return await command.run();
     } catch (error: any) {
       return {

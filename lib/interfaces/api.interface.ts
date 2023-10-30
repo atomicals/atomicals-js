@@ -47,9 +47,8 @@ export interface APIInterface {
     splatInteractive(atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     splitItneractive(atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     
-
     // Transfer methods
-    transferInteractiveNft(atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, receiveAddress: string, satsbyte: number, satsoutput: number): Promise<CommandResultInterface>;
+    transferInteractiveNft(atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, receiveAddress: string, satsbyte: number, satsoutput: number, atomicalIdReceipt?: string): Promise<CommandResultInterface>;
     transferInteractiveFt(atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, atomicalIdReceipt?: string): Promise<CommandResultInterface>;
     transferInteractiveUtxos(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean): Promise<CommandResultInterface>;
     mergeInteractiveUtxos(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number): Promise<CommandResultInterface>;

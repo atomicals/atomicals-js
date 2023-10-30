@@ -1163,7 +1163,7 @@ program.command('enable-subrealms')
     }
   });
 
-program.command('disable-subrealm-mints')
+program.command('disable-subrealms')
   .description('Delete the subrealm minting rules for a realm or subrealm')
   .argument('<realmOrSubRealm>', 'string')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
@@ -1560,6 +1560,7 @@ program.command('transfer-utxos')
 .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
 .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
 .option('--nofunding', 'Do not ask for seperate funding, use existing utxo')
+.option('--atomicalreceipt <string>', 'Attach an atomical id to a pay receipt')
 .action(async (options) => {
   try {
     const walletInfo = await validateWalletStorage();
@@ -1568,7 +1569,8 @@ program.command('transfer-utxos')
     const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
     let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
     let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-    const result = await atomicals.transferInteractiveUtxos(ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, options.nofunding);
+    const atomicalIdReceipt = options.atomicalreceipt;
+    const result = await atomicals.transferInteractiveUtxos(ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, options.nofunding, atomicalIdReceipt);
     handleResultLogging(result);
   } catch (error) {
     console.log(error);

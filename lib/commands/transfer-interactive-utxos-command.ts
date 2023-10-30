@@ -18,6 +18,8 @@ import { getKeypairInfo, KeyPairInfo } from "../utils/address-keypair-path";
 import { NETWORK, calculateUtxoFundsRequired, logBanner } from "./command-helpers";
 import { onlyUnique } from "../utils/utils";
 import { IValidatedWalletInfo } from "../utils/validate-wallet-storage";
+import { compactIdToOutpoint, isAtomicalId } from "../utils/atomical-format-helpers";
+import { ATOMICALS_PROTOCOL_ENVELOPE_ID } from "../types/protocol-tags";
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 initEccLib(tinysecp as any);
 const ECPair: ECPairAPI = ECPairFactory(tinysecp);
@@ -63,11 +65,15 @@ export class TransferInteractiveUtxosCommand implements CommandInterface {
     private fundingWIF: string,
     private validatedWalletInfo: IValidatedWalletInfo,
     private satsbyte: number,
-    private nofunding: boolean
+    private nofunding: boolean,
+    private atomicalIdReceipt?: string,
   ) {
 
   }
   async run(): Promise<any> {
+    if (this.atomicalIdReceipt && !isAtomicalId(this.atomicalIdReceipt)) {
+      throw new Error('AtomicalId receipt is not a valid atomical id')
+    }
     const keypairAtomical = ECPair.fromWIF(this.currentOwnerAtomicalWIF);
     const keypairFunding = ECPair.fromWIF(this.fundingWIF);
 
@@ -366,6 +372,20 @@ export class TransferInteractiveUtxosCommand implements CommandInterface {
       });
       tokenBalanceOut += output.value;
       tokenOutputsLength++;
+    }
+
+    if (this.atomicalIdReceipt) {
+      const outpoint = compactIdToOutpoint(this.atomicalIdReceipt);
+      console.log('outpoint', outpoint);
+      const atomEnvBuf = Buffer.from(ATOMICALS_PROTOCOL_ENVELOPE_ID, 'utf8');
+      const payOpBuf = Buffer.from('p', 'utf8');
+      const outpointBuf = Buffer.from(outpoint, 'hex')
+      const embed = bitcoin.payments.embed({ data: [atomEnvBuf, payOpBuf, outpointBuf] });
+      const paymentRecieptOpReturn = embed.output!
+      psbt.addOutput({
+        script: paymentRecieptOpReturn,
+        value: 0,
+      })
     }
 
     if (!this.nofunding) {
