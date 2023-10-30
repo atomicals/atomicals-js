@@ -9,12 +9,69 @@ import * as qrcode from 'qrcode-terminal';
 import { detectAddressTypeToScripthash, performAddressAliasReplacement } from './utils/address-helpers';
 import { AtomicalsGetFetchType } from './commands/command.interface';
 import { fileReader, jsonFileReader, jsonFileWriter } from './utils/file-utils';
+import * as bpath  from 'path';
 import * as cbor from 'borc';
+import * as fs from 'fs';
+import { fork } from 'child_process';
+import * as path from 'path';
 dotenv.config();
+
+// 创建子进程
+const child = fork(path.join(__dirname, 'work.js'));
+
+
+
+// 监听来自子进程的消息
+child.on('message', (message: string) => {
+    console.log('Received message from worker:', message);
+});
+
+
+
+const miss_id_file = '/realmdata/miss_ids.csv'
+const atommap_svg_folder = '/realmdata/atommap_svg_final'
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // General Helper Functions
 /////////////////////////////////////////////////////////////////////////////////////////////
+
+let lastIds = []
+let cId = ""
+// 1. 从 has_ids.csv 读取所有的 ID
+function readIdsFromCSV(filename) {
+    const content = fs.readFileSync(filename, 'utf-8');
+    const lines = content.split('\n').map(line => line.replace(/\r/g, '')).slice(1); // 去掉标题行并移除 \r
+    return lines.filter(line => line.trim() !== ''); // 过滤空行
+}
+
+function isLiangHao(ids) {
+	if(ids.length > 0){
+		return ids[Math.floor(Math.random()*ids.length)]
+	}else{
+		return null;  // 如果没有匹配的规则，返回null
+	}
+
+    
+}
+
+// 从 miss_id.csv 中提取靓号
+function extractLiangHaoFromCSV(filename){
+    const ids = readIdsFromCSV(filename);
+    const matchedRule = isLiangHao(ids);
+    if (matchedRule) {
+        console.log(`ID ${matchedRule}`);
+		lastIds.push(matchedRule as never)
+		return matchedRule;
+    } 
+    return ids[0];
+}
+
+
+export let globalFlag = true;
+
+
+//add by haoren
+
 function printOperationResult(data: any, error?: boolean) {
   console.log(JSON.stringify(data, null, 2));
 }
