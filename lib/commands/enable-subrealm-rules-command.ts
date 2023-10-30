@@ -7,7 +7,7 @@ bitcoin.initEccLib(ecc);
 import {
   initEccLib,
 } from "bitcoinjs-lib";
-import { getAndCheckAtomicalInfo, logBanner, prepareFilesDataAsObject } from "./command-helpers";
+import { getAndCheckAtomicalInfo, logBanner, prepareFilesDataAsObject, readJsonFileAsCompleteDataObject } from "./command-helpers";
 import { AtomicalOperationBuilder } from "../utils/atomical-operation-builder";
 import { BaseRequestOptions } from "../interfaces/api.interface";
 import { IWalletRecord } from "../utils/validate-wallet-storage";
@@ -20,7 +20,7 @@ export class EnableSubrealmRulesCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
     private atomicalId: string,
-    private files: string[],
+    private file: string,
     private funding: IWalletRecord,
     private owner: IWalletRecord,
     private options: BaseRequestOptions
@@ -30,7 +30,7 @@ export class EnableSubrealmRulesCommand implements CommandInterface {
   async run(): Promise<any> {
     logBanner(`Enable Subrealm Rules Interactive`);
     // Attach any default data
-    let filesData = await prepareFilesDataAsObject(this.files);
+    let filesData = await readJsonFileAsCompleteDataObject(this.file, false);
     // validateSubrealmRulesObject(filesData);
     const { atomicalInfo, locationInfo, inputUtxoPartial } = await getAndCheckAtomicalInfo(this.electrumApi, this.atomicalId, this.owner.address, 'NFT', null);
     const atomicalBuilder = new AtomicalOperationBuilder({

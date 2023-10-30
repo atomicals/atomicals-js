@@ -6,7 +6,7 @@ import { ElectrumApi } from './api/electrum-api';
 import { validateCliInputs } from './utils/validate-cli-inputs';
 import { IValidatedWalletInfo, IWalletRecord, validateWalletStorage } from './utils/validate-wallet-storage';
 import * as qrcode from 'qrcode-terminal';
-import { detectAddressTypeToScripthash, performAddressAliasReplacement } from './utils/address-helpers';
+import { detectAddressTypeToScripthash, detectAddressTypeToScripthash2, detectScriptToAddressType, performAddressAliasReplacement } from './utils/address-helpers';
 import { AtomicalsGetFetchType } from './commands/command.interface';
 import { fileReader, jsonFileReader, jsonFileWriter } from './utils/file-utils';
 import * as cbor from 'borc';
@@ -278,30 +278,15 @@ program.command('address-script')
     console.log('Script:', result.output.toString('hex'))
     console.log(`------------------------------------------------------`);
   });
-/*
-program.command('encode-ids')
-  .description('Encodes all id fields in JSON document to compatible form')
-  .argument('<filename>', 'string')
-  .action(async (filename, options) => {
-    const jsonFileContents = await jsonFileReader(filename);
-    const convertedJsonFileContents = await Atomicals.encodeIds(jsonFileContents, {});
-    const c = cbor.encode(convertedJsonFileContents);
-    console.log('c', c.toString('hex').length)
-    await jsonFileWriter(filename + '.converted.json', convertedJsonFileContents);
-    console.log(`------------------------------------------------------`);
-  });*/
 
-/*
-program.command('encode-x')
-  .description('')
-  .argument('<filename>', 'string')
-  .action(async (filename, options) => {
-    const jsonFileContents = await jsonFileReader(filename);
-    const convertedJsonFileContents = await Atomicals.encodeX(jsonFileContents, {});
-    await jsonFileWriter(filename + '.x.converted.json', convertedJsonFileContents);
+  program.command('script-address')
+  .description('Decodes a script as an address')
+  .argument('<script>', 'string')
+  .action(async (script, options) => {
+    const result = detectScriptToAddressType(script)
+    console.log('Address:', result)
     console.log(`------------------------------------------------------`);
   });
-  */
 
 program.command('address')
   .description('Get balances and Atomicals stored at an address')
@@ -1149,7 +1134,7 @@ program.command('events')
 program.command('enable-subrealms')
   .description('Set and enable subrealm minting rules for a realm or subrealm')
   .argument('<realmOrSubRealm>', 'string')
-  .argument('<files...>')
+  .argument('<file>')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
@@ -1157,7 +1142,7 @@ program.command('enable-subrealms')
   .option('--bitworkc <string>', 'Whether to add any bitwork proof of work to the commit tx')
   .option('--bitworkr <string>', 'Whether to add any bitwork proof of work to the reveal tx.')
   .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for mining. Improvements mining performance to set this flag')
-  .action(async (realmOrSubRealm, files, options) => {
+  .action(async (realmOrSubRealm, file, options) => {
     try {
       const walletInfo = await validateWalletStorage();
       const config: ConfigurationInterface = validateCliInputs();
@@ -1165,7 +1150,7 @@ program.command('enable-subrealms')
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       const realmOrSubRealmAdded = realmOrSubRealm.indexOf('+') === 0 ? realmOrSubRealm : '+' + realmOrSubRealm;
-      const result: any = await atomicals.enableSubrealmRules(realmOrSubRealmAdded, files, fundingWalletRecord, ownerWalletRecord, {
+      const result: any = await atomicals.enableSubrealmRules(realmOrSubRealmAdded, file, fundingWalletRecord, ownerWalletRecord, {
         satsbyte: parseInt(options.satsbyte),
         satsoutput: parseInt(options.satsoutput),
         bitworkc: options.bitworkc,
@@ -1550,7 +1535,8 @@ program.command('transfer-ft')
   .argument('<atomicalId>', 'string')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
-  .option('--satsbyte <number>', 'Satoshis per byte in   fees', '15')
+  .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
+  .option('--atomicalreceipt <string>', 'Attach an atomical id to a pay receipt')
   .action(async (atomicalId, options) => {
     try {
       const walletInfo = await validateWalletStorage();
@@ -1559,7 +1545,8 @@ program.command('transfer-ft')
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result = await atomicals.transferInteractiveFt(atomicalId, ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte);
+      const atomicalIdReceipt = options.atomicalreceipt;
+      const result = await atomicals.transferInteractiveFt(atomicalId, ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, atomicalIdReceipt);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);

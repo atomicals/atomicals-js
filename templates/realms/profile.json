@@ -2,7 +2,7 @@
     "$path": "/",
     "v": "v1",
     "name": "Lorem Ipsum",
-    "image": "atom:btc:<atomicalId>/#image.jpg",
+    "image": "atom:btc:id:<atomicalId>/image.jpg",
     "banner": "",
     "btc": "btc address to receive donations",
     "doge": "doge address to receive donations",
