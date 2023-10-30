@@ -381,10 +381,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async enableSubrealmRules(realmOrSubrealm: string, files: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async enableSubrealmRules(realmOrSubrealm: string, file: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new EnableSubrealmRulesCommand(this.electrumApi, realmOrSubrealm, files, funding, atomicalOwner, options);
+      const command: CommandInterface = new EnableSubrealmRulesCommand(this.electrumApi, realmOrSubrealm, file, funding, atomicalOwner, options);
       return await command.run();
     } catch (error: any) {
       return {
@@ -548,7 +548,7 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async transferInteractiveFt(atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number): Promise<CommandResultInterface> {
+  async transferInteractiveFt(atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, atomicalIdReceipt: string): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new TransferInteractiveFtCommand(
@@ -557,7 +557,9 @@ export class Atomicals implements APIInterface {
         owner.WIF,
         funding.WIF,
         validatedWalletInfo,
-        satsbyte);
+        satsbyte,
+        atomicalIdReceipt
+      );
       return await command.run();
     } catch (error: any) {
       return {

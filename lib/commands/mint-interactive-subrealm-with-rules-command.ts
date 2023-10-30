@@ -68,7 +68,7 @@ export class MintInteractiveSubrealmWithRulesCommand implements CommandInterface
     console.log(`% npm cli realm-info ${this.requestSubrealm}`)
     console.log('getSubrealmReponse', getSubrealmReponse);
     console.log(`*** We detected that the expected active rules list for the next block (${getSubrealmReponse.data.nearest_parent_realm_subrealm_mint_rules.current_height}) are: ***`)
-    console.log(getSubrealmReponse.data.nearest_parent_realm_subrealm_mint_rules.current_height_rules);
+    console.log(JSON.stringify(getSubrealmReponse.data.nearest_parent_realm_subrealm_mint_rules.current_height_rules, null, 2));
     let index = 0;
     let matchedAtLeastOneRule = false
 
@@ -76,11 +76,13 @@ export class MintInteractiveSubrealmWithRulesCommand implements CommandInterface
       !Object.keys(getSubrealmReponse.data.nearest_parent_realm_subrealm_mint_rules.current_height_rules).length) {
       throw new Error('The requested subrealm does not have any rules for the current height. Aborting...')
     }
-
+    let bitworkc;
+    let bitworkr;
     for (const price_point of getSubrealmReponse.data.nearest_parent_realm_subrealm_mint_rules.current_height_rules) {
-      console.log('price_point', price_point);
       const regexRule = price_point.p;
       const outputRulesMap = price_point.o;
+      bitworkc = price_point.bitworkc;
+      bitworkr = price_point.bitworkr;
       const modifiedPattern = '^' + regexRule + '$';
       let regexPattern;
       try {
@@ -133,7 +135,16 @@ export class MintInteractiveSubrealmWithRulesCommand implements CommandInterface
           outputNum++;
         }
 
+        if (bitworkr) {
+          console.log('Bitworkr required: ', bitworkr);
+        }
+
+        if (bitworkc) {
+          console.log('Bitworkc required: ', bitworkc);
+        }
+
         matchedAtLeastOneRule = true;
+        break;
       }
       index++;
     }
@@ -162,11 +173,11 @@ export class MintInteractiveSubrealmWithRulesCommand implements CommandInterface
       atomicalBuilder.setContainerMembership(this.options.container);
     }
     // Attach any requested bitwork
-    if (this.options.bitworkc) {
-      atomicalBuilder.setBitworkCommit(this.options.bitworkc);
+    if (bitworkc || this.options.bitworkc) {
+      atomicalBuilder.setBitworkCommit(bitworkc || this.options.bitworkc);
     }
-    if (this.options.bitworkr) {
-      atomicalBuilder.setBitworkReveal(this.options.bitworkr);
+    if (bitworkr || this.options.bitworkr) {
+      atomicalBuilder.setBitworkReveal(bitworkr || this.options.bitworkr);
     }
      // The receiver output
      atomicalBuilder.addOutput({

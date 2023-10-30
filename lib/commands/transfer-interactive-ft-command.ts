@@ -20,9 +20,10 @@ import { getKeypairInfo, KeyPairInfo } from "../utils/address-keypair-path";
 import { NETWORK, calculateFTFundsRequired, calculateFundsRequired, logBanner } from "./command-helpers";
 import { onlyUnique } from "../utils/utils";
 import { IValidatedWalletInfo } from "../utils/validate-wallet-storage";
-import { AtomicalIdentifierType, AtomicalResolvedIdentifierReturn, getAtomicalIdentifierType } from "../utils/atomical-format-helpers";
+import { AtomicalIdentifierType, AtomicalResolvedIdentifierReturn, compactIdToOutpoint, getAtomicalIdentifierType, isAtomicalId } from "../utils/atomical-format-helpers";
 import { GetCommand } from "./get-command";
 import { GetByTickerCommand } from "./get-by-ticker-command";
+import { ATOMICALS_PROTOCOL_ENVELOPE_ID } from "../types/protocol-tags";
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 initEccLib(tinysecp as any);
 const ECPair: ECPairAPI = ECPairFactory(tinysecp);
@@ -78,11 +79,15 @@ export class TransferInteractiveFtCommand implements CommandInterface {
     private currentOwnerAtomicalWIF: string,
     private fundingWIF: string,
     private validatedWalletInfo: IValidatedWalletInfo,
-    private satsbyte: number
+    private satsbyte: number,
+    private atomicalIdReceipt: string
   ) {
 
   }
   async run(): Promise<any> {
+    if (this.atomicalIdReceipt && !isAtomicalId(this.atomicalIdReceipt)) {
+      throw new Error('AtomicalId receipt is not a valid atomical id')
+    }
     const keypairAtomical = ECPair.fromWIF(this.currentOwnerAtomicalWIF);
     const keypairFunding = ECPair.fromWIF(this.fundingWIF);
     const keypairFundingInfo: KeyPairInfo = getKeypairInfo(keypairFunding)
@@ -406,7 +411,6 @@ export class TransferInteractiveFtCommand implements CommandInterface {
     }
 
 
- 
     for (const output of transferOptions.outputs) {
       psbt.addOutput({
         value: output.value,
@@ -414,6 +418,20 @@ export class TransferInteractiveFtCommand implements CommandInterface {
       });
       tokenBalanceOut += output.value;
       tokenOutputsLength++;
+    }
+
+    if (this.atomicalIdReceipt) {
+      const outpoint = compactIdToOutpoint(this.atomicalIdReceipt);
+      console.log('outpoint', outpoint);
+      const atomEnvBuf = Buffer.from(ATOMICALS_PROTOCOL_ENVELOPE_ID, 'utf8');
+      const payOpBuf = Buffer.from('p', 'utf8');
+      const outpointBuf = Buffer.from(outpoint, 'hex')
+      const embed = bitcoin.payments.embed({ data: [atomEnvBuf, payOpBuf, outpointBuf] });
+      const paymentRecieptOpReturn = embed.output!
+      psbt.addOutput({
+        script: paymentRecieptOpReturn,
+        value: 0,
+      })
     }
 
     // TODO DETECT THAT THERE NEEDS TO BE CHANGE ADDED AND THEN 

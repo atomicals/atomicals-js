@@ -338,8 +338,8 @@ export class AtomicalOperationBuilder {
             return;
         }
         this.bitworkInfoCommit = isValidBitworkString(bitworkString);
-
     }
+
     setBitworkReveal(bitworkString: string | undefined) {
         if (!bitworkString) {
             return;
@@ -621,7 +621,6 @@ export class AtomicalOperationBuilder {
             // The reason is the caller knows the context to create them in
             // Add any additional outputs that were assigned
             for (const additionalOutput of this.additionalOutputs) {
-                console.log('additional', additionalOutput);
                 psbt.addOutput({
                     address: additionalOutput.address,
                     value: additionalOutput.value,
@@ -637,7 +636,6 @@ export class AtomicalOperationBuilder {
                     tapInternalKey: parentAtomicalInfo.parentKeyInfo.childNodeXOnlyPubkey
                 });
                 totalInputsforReveal += parentAtomicalInfo.parentUtxoPartial.witnessUtxo.value;
-                //  console.log('parent', parentAtomicalInfo.parentKeyInfo.address, parentAtomicalInfo.parentUtxoPartial.witnessUtxo.value);
                 psbt.addOutput({
                     address: parentAtomicalInfo.parentKeyInfo.address,
                     value: parentAtomicalInfo.parentUtxoPartial.witnessUtxo.value,

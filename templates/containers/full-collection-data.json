@@ -1,16 +1,30 @@
 {
   "name": "Collection Name",
   "desc": "Collection description",
-  "image": "atom:btc:id:0b95c7286d9437cc55f3fab6d01e0d2d4ea8a38ed6e6dc570ed516ee8f5c74e7i0/bitcoin.png",
+  "image": "atom:btc:dat:<location of store-file data>/image.png",
   "legal": {
     "terms": "...",
     "license": "CC"
   },
   "links": {
-    "x": "https://x./com/...",
-    "website": "https://...",
-    "realmtree": "atom:btc:realm:mycoolcollection",
-    "discord": "https://discord.gg/..."
+    "x": {
+      "v": "https://x./com/..."
+    },
+    "website": {
+      "v": "https://..."
+    },
+    "art-assets.zip": {
+      "v": "atom:btc:dat:<dat_id>/assets.zip"
+    },
+    "realm": {
+      "v": "atom:btc:realm:myrealmname.subrealm"
+    },
+    "othercontainer": {
+      "v": "atom:btc:container:relatedcollection-of-cool-things"
+    },
+    "discord": {
+      "v": "https://discord.gg/..."
+    }
   },
   "attrs": [
     {
