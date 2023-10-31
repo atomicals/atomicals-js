@@ -177,6 +177,18 @@ export function getIndexFromAtomicalId(atomicalId: string): number {
   return parseInt(atomicalId.split('i')[1], 10)
 }
 
+export function outpointToCompactId(outpointHex: string): string {
+  if (outpointHex.length !== 72) {
+    throw new Error('Invalid outpoint hex')
+  }
+  const txidPart = outpointHex.substring(0, 64);
+  const numPart = outpointHex.substring(64);
+  const txid = Buffer.from(txidPart, 'hex').reverse().toString('hex')
+  let indexNum = Buffer.from(numPart, 'hex').readUint32LE();
+  let compactId = txid + 'i' + indexNum;
+  return compactId;
+}
+
 /** Convert a location_id or atomical_id to the outpoint (36 bytes hex string) */
 export function compactIdToOutpoint(locationId: string): string {
   let txid: any = getTxIdFromAtomicalId(locationId);

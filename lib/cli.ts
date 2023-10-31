@@ -10,6 +10,8 @@ import { detectAddressTypeToScripthash, detectAddressTypeToScripthash2, detectSc
 import { AtomicalsGetFetchType } from './commands/command.interface';
 import { fileReader, jsonFileReader, jsonFileWriter } from './utils/file-utils';
 import * as cbor from 'borc';
+import { toOutputScript } from 'bitcoinjs-lib/src/address';
+import { compactIdToOutpoint, outpointToCompactId } from './utils/atomical-format-helpers';
 dotenv.config();
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -143,13 +145,13 @@ function resolveWalletAliasNew(walletInfo: IValidatedWalletInfo, alias: string |
 }
 
 function resolveAddress(walletInfo: IValidatedWalletInfo, alias: string | undefined, defaultValue: any): IWalletRecord | any {
- 
+
   if (!alias) {
     return defaultValue;
   }
- 
+
   if (walletInfo[alias]) {
- 
+
     return walletInfo[alias];
   }
   if (walletInfo.imported[alias]) {
@@ -159,7 +161,7 @@ function resolveAddress(walletInfo: IValidatedWalletInfo, alias: string | undefi
 
   // As a last effort try and return the address
   try {
- 
+
     detectAddressTypeToScripthash(alias)
     return {
       address: alias
@@ -279,12 +281,31 @@ program.command('address-script')
     console.log(`------------------------------------------------------`);
   });
 
-  program.command('script-address')
+program.command('script-address')
   .description('Decodes a script as an address')
   .argument('<script>', 'string')
   .action(async (script, options) => {
     const result = detectScriptToAddressType(script)
     console.log('Address:', result)
+    console.log(`------------------------------------------------------`);
+  });
+
+
+program.command('outpoint-compact')
+  .description('Decodes hex outpoint to compact location id form')
+  .argument('<hex>', 'string')
+  .action(async (hex, options) => {
+    const result = outpointToCompactId(hex);
+    console.log('result:', result)
+    console.log(`------------------------------------------------------`);
+  });
+
+program.command('compact-outpoint')
+  .description('Encodes the compact id to outpoint hex format')
+  .argument('<compactId>', 'string')
+  .action(async (compactId, options) => {
+    const result = compactIdToOutpoint(compactId);
+    console.log('result:', result)
     console.log(`------------------------------------------------------`);
   });
 
@@ -817,7 +838,7 @@ program.command('set')
     }
   });
 
-  program.command('set-container-data')
+program.command('set-container-data')
   .description('Update container data with json file contents')
   .argument('<containerName>', 'string')
   .argument('<jsonFilename>', 'string')
@@ -844,7 +865,7 @@ program.command('set')
       console.log(error);
     }
   });
- 
+
 program.command('emit')
   .description('Emit an event for an existing Atomical with data.')
   .argument('<atomicalIdAlias>', 'string')
@@ -1555,27 +1576,27 @@ program.command('transfer-ft')
 
 // temporarily remove so people don't accidentally burn arc20
 program.command('transfer-utxos')
-.description('Transfer plain regular UTXOs to another addresses')
-.option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
-.option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
-.option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
-.option('--nofunding', 'Do not ask for seperate funding, use existing utxo')
-.option('--atomicalreceipt <string>', 'Attach an atomical id to a pay receipt')
-.action(async (options) => {
-  try {
-    const walletInfo = await validateWalletStorage();
-    const satsbyte = parseInt(options.satsbyte);
-    const config: ConfigurationInterface = validateCliInputs();
-    const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-    let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
-    let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-    const atomicalIdReceipt = options.atomicalreceipt;
-    const result = await atomicals.transferInteractiveUtxos(ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, options.nofunding, atomicalIdReceipt);
-    handleResultLogging(result);
-  } catch (error) {
-    console.log(error);
-  }
-});
+  .description('Transfer plain regular UTXOs to another addresses')
+  .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
+  .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
+  .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
+  .option('--nofunding', 'Do not ask for seperate funding, use existing utxo')
+  .option('--atomicalreceipt <string>', 'Attach an atomical id to a pay receipt')
+  .action(async (options) => {
+    try {
+      const walletInfo = await validateWalletStorage();
+      const satsbyte = parseInt(options.satsbyte);
+      const config: ConfigurationInterface = validateCliInputs();
+      const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
+      let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
+      let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
+      const atomicalIdReceipt = options.atomicalreceipt;
+      const result = await atomicals.transferInteractiveUtxos(ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, options.nofunding, atomicalIdReceipt);
+      handleResultLogging(result);
+    } catch (error) {
+      console.log(error);
+    }
+  });
 
 program.command('merge-atomicals')
   .description('Merge Atomicals UTXOs together for test purposes')
