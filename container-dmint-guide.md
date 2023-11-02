@@ -44,7 +44,7 @@ Generating hashes for filename 1.png with hash e0bb2a5d8a80d989bfc4b5f06d18eba90
 
 ```
 
-### Step 2. 
+### Step 2. Upload each item chunk to container
 
 For each of the chunk files, put into the container items like so:
 
@@ -60,7 +60,7 @@ You may query anytime the state of your collection like:
 yarn cli state #mycoolcontainername
 ```
 
-### Step 3.
+### Step 3. Enable dmint and set mint height
 
 Now that all of the `items` file hashes are saved to the container, we must enable the `dmint` configuration options with another command.
 
