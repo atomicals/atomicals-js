@@ -7,7 +7,7 @@ bitcoin.initEccLib(ecc);
 import {
   initEccLib,
 } from "bitcoinjs-lib";
-import { getAndCheckAtomicalInfo, logBanner, prepareFilesDataAsObject, readJsonFileAsCompleteDataObjectEncodeAtomicalIds } from "./command-helpers";
+import { getAndCheckAtomicalInfo, logBanner, prepareFilesDataAsObject, readJsonFileAsCompleteDataObjectEncodeHash } from "./command-helpers";
 import { AtomicalOperationBuilder } from "../utils/atomical-operation-builder";
 import { BaseRequestOptions } from "../interfaces/api.interface";
 import { IWalletRecord } from "../utils/validate-wallet-storage";
@@ -15,11 +15,11 @@ import { IWalletRecord } from "../utils/validate-wallet-storage";
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 initEccLib(tinysecp as any);
 
-export class SetInteractiveCommand implements CommandInterface {
+export class PrepareDmintItemsIteractiveCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
-    private atomicalId: string,
-    private filename: string,
+    private containerName: string,
+    private jsonFile: string,
     private owner: IWalletRecord,
     private funding: IWalletRecord,
     private options: BaseRequestOptions
@@ -27,10 +27,11 @@ export class SetInteractiveCommand implements CommandInterface {
 
   }
   async run(): Promise<any> {
-    logBanner(`Set Interactive`);
+    logBanner(`Prepare Container Dmint Items Interactive`);
     // Attach any default data
-    let filesData = await readJsonFileAsCompleteDataObjectEncodeAtomicalIds(this.filename);
-    const { atomicalInfo, locationInfo, inputUtxoPartial } = await getAndCheckAtomicalInfo(this.electrumApi, this.atomicalId, this.owner.address);
+    let filesData = await readJsonFileAsCompleteDataObjectEncodeHash(this.jsonFile, true, ':h');
+     
+    const { atomicalInfo, locationInfo, inputUtxoPartial } = await getAndCheckAtomicalInfo(this.electrumApi, this.containerName, this.owner.address, 'NFT', 'container');
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
       satsbyte: this.options.satsbyte,
@@ -45,6 +46,11 @@ export class SetInteractiveCommand implements CommandInterface {
       init: this.options.init,
     });
     await atomicalBuilder.setData(filesData);
+
+    // Attach any requested bitwork
+    if (this.options.bitworkc) {
+      atomicalBuilder.setBitworkCommit(this.options.bitworkc);
+    }
 
     // Add the atomical to update
     atomicalBuilder.addInputUtxo(inputUtxoPartial, this.owner.WIF)

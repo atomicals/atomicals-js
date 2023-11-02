@@ -67,7 +67,14 @@ export const encodeAtomicalIdToBuffer = (v) => {
   return result.buf;
 }
 
-export const encodeIds = (jsonObject, updatedObject, encodingFunc) => {
+export const encodeHashToBuffer = (v) => {
+  if (!v || v.length !== 64) {
+    throw new Error('Not valid sha256 hash ' + v)
+  }
+  return Buffer.from(v, 'hex');
+}
+
+export const encodeIds = (jsonObject, updatedObject, encodingFunc, autoEncodePattern?: string) => {
   if (!isObject(jsonObject)) {
     return;
   }
@@ -77,9 +84,11 @@ export const encodeIds = (jsonObject, updatedObject, encodingFunc) => {
     }
     if (prop === 'id' && isAtomicalId(jsonObject['id'])) {
       updatedObject[prop] = encodingFunc(jsonObject['id'])
+    } else if (autoEncodePattern && prop.endsWith(autoEncodePattern)) {
+      updatedObject[prop] = encodingFunc(jsonObject[prop])
     } else {
       updatedObject[prop] = jsonObject[prop]
-      encodeIds(jsonObject[prop], updatedObject[prop], encodingFunc)
+      encodeIds(jsonObject[prop], updatedObject[prop], encodingFunc, autoEncodePattern)
     }
   }
   return updatedObject;
@@ -260,12 +269,12 @@ export function extractFileFromInputWitness(inputWitness: any[], hexify = false,
               if (Buffer.isBuffer(witnessScript[i])) {
                 const opType = witnessScript[i].toString('utf8');
                 if (Buffer.isBuffer(witnessScript[i]) && (opType === mintnft || opType === update || opType === mintft || opType === mintdft || opType === event || opType == storedat)) {
-                  
+
                   return parseAtomicalsDataDefinitionOperation(opType, witnessScript, i + 1, hexify, addUtf8);
                 }
               }
             }
-          }  
+          }
           i++
           if (i >= witnessScript.length) {
             break;

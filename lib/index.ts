@@ -68,6 +68,8 @@ import { BroadcastCommand } from "./commands/broadcast-command";
 import { compactIdToOutpointBytesAndHex, isAtomicalId } from "./utils/atomical-format-helpers";
 import { SetContainerDataInteractiveCommand } from "./commands/set-container-data-interactive-command";
 import { CreateDmintManifestCommand } from "./commands/create-dmint-manifest-command";
+import { PrepareDmintInteractiveCommand } from "./commands/prepare-dmint-interactive-command";
+import { PrepareDmintItemsIteractiveCommand } from "./commands/prepare-dmint-items-interactive-command";
 export { decorateAtomicals } from "./utils/atomical-format-helpers";
 export { addressToP2PKH } from "./utils/address-helpers";
 export { getExtendTaprootAddressKeypairPath } from "./utils/address-keypair-path";
@@ -480,6 +482,39 @@ export class Atomicals implements APIInterface {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new SetInteractiveCommand(this.electrumApi, atomicalId, filename, atomicalOwner, funding, options);
+      return await command.run();
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.toString(),
+        error
+      }
+    } finally {
+      this.electrumApi.close();
+    }
+  }
+  
+  async prepareDmint(containerName: string, mintHeight: number, immutable: boolean, mintbitworkc: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+    try {
+      await this.electrumApi.open();
+      const command: CommandInterface = new PrepareDmintInteractiveCommand(this.electrumApi, containerName, mintHeight, immutable, mintbitworkc, atomicalOwner, funding, options);
+      return await command.run();
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.toString(),
+        error
+      }
+    } finally {
+      this.electrumApi.close();
+    }
+  }
+
+
+  async prepareDmintItems(containerName: string, jsonFile: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+    try {
+      await this.electrumApi.open();
+      const command: CommandInterface = new PrepareDmintItemsIteractiveCommand(this.electrumApi, containerName, jsonFile, atomicalOwner, funding, options);
       return await command.run();
     } catch (error: any) {
       return {

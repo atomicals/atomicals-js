@@ -7,7 +7,7 @@ bitcoin.initEccLib(ecc);
 import {
   initEccLib,
 } from "bitcoinjs-lib";
-import { getAndCheckAtomicalInfo, logBanner, prepareFilesDataAsObject, readJsonFileAsCompleteDataObject } from "./command-helpers";
+import { getAndCheckAtomicalInfo, logBanner, prepareFilesDataAsObject, readJsonFileAsCompleteDataObjectEncodeAtomicalIds } from "./command-helpers";
 import { AtomicalOperationBuilder } from "../utils/atomical-operation-builder";
 import { BaseRequestOptions } from "../interfaces/api.interface";
 import { IWalletRecord } from "../utils/validate-wallet-storage";
@@ -30,7 +30,7 @@ export class EnableSubrealmRulesCommand implements CommandInterface {
   async run(): Promise<any> {
     logBanner(`Enable Subrealm Rules Interactive`);
     // Attach any default data
-    let filesData = await readJsonFileAsCompleteDataObject(this.file, false);
+    let filesData = await readJsonFileAsCompleteDataObjectEncodeAtomicalIds(this.file, false);
     // validateSubrealmRulesObject(filesData);
     const { atomicalInfo, locationInfo, inputUtxoPartial } = await getAndCheckAtomicalInfo(this.electrumApi, this.atomicalId, this.owner.address, 'NFT', null);
     const atomicalBuilder = new AtomicalOperationBuilder({
@@ -47,8 +47,8 @@ export class EnableSubrealmRulesCommand implements CommandInterface {
       init: this.options.init,
     });
     await atomicalBuilder.setData(filesData);
-      // Just add some bitwork to make it use the funding address
-      atomicalBuilder.setBitworkCommit('1');
+    // Just add some bitwork to make it use the funding address
+    atomicalBuilder.setBitworkCommit('1');
     // Add the atomical to update
     atomicalBuilder.addInputUtxo(inputUtxoPartial, this.owner.WIF)
     // The receiver output

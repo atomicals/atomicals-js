@@ -7,7 +7,7 @@ bitcoin.initEccLib(ecc);
 import {
   initEccLib,
 } from "bitcoinjs-lib";
-import { getAndCheckAtomicalInfo, logBanner, prepareFilesDataAsObject, readJsonFileAsCompleteDataObject } from "./command-helpers";
+import { getAndCheckAtomicalInfo, logBanner, prepareFilesDataAsObject, readJsonFileAsCompleteDataObjectEncodeAtomicalIds } from "./command-helpers";
 import { AtomicalOperationBuilder } from "../utils/atomical-operation-builder";
 import { BaseRequestOptions } from "../interfaces/api.interface";
 import { IWalletRecord } from "../utils/validate-wallet-storage";
@@ -29,7 +29,7 @@ export class SetContainerDataInteractiveCommand implements CommandInterface {
   async run(): Promise<any> {
     logBanner(`Set Container Data Interactive`);
     // Attach any default data
-    let filesData = await readJsonFileAsCompleteDataObject(this.filename, true);
+    let filesData = await readJsonFileAsCompleteDataObjectEncodeAtomicalIds(this.filename, true);
     const { atomicalInfo, locationInfo, inputUtxoPartial } = await getAndCheckAtomicalInfo(this.electrumApi, this.containerName, this.owner.address, 'NFT', 'container');
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,

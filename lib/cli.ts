@@ -864,19 +864,18 @@ program.command('set-container-data')
       console.log(error);
     }
   });
-/*
-program.command('enable-dmint')
+ 
+program.command('prepare-dmint-items')
 .description('Configure container for decentralized dmint')
 .argument('<containerName>', 'string')
-.argument('<mintheight>', 'number')
-.argument('<folder>', 'string')
-.argument('<immutable>', 'number')
+.argument('<dmintManifestJson>', 'string')
+.option('--notimmutable', 'Whether minted items are not immutable')
 .option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
 .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
 .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
 .option('--satsoutput <number>', 'Satoshis to put into output', '1000')
-.option('--disableautoencode', 'Disables auto encoding of $b variables')
-.action(async (containerName, jsonFilename, options) => {
+.option('--bitworkc <string>', 'Whether to add any bitwork proof of work to the commit tx')
+.action(async (containerName, mintheight, jsonFilename, options) => {
   try {
     const walletInfo = await validateWalletStorage();
     const config: ConfigurationInterface = validateCliInputs();
@@ -884,18 +883,50 @@ program.command('enable-dmint')
     let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
     let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
     containerName = containerName.startsWith('#') ? containerName : '#' + containerName;
-    const result: any = await atomicals.setContainerDataInteractive(containerName, jsonFilename, fundingWalletRecord, ownerWalletRecord, {
+    const result: any = await atomicals.prepareDmintItems(containerName, jsonFilename, fundingWalletRecord, ownerWalletRecord, {
       satsbyte: parseInt(options.satsbyte, 10),
       satsoutput: parseInt(options.satsoutput, 10),
-      disableautoencode: !!options.disableautoencode
+      bitworkc: options.bitworkc ? options.bitworkc : '7',
     });
     handleResultLogging(result);
   } catch (error) {
     console.log(error);
   }
 });
-*/
-program.command('create-dmint-manifest')
+
+program.command('prepare-dmint-config')
+.description('Configure container for decentralized dmint')
+.argument('<containerName>', 'string')
+.argument('<mintheight>', 'number')
+.option('--notimmutable', 'Whether minted items are not immutable')
+.option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
+.option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
+.option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
+.option('--satsoutput <number>', 'Satoshis to put into output', '1000')
+.option('--mintbitworkc <string>', 'Whether to add any bitwork proof of work to the mint commit tx')
+.option('--bitworkc <string>', 'Whether to add any bitwork proof of work to the commit tx')
+.action(async (containerName, mintheight, options) => {
+  try {
+    const walletInfo = await validateWalletStorage();
+    const config: ConfigurationInterface = validateCliInputs();
+    const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
+    let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
+    let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
+    containerName = containerName.startsWith('#') ? containerName : '#' + containerName;
+    const isNotImmutable = options.notimmutable ? true : false;
+    const mintBitworkcValue = options.mintbitworkc ? options.mintbitworkc : getRandomBitwork4();
+    const result: any = await atomicals.prepareDmint(containerName, parseInt(mintheight, 10), !isNotImmutable, mintBitworkcValue, fundingWalletRecord, ownerWalletRecord, {
+      satsbyte: parseInt(options.satsbyte, 10),
+      satsoutput: parseInt(options.satsoutput, 10),
+      bitworkc: options.bitworkc ? options.bitworkc : '7',
+    });
+    handleResultLogging(result);
+  } catch (error) {
+    console.log(error);
+  }
+});
+ 
+program.command('prepare-dmint-manifest')
 .description('Configure container for decentralized dmint')
 .argument('<folder>', 'string')
 .argument('<outputName>', 'string')

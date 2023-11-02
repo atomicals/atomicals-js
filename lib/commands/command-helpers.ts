@@ -12,7 +12,7 @@ import { ATOMICALS_PROTOCOL_ENVELOPE_ID } from "../types/protocol-tags";
 import { ElectrumApiInterface } from "../api/electrum-api.interface";
 import { ResolveCommand } from "./resolve-command";
 import { AtomicalsGetFetchType } from "./command.interface";
-import { AtomicalIdentifierType, decorateAtomical, encodeAtomicalIdToBuffer, encodeIds } from "../utils/atomical-format-helpers";
+import { AtomicalIdentifierType, decorateAtomical, encodeAtomicalIdToBuffer, encodeHashToBuffer, encodeIds } from "../utils/atomical-format-helpers";
 import { IsAtomicalOwnedByWalletRecord } from "../utils/address-helpers";
 import { IInputUtxoPartial } from "../types/UTXO.interface";
 import * as dotenv from 'dotenv'
@@ -22,7 +22,7 @@ export const NETWORK = process.env.NETWORK === 'testnet' ? networks.testnet : ne
 
 function basename(path) {
     return path.split('/').reverse()[0];
- } 
+}
 export function logBanner(text: string) {
     console.log("====================================================================")
     console.log(text)
@@ -235,7 +235,7 @@ export const readFileAsCompleteDataObject = async (filePath, givenFileName) => {
         [givenFileName]: fileContents
     };
 }
- 
+
 export const prepareFilesDataAsObject = async (fields: string[], disableAutoncode = false) => {
     let fieldDataObject = {};
     for (const entry of fields) {
@@ -298,14 +298,28 @@ export const prepareFilesDataAsObject = async (fields: string[], disableAutoncod
     return fieldDataObject;
 }
 
-export const readJsonFileAsCompleteDataObject = async (jsonFile, autoEncode = false) => {
+export const readJsonFileAsCompleteDataObjectEncodeAtomicalIds = async (jsonFile, autoEncode = false, autoEncodePattern?: string) => {
     if (!jsonFile.endsWith('.json')) {
         throw new Error('Filename must end in json')
     }
     const jsonFileContents: any = await jsonFileReader(jsonFile);
     if (autoEncode) {
         const updatedObject = {};
-        encodeIds(jsonFileContents, updatedObject, encodeAtomicalIdToBuffer);
+        encodeIds(jsonFileContents, updatedObject, encodeAtomicalIdToBuffer, autoEncodePattern);
+        return updatedObject;
+    }
+    return jsonFileContents;
+}
+
+
+export const readJsonFileAsCompleteDataObjectEncodeHash = async (jsonFile, autoEncode = false, autoEncodePattern?: string) => {
+    if (!jsonFile.endsWith('.json')) {
+        throw new Error('Filename must end in json')
+    }
+    const jsonFileContents: any = await jsonFileReader(jsonFile);
+    if (autoEncode) {
+        const updatedObject = {};
+        encodeIds(jsonFileContents, updatedObject, encodeHashToBuffer, autoEncodePattern);
         return updatedObject;
     }
     return jsonFileContents;
@@ -539,7 +553,7 @@ export const guessPrefixType = (id: any): any => {
 }
 
 export const normalizeIdentifier = (id: any, expectedType?: AtomicalIdentifierType): any => {
-    switch(expectedType) {
+    switch (expectedType) {
         case null:
             return guessPrefixType(id);
         case AtomicalIdentifierType.CONTAINER_NAME:
