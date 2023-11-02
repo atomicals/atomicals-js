@@ -44,6 +44,25 @@ Generating hashes for filename 1.png with hash e0bb2a5d8a80d989bfc4b5f06d18eba90
 
 ```
 
+Here is a sample chunk file:
+
+```
+{
+  "items": {
+    "0.png": {
+      "e": {
+        "im.png:h": "9850f1b04684a9db69a05b81f9c1354dafc60ed4530df9a663f2d776e552559c"
+      }
+    },
+    "1.png": {
+      "e": {
+        "im.png:h": "e0bb2a5d8a80d989bfc4b5f06d18eba90d9dd3114511bd0b3db8aaabe296d497"
+      }
+    }
+  }
+}
+```
+
 ### Step 2. Upload each item chunk to container
 
 For each of the chunk files, put into the container items like so:
