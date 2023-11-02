@@ -290,7 +290,6 @@ program.command('script-address')
     console.log(`------------------------------------------------------`);
   });
 
-
 program.command('outpoint-compact')
   .description('Decodes hex outpoint to compact location id form')
   .argument('<hex>', 'string')
@@ -865,6 +864,49 @@ program.command('set-container-data')
       console.log(error);
     }
   });
+/*
+program.command('enable-dmint')
+.description('Configure container for decentralized dmint')
+.argument('<containerName>', 'string')
+.argument('<mintheight>', 'number')
+.argument('<folder>', 'string')
+.argument('<immutable>', 'number')
+.option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
+.option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
+.option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
+.option('--satsoutput <number>', 'Satoshis to put into output', '1000')
+.option('--disableautoencode', 'Disables auto encoding of $b variables')
+.action(async (containerName, jsonFilename, options) => {
+  try {
+    const walletInfo = await validateWalletStorage();
+    const config: ConfigurationInterface = validateCliInputs();
+    const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
+    let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
+    let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
+    containerName = containerName.startsWith('#') ? containerName : '#' + containerName;
+    const result: any = await atomicals.setContainerDataInteractive(containerName, jsonFilename, fundingWalletRecord, ownerWalletRecord, {
+      satsbyte: parseInt(options.satsbyte, 10),
+      satsoutput: parseInt(options.satsoutput, 10),
+      disableautoencode: !!options.disableautoencode
+    });
+    handleResultLogging(result);
+  } catch (error) {
+    console.log(error);
+  }
+});
+*/
+program.command('create-dmint-manifest')
+.description('Configure container for decentralized dmint')
+.argument('<folder>', 'string')
+.argument('<outputName>', 'string')
+.action(async (folder, outputName, options) => {
+  try {
+    const result: any = await Atomicals.createDmintManifest(folder, outputName);
+    handleResultLogging(result);
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 program.command('emit')
   .description('Emit an event for an existing Atomical with data.')

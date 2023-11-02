@@ -67,6 +67,7 @@ import { GetFtInfoCommand } from "./commands/get-dft-info-command";
 import { BroadcastCommand } from "./commands/broadcast-command";
 import { compactIdToOutpointBytesAndHex, isAtomicalId } from "./utils/atomical-format-helpers";
 import { SetContainerDataInteractiveCommand } from "./commands/set-container-data-interactive-command";
+import { CreateDmintManifestCommand } from "./commands/create-dmint-manifest-command";
 export { decorateAtomicals } from "./utils/atomical-format-helpers";
 export { addressToP2PKH } from "./utils/address-helpers";
 export { getExtendTaprootAddressKeypairPath } from "./utils/address-keypair-path";
@@ -79,6 +80,20 @@ export { bitcoin };
 export class Atomicals implements APIInterface {
   constructor(private electrumApi: ElectrumApiInterface) {
   }
+
+  static async createDmintManifest(folderName: string, outputs: string): Promise<CommandResultInterface> {
+    try {
+      const command: CommandInterface = new CreateDmintManifestCommand(folderName, outputs);
+      return await command.run();
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.toString(),
+        error
+      }
+    }
+  }
+  
   static async renderPreviews(filesmap: FileMap, body: boolean): Promise<any> {
     try {
       const command: CommandInterface = new RenderPreviewsCommand(filesmap, body);
@@ -122,10 +137,10 @@ export class Atomicals implements APIInterface {
     }
     const updatedtotal: any = [];
     const concise: any = [];
-  
+
     const traitsArray = [
       {
-        "trait":  "design",
+        "trait": "design",
         "type": "string",
         "values": [
           "Portal Prologue",

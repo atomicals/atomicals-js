@@ -25,3 +25,4 @@ commit-command-output*.json
 *.sln
 .env
 .gitkeep
+dmint/
