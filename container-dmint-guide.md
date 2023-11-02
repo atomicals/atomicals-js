@@ -31,13 +31,13 @@ Run the following command to create the dmint manifest chunks. It is required to
 limitations.  Generate the command to produce chunks0.json, chunks1.json, etc.... (if your collection has les than 3334 items then only one chunk will be created)
 
 ```
-yarn cli prepare-dmint-manifest ./dmint chunks
+yarn cli prepare-dmint-manifest ./nftimages chunks
 yarn run v1.22.19
-$ node dist/cli.js prepare-dmint-manifest ./dmint chunks
+$ node dist/cli.js prepare-dmint-manifest ./nftimages chunks
 Generating hashes for filename 0.png with hash 9850f1b04684a9db69a05b81f9c1354dafc60ed4530df9a663f2d776e552559c
 Generating hashes for filename 1.png with hash e0bb2a5d8a80d989bfc4b5f06d18eba90d9dd3114511bd0b3db8aaabe296d497
 {
-  "folder": "./dmint",
+  "folder": "./nftimages",
   "totalItems": 2,
   "chunkCount": 1
 }
