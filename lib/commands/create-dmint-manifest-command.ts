@@ -9,6 +9,10 @@ import { FileMap } from "../interfaces/filemap.interface";
 import { basename, extname } from "path";
 import { hash256 } from 'bitcoinjs-lib/src/crypto';
 
+function isInvalidExtension(extName) {
+  return extName !== '.jpg' && extName !== '.gif' && extName !== '.jpeg' && extName !== '.png' && extName !== '.svg' && extName !== '.webp' &&
+  extName !== '.mp3' && extName !== '.mp4' && extName !== '.mov' && extName !== '.webm' && extName !== '.avi' && extName !== '.mpg'
+} 
 export class CreateDmintManifestCommand implements CommandInterface {
   constructor(
     private folder: string,
@@ -30,9 +34,11 @@ export class CreateDmintManifestCommand implements CommandInterface {
       }
       const basePath = basename(file);
       const extName = extname(file);
-      if (extName !== '.jpg' && extName !== '.gif' && extName !== '.jpeg' && extName !== '.png' && extName !== '.svg') {
+
+      if (isInvalidExtension(extName)) {
         continue;
       }
+      
       if (counter > 0 && counter % 3334 === 0) {
         chunkNum++;
         itemsChunked.push({})
@@ -42,7 +48,11 @@ export class CreateDmintManifestCommand implements CommandInterface {
       const hashed = hash256(fileBuf);
       const hashedStr = hashed.toString('hex');
       console.log(`Generating hashes for filename ${basePath} with hash ${hashedStr}`);
-      itemsChunked[chunkNum][basePath] = {
+      const splitBase = basePath.split('.');
+      if (splitBase.length !== 2) {
+        throw new Error('Image file must have exactly with dot extension: ' + basePath)
+      }
+      itemsChunked[chunkNum][splitBase[0]] = {
         e: {
           ['im' + extName + ':h']: hashedStr
         }
