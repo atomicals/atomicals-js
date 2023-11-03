@@ -71,6 +71,7 @@ import { CreateDmintManifestCommand } from "./commands/create-dmint-manifest-com
 import { PrepareDmintInteractiveCommand } from "./commands/prepare-dmint-interactive-command";
 import { PrepareDmintItemsIteractiveCommand } from "./commands/prepare-dmint-items-interactive-command";
 import { MintInteractiveContainerDmintItemCommand } from "./commands/mint-interactive-dmint-item-command";
+import { GetContainerItems } from "./commands/get-container-items-command";
 export { decorateAtomicals } from "./utils/atomical-format-helpers";
 export { addressToP2PKH } from "./utils/address-helpers";
 export { getExtendTaprootAddressKeypairPath } from "./utils/address-keypair-path";
@@ -952,6 +953,24 @@ export class Atomicals implements APIInterface {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new GetByContainerCommand(this.electrumApi, container);
+      return await command.run();
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.toString(),
+        error
+      }
+    } finally {
+      if (!keepElectrumAlive) {
+        this.electrumApi.close();
+      }
+    }
+  }
+
+  async getContainerItems(container: string, keepElectrumAlive = false): Promise<CommandResultInterface> {
+    try {
+      await this.electrumApi.open();
+      const command: CommandInterface = new GetContainerItems(this.electrumApi, container);
       return await command.run();
     } catch (error: any) {
       return {

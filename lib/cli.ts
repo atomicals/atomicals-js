@@ -643,6 +643,21 @@ program.command('get-container')
     }
   });
 
+program.command('get-container-items')
+  .description('Get the items in the container')
+  .argument('<container>', 'string')
+  .option('--verbose', 'Verbose output')
+  .action(async (container, options) => {
+    try {
+      const config: ConfigurationInterface = validateCliInputs();
+      const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
+      const result: any = await atomicals.getContainerItems(container);
+      console.log(JSON.stringify(result, null, 2));
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
 program.command('resolve')
   .description(`Resolve a realm or subrealm. Alias for 'get-realm'`)
   .argument('<realm_or_subrealm>', 'string')

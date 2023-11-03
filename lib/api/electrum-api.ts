@@ -415,6 +415,18 @@ export class ElectrumApi implements ElectrumApiInterface {
         return p;
     }
 
+    public async atomicalsGetContainerItems(container: string): Promise<any> {
+        const p = new Promise((resolve, reject) => {
+            this.call('blockchain.atomicals.get_container_items', [container]).then(function (result: any) {
+                resolve(result);
+            }).catch((error) => {
+                console.log('error ', error)
+                reject(error);
+            })
+        });
+        return p;
+    }
+
     public async atomicalsFindTickers(prefix: string | null, asc?: boolean): Promise<any> {
         const p = new Promise((resolve, reject) => {
             const args: any = []
