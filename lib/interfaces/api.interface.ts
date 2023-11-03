@@ -29,6 +29,7 @@ export interface APIInterface {
     mintRealmInteractive(requestRealm: string, address: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
     mintSubrealmInteractive(requestSubRealm: string, address: string, WIF: string, owner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     mintContainerInteractive(requestContainer: string, address: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
+    mintContainerDmintItemInteractive(container: string, itemId: string, address: string, WIF: string, owner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
 
     // Mint fungible-token methods (FT)
     mintFtInteractive(files: string[], supply: number, address: string, requestTicker: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
@@ -49,7 +50,6 @@ export interface APIInterface {
     prepareDmint(containerName: string, mintHeight: number, immutable: boolean, mintbitworkc: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     prepareDmintItems(containerName: string, jsonFile: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     
-
     // Transfer methods
     transferInteractiveNft(atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, receiveAddress: string, satsbyte: number, satsoutput: number, atomicalIdReceipt?: string): Promise<CommandResultInterface>;
     transferInteractiveFt(atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, atomicalIdReceipt?: string): Promise<CommandResultInterface>;

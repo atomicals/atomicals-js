@@ -86,7 +86,6 @@ export class MintInteractiveFtCommand implements CommandInterface {
     console.log('Data objects: ', filesData);
     console.log('-----------------------')
 
-
     await promptContinue();
 
     const getExistingNameCommand = new GetByTickerCommand(this.electrumApi, this.requestTicker, AtomicalsGetFetchType.GET, undefined);

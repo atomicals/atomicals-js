@@ -70,6 +70,7 @@ import { SetContainerDataInteractiveCommand } from "./commands/set-container-dat
 import { CreateDmintManifestCommand } from "./commands/create-dmint-manifest-command";
 import { PrepareDmintInteractiveCommand } from "./commands/prepare-dmint-interactive-command";
 import { PrepareDmintItemsIteractiveCommand } from "./commands/prepare-dmint-items-interactive-command";
+import { MintInteractiveContainerDmintItemCommand } from "./commands/mint-interactive-dmint-item-command";
 export { decorateAtomicals } from "./utils/atomical-format-helpers";
 export { addressToP2PKH } from "./utils/address-helpers";
 export { getExtendTaprootAddressKeypairPath } from "./utils/address-keypair-path";
@@ -300,11 +301,26 @@ export class Atomicals implements APIInterface {
     }
   }
 
-
   async mintSubrealmInteractive(requestSubRealm: string, address: string, WIF: string, owner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new MintInteractiveSubrealmCommand(this.electrumApi, requestSubRealm, address, WIF, owner, options);
+      return await command.run();
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.toString(),
+        error
+      }
+    } finally {
+      this.electrumApi.close();
+    }
+  }
+
+  async mintContainerDmintItemInteractive(container: string, itemId: string, address: string, WIF: string, owner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+    try {
+      await this.electrumApi.open();
+      const command: CommandInterface = new MintInteractiveContainerDmintItemCommand(this.electrumApi, container, itemId, address, WIF, options);
       return await command.run();
     } catch (error: any) {
       return {

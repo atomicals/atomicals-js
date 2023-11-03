@@ -1030,6 +1030,7 @@ program.command('seal')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
+  .option('--bitworkc <string>', 'Whether to add any bitwork proof of work to the commit tx')
   .action(async (atomicalId, options) => {
     try {
       const walletInfo = await validateWalletStorage();
@@ -1038,7 +1039,8 @@ program.command('seal')
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       const result: any = await atomicals.sealInteractive(atomicalId, fundingWalletRecord, ownerWalletRecord, {
-        satsbyte: parseInt(options.satsbyte)
+        satsbyte: parseInt(options.satsbyte),
+        bitworkc: options.bitworkc,
       });
       handleResultLogging(result);
     } catch (error) {
@@ -1546,6 +1548,41 @@ program.command('mint-subrealm')
         satsbyte: parseInt(options.satsbyte),
         satsoutput: parseInt(options.satsoutput),
         container: options.container,
+        bitworkc: options.bitworkc,
+        bitworkr: options.bitworkr,
+        disableMiningChalk: options.disablechalk
+      });
+      handleResultLogging(result);
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
+  program.command('mint-dmitem')
+  .description('Mint dmitem non-fungible token (NFT) Atomical')
+  .argument('<container>', 'string')
+  .argument('<itemId>', 'string')
+  .option('--initialowner <string>', 'Initial owner wallet alias to mint the Atomical into')
+  .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
+  .option('--satsoutput <number>', 'Satoshis to put into the minted atomical', '1000')
+  .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
+  .option('--bitworkc <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the commit transaction.')
+  .option('--bitworkr <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the reveal transaction.')
+  .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for mining. Improvements mining performance to set this flag')
+  .action(async (container, itemId, options) => {
+    try {
+      const walletInfo = await validateWalletStorage();
+      const config: ConfigurationInterface = validateCliInputs();
+      const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
+      let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
+      let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
+      let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
+      const result: any = await atomicals.mintContainerDmintItemInteractive(container, itemId, initialOwnerAddress.address, fundingRecord.WIF, ownerWalletRecord, {
+        meta: options.meta,
+        ctx: options.ctx,
+        init: options.init,
+        satsbyte: parseInt(options.satsbyte),
+        satsoutput: parseInt(options.satsoutput),
         bitworkc: options.bitworkc,
         bitworkr: options.bitworkr,
         disableMiningChalk: options.disablechalk
