@@ -52,6 +52,11 @@ export class DeleteInteractiveCommand implements CommandInterface {
       $a: 1,
     });
 
+    // Attach any requested bitwork
+    if (this.options.bitworkc) {
+      atomicalBuilder.setBitworkCommit(this.options.bitworkc);
+    }
+
     atomicalBuilder.addInputUtxo(inputUtxoPartial, this.owner.WIF)
 
     // The receiver output

@@ -268,9 +268,9 @@ export class AtomicalOperationBuilder {
         if (typeof data !== 'object') {
             throw new Error('Data must be an object');
         }
-        if (data['args']) {
+        /*if (data['args']) {
             throw new Error(`Data cannot have field named 'args' set manually. Use setArgs method.`);
-        }
+        }*/
         if (data['meta']) {
             throw new Error(`Data cannot have field named 'meta' set manually. Use options config.`);
         }

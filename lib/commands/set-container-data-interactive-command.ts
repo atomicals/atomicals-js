@@ -46,6 +46,10 @@ export class SetContainerDataInteractiveCommand implements CommandInterface {
     });
     await atomicalBuilder.setData(filesData);
 
+    // Attach any requested bitwork
+    if (this.options.bitworkc) {
+      atomicalBuilder.setBitworkCommit(this.options.bitworkc);
+    }
     // Add the atomical to update
     atomicalBuilder.addInputUtxo(inputUtxoPartial, this.owner.WIF)
 

@@ -846,6 +846,7 @@ program.command('set-container-data')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
   .option('--satsoutput <number>', 'Satoshis to put into output', '1000')
   .option('--disableautoencode', 'Disables auto encoding of $b variables')
+  .option('--bitworkc <string>', 'Whether to add any bitwork proof of work to the commit tx')
   .action(async (containerName, jsonFilename, options) => {
     try {
       const walletInfo = await validateWalletStorage();
@@ -857,7 +858,8 @@ program.command('set-container-data')
       const result: any = await atomicals.setContainerDataInteractive(containerName, jsonFilename, fundingWalletRecord, ownerWalletRecord, {
         satsbyte: parseInt(options.satsbyte, 10),
         satsoutput: parseInt(options.satsoutput, 10),
-        disableautoencode: !!options.disableautoencode
+        disableautoencode: !!options.disableautoencode,
+        bitworkc: options.bitworkc,
       });
       handleResultLogging(result);
     } catch (error) {
