@@ -414,10 +414,34 @@ export class ElectrumApi implements ElectrumApiInterface {
         });
         return p;
     }
-
-    public async atomicalsGetContainerItems(container: string): Promise<any> {
+    public async atomicalsGetContainerItems(container: string, limit: number, offset: number): Promise<any> {
         const p = new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.get_container_items', [container]).then(function (result: any) {
+            this.call('blockchain.atomicals.get_container_items', [container, limit, offset]).then(function (result: any) {
+                resolve(result);
+            }).catch((error) => {
+                console.log('error ', error)
+                reject(error);
+            })
+        });
+        return p;
+    }
+
+    public async atomicalsGetByContainerItem(container: string, itemName: string): Promise<any> {
+        const p = new Promise((resolve, reject) => {
+            console.log('h')
+            this.call('blockchain.atomicals.get_by_container_item', [container, itemName]).then(function (result: any) {
+                resolve(result);
+            }).catch((error) => {
+                console.log('error ', error)
+                reject(error);
+            })
+        });
+        return p;
+    }
+
+    public async atomicalsGetByContainerItemValidated(container: string, item: string, main: string, mainHash: string, proof: any, checkWithoutSealed: boolean): Promise<any> {
+        const p = new Promise((resolve, reject) => {
+            this.call('blockchain.atomicals.get_by_container_item_validation', [container, item, main, mainHash, proof, checkWithoutSealed]).then(function (result: any) {
                 resolve(result);
             }).catch((error) => {
                 console.log('error ', error)

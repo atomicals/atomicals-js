@@ -60,7 +60,7 @@ export class InitInteractiveDftCommand implements CommandInterface {
     isValidBitworkMinimum(this.options.bitworkc);
 
     if (this.maxMints > 100000 || this.maxMints < 1) {
-      throw new Error('max mints must be between 1 and 100,000')
+      throw new Error('max mints must be between 1 and 200,000')
     }
     
     if (this.mintAmount > 100000000 || this.mintAmount < 546) {
