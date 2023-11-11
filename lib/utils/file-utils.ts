@@ -1,6 +1,8 @@
 
 
 import * as fs from 'fs';
+ 
+import { JsonStreamStringify } from 'json-stream-stringify';
 
 export const fileReader = async (filePath, encoding?: any) => {
 	return new Promise((resolve, reject) => {
@@ -39,18 +41,61 @@ export const jsonFileReader = async (filePath) => {
 
 export const jsonFileWriter = async (filePath, data) => {
 	return new Promise(function (resolve, reject) {
-		fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8', function (err) {
+		fs.writeFile(filePath, Buffer.from(JSON.stringify(data,null, 2)), 'utf8', function (err) {
 			if (err) {
 				console.log('jsonFileWriter', err);
 				reject(err);
 			}
 			else {
+
 				resolve(true);
 			}
 		});
 	})
 };
 
+/*
+
+export const jsonFileWriter = async (filePath, data) => {
+
+	return new Promise(function (resolve, reject) {
+		const stringifyStream = json.createStringifyStream({
+			body: data
+		});
+		var fd = fs.openSync(filePath, 'w');
+
+		fs.closeSync(fs.openSync(filePath, 'w'));
+
+		stringifyStream.on('data', function (strChunk) {
+			fs.appendFile(filePath, strChunk, function (err) {
+				if (err) throw err;
+			})
+		});
+		stringifyStream.on('end', function () {
+			resolve(true);
+		})
+	});
+
+};
+
+const json = require('big-json');
+ 
+// pojo will be sent out in JSON chunks written to the specified file name in the root 
+function makeFile(filename, pojo){
+
+    const stringifyStream = json.createStringifyStream({
+        body: pojo
+    });
+
+    stringifyStream.on('data', function(strChunk) {
+        fs.appendFile(filename, strChunk, function (err) {
+            if (err) throw err;
+        })
+    });
+
+}
+
+*/
 
 export const fileWriter = async (filePath, data) => {
 	return new Promise(function (resolve, reject) {

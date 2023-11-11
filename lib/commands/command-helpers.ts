@@ -305,7 +305,7 @@ export const readJsonFileAsCompleteDataObjectEncodeAtomicalIds = async (jsonFile
     const jsonFileContents: any = await jsonFileReader(jsonFile);
     if (autoEncode) {
         const updatedObject = {};
-        encodeIds(jsonFileContents, updatedObject, encodeAtomicalIdToBuffer, autoEncodePattern);
+        encodeIds(jsonFileContents, updatedObject, encodeAtomicalIdToBuffer, encodeHashToBuffer, autoEncodePattern);
         return updatedObject;
     }
     return jsonFileContents;
@@ -319,7 +319,7 @@ export const readJsonFileAsCompleteDataObjectEncodeHash = async (jsonFile, autoE
     const jsonFileContents: any = await jsonFileReader(jsonFile);
     if (autoEncode) {
         const updatedObject = {};
-        encodeIds(jsonFileContents, updatedObject, encodeHashToBuffer, autoEncodePattern);
+        encodeIds(jsonFileContents, updatedObject, encodeAtomicalIdToBuffer, encodeHashToBuffer, autoEncodePattern);
         return updatedObject;
     }
     return jsonFileContents;

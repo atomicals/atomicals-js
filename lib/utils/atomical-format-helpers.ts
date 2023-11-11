@@ -74,7 +74,7 @@ export const encodeHashToBuffer = (v) => {
   return Buffer.from(v, 'hex');
 }
 
-export const encodeIds = (jsonObject, updatedObject, encodingFunc, autoEncodePattern?: string) => {
+export const encodeIds = (jsonObject, updatedObject, atomicalIdEncodingFunc, otherEncodingFunc, autoEncodePattern?: string) => {
   if (!isObject(jsonObject)) {
     return;
   }
@@ -83,12 +83,12 @@ export const encodeIds = (jsonObject, updatedObject, encodingFunc, autoEncodePat
       continue;
     }
     if (prop === 'id' && isAtomicalId(jsonObject['id'])) {
-      updatedObject[prop] = encodingFunc(jsonObject['id'])
+      updatedObject[prop] = atomicalIdEncodingFunc(jsonObject['id'])
     } else if (autoEncodePattern && prop.endsWith(autoEncodePattern)) {
-      updatedObject[prop] = encodingFunc(jsonObject[prop])
+      updatedObject[prop] = otherEncodingFunc(jsonObject[prop])
     } else {
       updatedObject[prop] = jsonObject[prop]
-      encodeIds(jsonObject[prop], updatedObject[prop], encodingFunc, autoEncodePattern)
+      encodeIds(jsonObject[prop], updatedObject[prop], atomicalIdEncodingFunc, otherEncodingFunc, autoEncodePattern)
     }
   }
   return updatedObject;

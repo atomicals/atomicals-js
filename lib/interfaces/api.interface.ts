@@ -29,7 +29,7 @@ export interface APIInterface {
     mintRealmInteractive(requestRealm: string, address: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
     mintSubrealmInteractive(requestSubRealm: string, address: string, WIF: string, owner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     mintContainerInteractive(requestContainer: string, address: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    mintContainerDmintItemInteractive(container: string, itemId: string, address: string, WIF: string, owner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
+    mintContainerItemInteractive(container: string, itemId: string, manifestFile: string, address: string, WIF: string, owner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
 
     // Mint fungible-token methods (FT)
     mintFtInteractive(files: string[], supply: number, address: string, requestTicker: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
@@ -47,8 +47,7 @@ export interface APIInterface {
     sealInteractive(atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     splatInteractive(atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     splitItneractive(atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    prepareDmint(containerName: string, mintHeight: number, immutable: boolean, mintbitworkc: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    prepareDmintItems(containerName: string, jsonFile: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
+    setContainerDmintInteractive(containerName: string, jsonFile: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     
     // Transfer methods
     transferInteractiveNft(atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, receiveAddress: string, satsbyte: number, satsoutput: number, atomicalIdReceipt?: string): Promise<CommandResultInterface>;
@@ -80,7 +79,9 @@ export interface APIInterface {
     searchContainers(prefix: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     getAtomicalByRealm(realm: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     getAtomicalByTicker(ticker: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
-    getAtomicalByContainer(container: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
+    getAtomicalByContainerItem(container: string, itemId: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
+    getAtomicalByContainerItemValidated(container: string, itemId: string,  manifestFile: string, address: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
+
     resolveAtomical(atomicalIdOrNumberOrVariousName: string, atomicalsGetFetchType: AtomicalsGetFetchType, verbose: boolean, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     getRealmInfo(atomicalIdOrNumberOrVariousName: string, verbose: boolean, keepElectrumAlive: boolean): Promise<GetSubrealmInfoCommandResultInterface>;
     list(offset: number, limit: number, asc: boolean, verbose: boolean): Promise<CommandResultInterface>;

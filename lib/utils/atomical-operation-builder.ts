@@ -89,7 +89,8 @@ export enum REQUEST_NAME_TYPE {
     CONTAINER = 'CONTAINER',
     TICKER = 'TICKER',
     REALM = 'REALM',
-    SUBREALM = 'SUBREALM'
+    SUBREALM = 'SUBREALM',
+    ITEM = 'ITEM'
 }
 
 export interface AtomicalOperationBuilderOptions {
@@ -104,6 +105,7 @@ export interface AtomicalOperationBuilderOptions {
     meta?: string[] | any;
     init?: string[] | any;
     ctx?: string[] | any;
+    verbose?: boolean;
     nftOptions?: {
         satsoutput: number;
     };
@@ -138,7 +140,7 @@ export class AtomicalOperationBuilder {
     private bitworkInfoCommit: BitworkInfo | null = null;
     private bitworkInfoReveal: BitworkInfo | null = null;
     private requestName: string | null = null;
-    private requestSubrealmPid: string | null = null;
+    private requestParentId: string | null = null;
     private requestNameType: REQUEST_NAME_TYPE = REQUEST_NAME_TYPE.NONE;
     private meta: any = {};
     private args: any = {};
@@ -193,7 +195,7 @@ export class AtomicalOperationBuilder {
         isValidContainerName(name)
         this.requestName = trimmed;
         this.requestNameType = REQUEST_NAME_TYPE.CONTAINER;
-        this.requestSubrealmPid = null;
+        this.requestParentId = null;
     }
 
     setRequestRealm(name: string) {
@@ -204,7 +206,7 @@ export class AtomicalOperationBuilder {
         isValidRealmName(name)
         this.requestName = trimmed;
         this.requestNameType = REQUEST_NAME_TYPE.REALM;
-        this.requestSubrealmPid = null;
+        this.requestParentId = null;
     }
 
     setRequestSubrealm(name: string, parentRealmId: string, realmClaimType: REALM_CLAIM_TYPE) {
@@ -222,7 +224,7 @@ export class AtomicalOperationBuilder {
         const subrealmFinalPart = splitNames[splitNames.length - 1];
         isValidSubRealmName(subrealmFinalPart)
         this.requestName = subrealmFinalPart;
-        this.requestSubrealmPid = parentRealmId;
+        this.requestParentId = parentRealmId;
         this.requestNameType = REQUEST_NAME_TYPE.SUBREALM;
 
         if (realmClaimType === REALM_CLAIM_TYPE.DIRECT) {
@@ -236,7 +238,18 @@ export class AtomicalOperationBuilder {
         } else {
             throw new Error('RealmClaimType must be DIRECT or RULE')
         }
-        console.log('this.requestName', this.requestName);
+    }
+
+    setRequestItem(itemId: string, parentContainerId: string) {
+        if (this.options.opType !== 'nft') {
+            throw new Error('setRequestItem can only be set for NFT types')
+        }
+        if (!isAtomicalId(parentContainerId)) {
+            throw new Error('Invalid parent container atomical id for item');
+        }
+        this.requestName = itemId;
+        this.requestParentId = parentContainerId;
+        this.requestNameType = REQUEST_NAME_TYPE.ITEM;
     }
 
     setRequestTicker(name: string) {
@@ -247,7 +260,7 @@ export class AtomicalOperationBuilder {
         isValidTickerName(trimmed);
         this.requestName = trimmed;
         this.requestNameType = REQUEST_NAME_TYPE.TICKER;
-        this.requestSubrealmPid = null;
+        this.requestParentId = null;
     }
 
     /**
@@ -444,11 +457,18 @@ export class AtomicalOperationBuilder {
             case REQUEST_NAME_TYPE.SUBREALM:
                 copiedData['args'] = copiedData['args'] || {};
                 copiedData['args']['request_subrealm'] = this.requestName;
-                copiedData['args']['parent_realm'] = this.requestSubrealmPid;
+                copiedData['args']['parent_realm'] = this.requestParentId;
                 break;
             case REQUEST_NAME_TYPE.CONTAINER:
                 copiedData['args'] = copiedData['args'] || {};
                 copiedData['args']['request_container'] = this.requestName;
+                break;
+            case REQUEST_NAME_TYPE.ITEM:
+                copiedData['args'] = copiedData['args'] || {};
+                copiedData['args']['request_dmitem'] = this.requestName;
+                copiedData['args']['parent_container'] = this.requestParentId;
+                console.log(copiedData)
+                console.log(' this.requestParentId;',  this.requestParentId)
             default:
                 break;
         }
@@ -474,7 +494,7 @@ export class AtomicalOperationBuilder {
             copiedData['args']['parents'] = { [parentAtomicalInfo.parentId]: 0 }; // Also supports one parent for now
         }
 
-        
+
         let unixtime = Math.floor(Date.now() / 1000);
         let nonce = Math.floor(Math.random() * 10000000);
         let noncesGenerated = 0;
@@ -482,7 +502,11 @@ export class AtomicalOperationBuilder {
         let commitTxid: string | null = null;
         let revealTxid: string | null = null;
         let commitMinedWithBitwork = false;
+        console.log('copiedData', copiedData)
         const mockAtomPayload = new AtomicalsPayload(copiedData);
+        if (this.options.verbose) {
+            console.log('copiedData', copiedData)
+        }
         const payloadSize = mockAtomPayload.cbor().length
         console.log('Payload CBOR Size (bytes): ', payloadSize);
 
@@ -650,7 +674,7 @@ export class AtomicalOperationBuilder {
             const embed = bitcoin.payments.embed({ data: [data] });
 
             if (performBitworkForRevealTx) {
-               
+
                 psbt.addOutput({
                     script: embed.output!,
                     value: 0,

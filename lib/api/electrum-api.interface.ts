@@ -34,11 +34,13 @@ export interface ElectrumApiInterface {
     atomicalsByScripthash: (scripthash: string, verbose?: boolean) => Promise<any>;
     atomicalsByAddress: (address: string) => Promise<any>;
     atomicalsAtLocation: (location: string) => Promise<any>;
+    atomicalsGetByContainerItem: (container: string, item: string) => Promise<any>;
+    atomicalsGetByContainerItemValidated: (container: string, item: string, main: string, mainHash: string, proof: any, checkWithoutSealed: boolean) => Promise<any>;
     atomicalsGetByRealm: (realm: string) => Promise<any>;
     atomicalsGetRealmInfo: (realmOrSubRealm: string, verbose?: boolean) => Promise<any>;
     atomicalsGetByTicker: (ticker: string) => Promise<any>;
     atomicalsGetByContainer: (container: string) => Promise<any>;
-    atomicalsGetContainerItems: (container: string) => Promise<any>;
+    atomicalsGetContainerItems: (container: string, limit: number, offset: number) => Promise<any>;
     atomicalsFindTickers: (tickerPrefix: string | null, asc?: boolean) => Promise<any>;
     atomicalsFindContainers: (containerPrefix: string | null, asc?: boolean) => Promise<any>;
     atomicalsFindRealms: (realmPrefix: string | null, asc?: boolean) => Promise<any>;

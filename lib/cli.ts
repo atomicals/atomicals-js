@@ -48,7 +48,7 @@ function groupAtomicalsUtxosByAtomicalId(atomical_utxos: any[]) {
   }
   return sorted
 }
-function showWalletFTBalancesDetails(obj: any, showutxos = false) {
+function showWalletFTBalancesDetails(obj: any, showutxos = false, accumulated) {
   const atomicalsUtxosByAtomicalId = groupAtomicalsUtxosByAtomicalId(obj.atomicals_utxos);
   for (const atomicalId in obj.atomicals_balances) {
     if (!obj.atomicals_balances.hasOwnProperty(atomicalId)) {
@@ -68,10 +68,13 @@ function showWalletFTBalancesDetails(obj: any, showutxos = false) {
     console.log('Ticker:', atomical['ticker'])
     console.log('Confirmed balance:', atomical['confirmed'])
     console.log('UTXOs for Atomical:', atomicalsUtxosByAtomicalId[atomicalId].length);
+  
+    accumulated[atomical['ticker']] = accumulated[atomical['ticker']] || 0;
+    accumulated[atomical['ticker']] += atomical['confirmed']
     if (showutxos)
       console.log(JSON.stringify(atomicalsUtxosByAtomicalId[atomicalId], null, 2));
   }
-  return;
+  return accumulated
 }
 
 function showWalletDetails(obj: any, type: 'nft' | 'ft', showExtra = false, showBalancesOnly = false) {
@@ -474,6 +477,7 @@ program.command('balances')
       const electrum = ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || '');
       const atomicals = new Atomicals(electrum);
       const keepElectrumAlive = true;
+      let accumulated = {};
       if (alias) {
         if (!walletInfo.imported || !walletInfo.imported[alias]) {
           throw `No wallet with alias ${alias}`
@@ -485,7 +489,7 @@ program.command('balances')
         if (!noqr) {
           qrcode.generate(result.data?.address, { small: false });
         }
-        showWalletFTBalancesDetails(result.data, utxos)
+        accumulated = showWalletFTBalancesDetails(result.data, utxos, accumulated)
       } else if (address) {
         let result: any = await atomicals.walletInfo(address, false, keepElectrumAlive);
         console.log("\n========================================================================================================")
@@ -494,7 +498,7 @@ program.command('balances')
         if (!noqr) {
           qrcode.generate(result.data?.address, { small: false });
         }
-        showWalletFTBalancesDetails(result.data, utxos)
+        accumulated = showWalletFTBalancesDetails(result.data, utxos, accumulated)
       } else {
         // Just show the primary and funding address
         let result: any = await atomicals.walletInfo(walletInfo.primary.address, false, keepElectrumAlive);
@@ -504,7 +508,7 @@ program.command('balances')
         if (!noqr) {
           qrcode.generate(result.data?.address, { small: false });
         }
-        showWalletFTBalancesDetails(result.data, utxos)
+        accumulated = showWalletFTBalancesDetails(result.data, utxos, accumulated)
 
         result = await atomicals.walletInfo(walletInfo.funding.address, false, keepElectrumAlive);
         console.log("\n========================================================================================================")
@@ -513,7 +517,7 @@ program.command('balances')
         if (!noqr) {
           qrcode.generate(result.data?.address, { small: false });
         }
-        showWalletFTBalancesDetails(result.data, utxos)
+        accumulated = showWalletFTBalancesDetails(result.data, utxos, accumulated)
 
         if (all) {
           let counter = 3;
@@ -529,14 +533,16 @@ program.command('balances')
               if (!noqr) {
                 qrcode.generate(result.data?.address, { small: false });
               }
-              showWalletFTBalancesDetails(result.data, utxos)
+              accumulated = showWalletFTBalancesDetails(result.data, utxos, accumulated)
               counter++;
             }
           }
         }
       }
       console.log("\n\n");
+      console.log(accumulated)
       await electrum.close();
+      
     } catch (error) {
       console.log(error);
     }
@@ -646,12 +652,31 @@ program.command('get-container')
 program.command('get-container-items')
   .description('Get the items in the container')
   .argument('<container>', 'string')
+  .argument('<limit>', 'number')
+  .argument('<offset>', 'number')
   .option('--verbose', 'Verbose output')
-  .action(async (container, options) => {
+  .action(async (container, limit, offset, options) => {
     try {
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-      const result: any = await atomicals.getContainerItems(container);
+      const result: any = await atomicals.getContainerItems(container, parseInt(limit, 10), parseInt(offset, 10));
+      console.log(JSON.stringify(result, null, 2));
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
+program.command('get-container-item')
+  .description('Get an item in the container')
+  .argument('<container>', 'string')
+  .argument('<itemId>', 'string')
+  .option('--verbose', 'Verbose output')
+  .action(async (container, itemId, options) => {
+    try {
+      const config: ConfigurationInterface = validateCliInputs();
+      const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
+      const modifiedStripped = container.indexOf('#') === 0 ? container.substring(1) : container;
+      const result: any = await atomicals.getAtomicalByContainerItem(modifiedStripped, itemId);
       console.log(JSON.stringify(result, null, 2));
     } catch (error) {
       console.log(error);
@@ -824,7 +849,6 @@ program.command('find-containers')
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Modify, Updates, Events, Delete...
 /////////////////////////////////////////////////////////////////////////////////////////////
-
 program.command('set')
   .description('Set (update) an existing Atomical with data.')
   .argument('<atomicalIdAlias>', 'string')
@@ -834,6 +858,7 @@ program.command('set')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
   .option('--satsoutput <number>', 'Satoshis to put into output', '1000')
   .option('--disableautoencode', 'Disables auto encoding of $b variables')
+  .option('--bitworkc <string>', 'Whether to add any bitwork proof of work to the commit tx')
   .action(async (atomicalId, jsonFilename, options) => {
     try {
       const walletInfo = await validateWalletStorage();
@@ -844,7 +869,8 @@ program.command('set')
       const result: any = await atomicals.setInteractive(atomicalId, jsonFilename, fundingWalletRecord, ownerWalletRecord, {
         satsbyte: parseInt(options.satsbyte, 10),
         satsoutput: parseInt(options.satsoutput, 10),
-        disableautoencode: !!options.disableautoencode
+        disableautoencode: !!options.disableautoencode,
+        bitworkc: options.bitworkc ? options.bitworkc : '8', 
       });
       handleResultLogging(result);
     } catch (error) {
@@ -881,29 +907,83 @@ program.command('set-container-data')
       console.log(error);
     }
   });
- 
-program.command('prepare-dmint-items')
-.description('Configure container for decentralized dmint')
+  
+program.command('prepare-dmint')
+.description('Prepare the dmint config and item manifest from a folder of images')
+.argument('<folder>', 'string')
+.argument('<mintHeight>', 'number')
+.argument('<bitworkc>', 'string')
+.argument('<outputName>', 'string')
+.action(async (folder, mintHeight, bitworkc, outputName, options) => {
+  try {
+    const result: any = await Atomicals.createDmintManifest(folder, parseInt(mintHeight, 10), bitworkc, outputName);
+    handleResultLogging(result);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+program.command('enable-dmint')
+  .description('Enable dmint for a container with the dmint config file produced from the prepare-dmint command')
+  .argument('<container>', 'string')
+  .argument('<jsonFilename>', 'string')
+  .option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
+  .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
+  .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
+  .option('--satsoutput <number>', 'Satoshis to put into output', '1000')
+  .option('--disableautoencode', 'Disables auto encoding of $b variables')
+  .option('--bitworkc <string>', 'Whether to add any bitwork proof of work to the commit tx')
+  .action(async (containerName, jsonFilename, options) => {
+    try {
+      const walletInfo = await validateWalletStorage();
+      const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
+      let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
+      let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
+      containerName = containerName.startsWith('#') ? containerName : '#' + containerName;
+      const result: any = await atomicals.setContainerDmintInteractive(containerName, jsonFilename, fundingWalletRecord, ownerWalletRecord, {
+        satsbyte: parseInt(options.satsbyte, 10),
+        satsoutput: parseInt(options.satsoutput, 10),
+        disableautoencode: !!options.disableautoencode,
+        bitworkc: options.bitworkc || '7',
+      });
+
+      handleResultLogging(result);
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
+program.command('mint-item')
+.description('Mint item non-fungible token (NFT) Atomical from a decentralized container')
 .argument('<containerName>', 'string')
-.argument('<dmintManifestJson>', 'string')
-.option('--notimmutable', 'Whether minted items are not immutable')
-.option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
-.option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
+.argument('<itemName>', 'string')
+.argument('<manifestFile>', 'string')
+.option('--owner <string>', 'Owner of the parent Atomical. Used for direct subrealm minting.')
+.option('--initialowner <string>', 'Initial owner wallet alias to mint the Atomical into')
 .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
-.option('--satsoutput <number>', 'Satoshis to put into output', '1000')
-.option('--bitworkc <string>', 'Whether to add any bitwork proof of work to the commit tx')
-.action(async (containerName, mintheight, jsonFilename, options) => {
+.option('--satsoutput <number>', 'Satoshis to put into the minted atomical', '1000')
+.option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
+.option('--container <string>', 'Name of the container to request')
+.option('--bitworkc <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the commit transaction.')
+.option('--bitworkr <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the reveal transaction.')
+.option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for mining. Improvements mining performance to set this flag')
+.action(async (containerName, itemName, manifestFile, options) => {
   try {
     const walletInfo = await validateWalletStorage();
-    const config: ConfigurationInterface = validateCliInputs();
     const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-    let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
+    let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
     let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
-    containerName = containerName.startsWith('#') ? containerName : '#' + containerName;
-    const result: any = await atomicals.prepareDmintItems(containerName, jsonFilename, fundingWalletRecord, ownerWalletRecord, {
-      satsbyte: parseInt(options.satsbyte, 10),
-      satsoutput: parseInt(options.satsoutput, 10),
-      bitworkc: options.bitworkc ? options.bitworkc : '7',
+    let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
+    const result: any = await atomicals.mintContainerItemInteractive(containerName, itemName, manifestFile, initialOwnerAddress.address, fundingRecord.WIF, ownerWalletRecord, {
+      meta: options.meta,
+      ctx: options.ctx,
+      init: options.init,
+      satsbyte: parseInt(options.satsbyte),
+      satsoutput: parseInt(options.satsoutput),
+      container: options.container,
+      bitworkc: options.bitworkc,
+      bitworkr: options.bitworkr,
+      disableMiningChalk: options.disablechalk
     });
     handleResultLogging(result);
   } catch (error) {
@@ -911,45 +991,16 @@ program.command('prepare-dmint-items')
   }
 });
 
-program.command('prepare-dmint-config')
-.description('Configure container for decentralized dmint')
+program.command('get-container-item-validated')
+.description('Get an item from a container and see if it would validate with the provided data')
 .argument('<containerName>', 'string')
-.argument('<mintheight>', 'number')
-.option('--notimmutable', 'Whether minted items are not immutable')
-.option('--funding <string>', 'Use wallet alias WIF key to be used for funding')
-.option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
-.option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
-.option('--satsoutput <number>', 'Satoshis to put into output', '1000')
-.option('--mintbitworkc <string>', 'Whether to add any bitwork proof of work to the mint commit tx')
-.option('--bitworkc <string>', 'Whether to add any bitwork proof of work to the commit tx')
-.action(async (containerName, mintheight, options) => {
+.argument('<itemName>', 'string')
+.argument('<manifestFile>', 'string')
+.action(async (containerName, itemName, manifestFile, options) => {
   try {
     const walletInfo = await validateWalletStorage();
-    const config: ConfigurationInterface = validateCliInputs();
     const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-    let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-    let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
-    containerName = containerName.startsWith('#') ? containerName : '#' + containerName;
-    const isNotImmutable = options.notimmutable ? true : false;
-    const mintBitworkcValue = options.mintbitworkc ? options.mintbitworkc : getRandomBitwork4();
-    const result: any = await atomicals.prepareDmint(containerName, parseInt(mintheight, 10), !isNotImmutable, mintBitworkcValue, fundingWalletRecord, ownerWalletRecord, {
-      satsbyte: parseInt(options.satsbyte, 10),
-      satsoutput: parseInt(options.satsoutput, 10),
-      bitworkc: options.bitworkc ? options.bitworkc : '7',
-    });
-    handleResultLogging(result);
-  } catch (error) {
-    console.log(error);
-  }
-});
- 
-program.command('prepare-dmint-manifest')
-.description('Configure container for decentralized dmint')
-.argument('<folder>', 'string')
-.argument('<outputName>', 'string')
-.action(async (folder, outputName, options) => {
-  try {
-    const result: any = await Atomicals.createDmintManifest(folder, outputName);
+    const result: any = await atomicals.getAtomicalByContainerItemValidated(containerName, itemName, manifestFile);
     handleResultLogging(result);
   } catch (error) {
     console.log(error);
@@ -1029,7 +1080,7 @@ program.command('delete')
       const result: any = await atomicals.deleteInteractive(atomicalId, filesToDelete, ownerWalletRecord, fundingWalletRecord, {
         satsbyte: parseInt(options.satsbyte, 10),
         satsoutput: parseInt(options.satsoutput, 10),
-        bitworkc: options.bitworkc,
+        bitworkc: options.bitworkc ? options.bitworkc : '8',
         bitworkr: options.bitworkr,
         disableMiningChalk: options.disablechalk
       });
@@ -1055,7 +1106,7 @@ program.command('seal')
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       const result: any = await atomicals.sealInteractive(atomicalId, fundingWalletRecord, ownerWalletRecord, {
         satsbyte: parseInt(options.satsbyte),
-        bitworkc: options.bitworkc,
+        bitworkc: options.bitworkc || '1'
       });
       handleResultLogging(result);
     } catch (error) {
@@ -1563,41 +1614,6 @@ program.command('mint-subrealm')
         satsbyte: parseInt(options.satsbyte),
         satsoutput: parseInt(options.satsoutput),
         container: options.container,
-        bitworkc: options.bitworkc,
-        bitworkr: options.bitworkr,
-        disableMiningChalk: options.disablechalk
-      });
-      handleResultLogging(result);
-    } catch (error) {
-      console.log(error);
-    }
-  });
-
-  program.command('mint-dmitem')
-  .description('Mint dmitem non-fungible token (NFT) Atomical')
-  .argument('<container>', 'string')
-  .argument('<itemId>', 'string')
-  .option('--initialowner <string>', 'Initial owner wallet alias to mint the Atomical into')
-  .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
-  .option('--satsoutput <number>', 'Satoshis to put into the minted atomical', '1000')
-  .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
-  .option('--bitworkc <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the commit transaction.')
-  .option('--bitworkr <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the reveal transaction.')
-  .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for mining. Improvements mining performance to set this flag')
-  .action(async (container, itemId, options) => {
-    try {
-      const walletInfo = await validateWalletStorage();
-      const config: ConfigurationInterface = validateCliInputs();
-      const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-      let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
-      let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
-      let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result: any = await atomicals.mintContainerDmintItemInteractive(container, itemId, initialOwnerAddress.address, fundingRecord.WIF, ownerWalletRecord, {
-        meta: options.meta,
-        ctx: options.ctx,
-        init: options.init,
-        satsbyte: parseInt(options.satsbyte),
-        satsoutput: parseInt(options.satsoutput),
         bitworkc: options.bitworkc,
         bitworkr: options.bitworkr,
         disableMiningChalk: options.disablechalk

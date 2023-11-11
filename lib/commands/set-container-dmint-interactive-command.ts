@@ -7,7 +7,7 @@ bitcoin.initEccLib(ecc);
 import {
   initEccLib,
 } from "bitcoinjs-lib";
-import { getAndCheckAtomicalInfo, logBanner, prepareFilesDataAsObject, readJsonFileAsCompleteDataObjectEncodeHash } from "./command-helpers";
+import { getAndCheckAtomicalInfo, logBanner, readJsonFileAsCompleteDataObjectEncodeAtomicalIds } from "./command-helpers";
 import { AtomicalOperationBuilder } from "../utils/atomical-operation-builder";
 import { BaseRequestOptions } from "../interfaces/api.interface";
 import { IWalletRecord } from "../utils/validate-wallet-storage";
@@ -15,11 +15,32 @@ import { IWalletRecord } from "../utils/validate-wallet-storage";
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 initEccLib(tinysecp as any);
 
-export class PrepareDmintItemsIteractiveCommand implements CommandInterface {
+export function validateDmint(obj) {
+  if (!obj) {
+    return false;
+  }
+  if (!obj.dmint) {
+    return false;
+  }
+  const mh = obj.dmint.mint_length;
+  if (mh) {
+    if (isNaN(mh)) {
+      return false;
+    }
+    if (mh < 0 || mh > 10000000) {
+      return false;
+    }
+  } else {
+    return mh !== 0;
+  }
+
+  
+}
+export class SetContainerDmintInteractiveCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
     private containerName: string,
-    private jsonFile: string,
+    private filename: string,
     private owner: IWalletRecord,
     private funding: IWalletRecord,
     private options: BaseRequestOptions
@@ -27,10 +48,13 @@ export class PrepareDmintItemsIteractiveCommand implements CommandInterface {
 
   }
   async run(): Promise<any> {
-    logBanner(`Prepare Container Dmint Items Interactive`);
+    logBanner(`Set Container Data Interactive`);
     // Attach any default data
-    let filesData = await readJsonFileAsCompleteDataObjectEncodeHash(this.jsonFile, true, ':h');
-     
+    let filesData = await readJsonFileAsCompleteDataObjectEncodeAtomicalIds(this.filename, false);
+
+    if (!validateDmint(filesData)) {
+      throw new Error('Invalid dmint');
+    }
     const { atomicalInfo, locationInfo, inputUtxoPartial } = await getAndCheckAtomicalInfo(this.electrumApi, this.containerName, this.owner.address, 'NFT', 'container');
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
@@ -51,7 +75,6 @@ export class PrepareDmintItemsIteractiveCommand implements CommandInterface {
     if (this.options.bitworkc) {
       atomicalBuilder.setBitworkCommit(this.options.bitworkc);
     }
-
     // Add the atomical to update
     atomicalBuilder.addInputUtxo(inputUtxoPartial, this.owner.WIF)
 
