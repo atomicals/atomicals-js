@@ -35,7 +35,7 @@ export interface ElectrumApiInterface {
     atomicalsByAddress: (address: string) => Promise<any>;
     atomicalsAtLocation: (location: string) => Promise<any>;
     atomicalsGetByContainerItem: (container: string, item: string) => Promise<any>;
-    atomicalsGetByContainerItemValidated: (container: string, item: string, main: string, mainHash: string, proof: any, checkWithoutSealed: boolean) => Promise<any>;
+    atomicalsGetByContainerItemValidated: (container: string, item: string, bitworkc: string, bitworkr: string, main: string, mainHash: string, proof: any, checkWithoutSealed: boolean) => Promise<any>;
     atomicalsGetByRealm: (realm: string) => Promise<any>;
     atomicalsGetRealmInfo: (realmOrSubRealm: string, verbose?: boolean) => Promise<any>;
     atomicalsGetByTicker: (ticker: string) => Promise<any>;

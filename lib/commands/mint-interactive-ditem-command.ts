@@ -64,7 +64,7 @@ export class MintInteractiveDitemCommand implements CommandInterface {
     const mainHash = hash256(fileBuf).toString('hex')
     const proof = expectedData['args']['proof']
     // Step 1. Query the container item to see if it's taken
-    const getItemCmd = new GetContainerItemValidatedCommand(this.electrumApi, this.container, this.requestDmitem, main, mainHash, proof, false);
+    const getItemCmd = new GetContainerItemValidatedCommand(this.electrumApi, this.container, this.requestDmitem, 'any', 'any', main, mainHash, proof, false);
     const getItemCmdResponse = await getItemCmd.run();
     if (getItemCmdResponse.data.atomical_id) {
       return {

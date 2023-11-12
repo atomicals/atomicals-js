@@ -165,7 +165,7 @@ export class ElectrumApiMock implements ElectrumApiInterface {
     public async atomicalsGetByContainerItem(container: string, item: string): Promise<any> {
         return "atomicalsGetByContainerItem"
     }
-    public async atomicalsGetByContainerItemValidated(container: string, item: string, main: string, mainHash: string, proof: any, checkWithoutSealed: boolean): Promise<any> {
+    public async atomicalsGetByContainerItemValidated(container: string, item: string, bitworkc: string, bitworkr: string, main: string, mainHash: string, proof: any, checkWithoutSealed: boolean): Promise<any> {
         return "atomicalsGetByContainerItemValidated"
     }
     

@@ -68,7 +68,7 @@ function showWalletFTBalancesDetails(obj: any, showutxos = false, accumulated) {
     console.log('Ticker:', atomical['ticker'])
     console.log('Confirmed balance:', atomical['confirmed'])
     console.log('UTXOs for Atomical:', atomicalsUtxosByAtomicalId[atomicalId].length);
-  
+
     accumulated[atomical['ticker']] = accumulated[atomical['ticker']] || 0;
     accumulated[atomical['ticker']] += atomical['confirmed']
     if (showutxos)
@@ -542,7 +542,7 @@ program.command('balances')
       console.log("\n\n");
       console.log(accumulated)
       await electrum.close();
-      
+
     } catch (error) {
       console.log(error);
     }
@@ -870,7 +870,7 @@ program.command('set')
         satsbyte: parseInt(options.satsbyte, 10),
         satsoutput: parseInt(options.satsoutput, 10),
         disableautoencode: !!options.disableautoencode,
-        bitworkc: options.bitworkc ? options.bitworkc : '8', 
+        bitworkc: options.bitworkc ? options.bitworkc : '8',
       });
       handleResultLogging(result);
     } catch (error) {
@@ -907,21 +907,33 @@ program.command('set-container-data')
       console.log(error);
     }
   });
-  
+
+program.command('prepare-dmint-items')
+  .description('Prepare the dmint config and item manifest from a folder of images')
+  .argument('<folder>', 'string')
+  .argument('<outputFolderName>', 'string')
+  .action(async (folder, outputFolderName) => {
+    try {
+      const result: any = await Atomicals.createDmintItemManifests(folder, outputFolderName);
+      handleResultLogging(result);
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
 program.command('prepare-dmint')
-.description('Prepare the dmint config and item manifest from a folder of images')
-.argument('<folder>', 'string')
-.argument('<mintHeight>', 'number')
-.argument('<bitworkc>', 'string')
-.argument('<outputName>', 'string')
-.action(async (folder, mintHeight, bitworkc, outputName, options) => {
-  try {
-    const result: any = await Atomicals.createDmintManifest(folder, parseInt(mintHeight, 10), bitworkc, outputName);
-    handleResultLogging(result);
-  } catch (error) {
-    console.log(error);
-  }
-});
+  .description('Prepare the dmint config and item manifest from a folder of images')
+  .argument('<folder>', 'string')
+  .argument('<mintHeight>', 'number')
+  .argument('<bitworkc>', 'string')
+  .action(async (folder, mintHeight, bitworkc) => {
+    try {
+      const result: any = await Atomicals.createDmint(folder, parseInt(mintHeight, 10), bitworkc);
+      handleResultLogging(result);
+    } catch (error) {
+      console.log(error);
+    }
+  });
 
 program.command('enable-dmint')
   .description('Enable dmint for a container with the dmint config file produced from the prepare-dmint command')
@@ -954,58 +966,58 @@ program.command('enable-dmint')
   });
 
 program.command('mint-item')
-.description('Mint item non-fungible token (NFT) Atomical from a decentralized container')
-.argument('<containerName>', 'string')
-.argument('<itemName>', 'string')
-.argument('<manifestFile>', 'string')
-.option('--owner <string>', 'Owner of the parent Atomical. Used for direct subrealm minting.')
-.option('--initialowner <string>', 'Initial owner wallet alias to mint the Atomical into')
-.option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
-.option('--satsoutput <number>', 'Satoshis to put into the minted atomical', '1000')
-.option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
-.option('--container <string>', 'Name of the container to request')
-.option('--bitworkc <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the commit transaction.')
-.option('--bitworkr <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the reveal transaction.')
-.option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for mining. Improvements mining performance to set this flag')
-.action(async (containerName, itemName, manifestFile, options) => {
-  try {
-    const walletInfo = await validateWalletStorage();
-    const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-    let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
-    let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
-    let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-    const result: any = await atomicals.mintContainerItemInteractive(containerName, itemName, manifestFile, initialOwnerAddress.address, fundingRecord.WIF, ownerWalletRecord, {
-      meta: options.meta,
-      ctx: options.ctx,
-      init: options.init,
-      satsbyte: parseInt(options.satsbyte),
-      satsoutput: parseInt(options.satsoutput),
-      container: options.container,
-      bitworkc: options.bitworkc,
-      bitworkr: options.bitworkr,
-      disableMiningChalk: options.disablechalk
-    });
-    handleResultLogging(result);
-  } catch (error) {
-    console.log(error);
-  }
-});
+  .description('Mint item non-fungible token (NFT) Atomical from a decentralized container')
+  .argument('<containerName>', 'string')
+  .argument('<itemName>', 'string')
+  .argument('<manifestFile>', 'string')
+  .option('--owner <string>', 'Owner of the parent Atomical. Used for direct subrealm minting.')
+  .option('--initialowner <string>', 'Initial owner wallet alias to mint the Atomical into')
+  .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
+  .option('--satsoutput <number>', 'Satoshis to put into the minted atomical', '1000')
+  .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
+  .option('--container <string>', 'Name of the container to request')
+  .option('--bitworkc <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the commit transaction.')
+  .option('--bitworkr <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the reveal transaction.')
+  .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for mining. Improvements mining performance to set this flag')
+  .action(async (containerName, itemName, manifestFile, options) => {
+    try {
+      const walletInfo = await validateWalletStorage();
+      const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
+      let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
+      let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
+      let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
+      const result: any = await atomicals.mintContainerItemInteractive(containerName, itemName, manifestFile, initialOwnerAddress.address, fundingRecord.WIF, ownerWalletRecord, {
+        meta: options.meta,
+        ctx: options.ctx,
+        init: options.init,
+        satsbyte: parseInt(options.satsbyte),
+        satsoutput: parseInt(options.satsoutput),
+        container: options.container,
+        bitworkc: options.bitworkc,
+        bitworkr: options.bitworkr,
+        disableMiningChalk: options.disablechalk
+      });
+      handleResultLogging(result);
+    } catch (error) {
+      console.log(error);
+    }
+  });
 
 program.command('get-container-item-validated')
-.description('Get an item from a container and see if it would validate with the provided data')
-.argument('<containerName>', 'string')
-.argument('<itemName>', 'string')
-.argument('<manifestFile>', 'string')
-.action(async (containerName, itemName, manifestFile, options) => {
-  try {
-    const walletInfo = await validateWalletStorage();
-    const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-    const result: any = await atomicals.getAtomicalByContainerItemValidated(containerName, itemName, manifestFile);
-    handleResultLogging(result);
-  } catch (error) {
-    console.log(error);
-  }
-});
+  .description('Get an item from a container and see if it would validate with the provided data')
+  .argument('<containerName>', 'string')
+  .argument('<itemName>', 'string')
+  .argument('<manifestFile>', 'string')
+  .action(async (containerName, itemName, manifestFile, options) => {
+    try {
+      const walletInfo = await validateWalletStorage();
+      const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
+      const result: any = await atomicals.getAtomicalByContainerItemValidated(containerName, itemName, manifestFile);
+      handleResultLogging(result);
+    } catch (error) {
+      console.log(error);
+    }
+  });
 
 program.command('emit')
   .description('Emit an event for an existing Atomical with data.')

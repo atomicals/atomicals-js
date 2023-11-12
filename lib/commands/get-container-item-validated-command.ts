@@ -6,6 +6,8 @@ export class GetContainerItemValidatedCommand implements CommandInterface {
     private electrumApi: ElectrumApiInterface,
     private containerName: any,
     private item: any,
+    private bitworkc: any,
+    private bitworkr: any,
     private main: string,
     private mainHash: string,
     private proof: string,
@@ -14,7 +16,7 @@ export class GetContainerItemValidatedCommand implements CommandInterface {
   }
 
   async run(): Promise<any> {
-    const responseResult = await this.electrumApi.atomicalsGetByContainerItemValidated(this.containerName, this.item, this.main, this.mainHash, this.proof, this.checkWithoutSealed);
+    const responseResult = await this.electrumApi.atomicalsGetByContainerItemValidated(this.containerName, this.item, this.bitworkc, this.bitworkr, this.main, this.mainHash, this.proof, this.checkWithoutSealed);
     return {
       success: true,
       data: responseResult.result

@@ -67,12 +67,13 @@ import { GetFtInfoCommand } from "./commands/get-dft-info-command";
 import { BroadcastCommand } from "./commands/broadcast-command";
 import { compactIdToOutpointBytesAndHex, isAtomicalId } from "./utils/atomical-format-helpers";
 import { SetContainerDataInteractiveCommand } from "./commands/set-container-data-interactive-command";
-import { CreateDmintManifestCommand } from "./commands/create-dmint-manifest-command";
 import { GetContainerItems } from "./commands/get-container-items-command";
 import { MintInteractiveDitemCommand } from "./commands/mint-interactive-ditem-command";
 import { SetContainerDmintInteractiveCommand } from "./commands/set-container-dmint-interactive-command";
 import { GetContainerItemCommand } from "./commands/get-container-item";
 import { GetContainerItemValidatedByManifestCommand } from "./commands/get-container-item-validated-by-manifest-command";
+import { CreateDmintItemManifestsCommand } from "./commands/create-dmint-manifest-command";
+import { CreateDmintCommand } from "./commands/create-dmint-command";
 export { decorateAtomicals } from "./utils/atomical-format-helpers";
 export { addressToP2PKH } from "./utils/address-helpers";
 export { getExtendTaprootAddressKeypairPath } from "./utils/address-keypair-path";
@@ -86,9 +87,9 @@ export class Atomicals implements APIInterface {
   constructor(private electrumApi: ElectrumApiInterface) {
   }
 
-  static async createDmintManifest(folderName: string, mintHeight: number, bitworkc: string, outputs: string): Promise<CommandResultInterface> {
+  static async createDmintItemManifests(folderName: string, output: string): Promise<CommandResultInterface> {
     try {
-      const command: CommandInterface = new CreateDmintManifestCommand(folderName, mintHeight, bitworkc, outputs);
+      const command: CommandInterface = new CreateDmintItemManifestsCommand(folderName, output);
       return await command.run();
     } catch (error: any) {
       return {
@@ -98,7 +99,22 @@ export class Atomicals implements APIInterface {
       }
     }
   }
-  
+
+
+  static async createDmint(folderName: string, mintHeight: number, bitworkc: string): Promise<CommandResultInterface> {
+    try {
+      const command: CommandInterface = new CreateDmintCommand(folderName, mintHeight, bitworkc);
+      return await command.run();
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.toString(),
+        error
+      }
+    }
+  }
+
+
   static async renderPreviews(filesmap: FileMap, body: boolean): Promise<any> {
     try {
       const command: CommandInterface = new RenderPreviewsCommand(filesmap, body);
@@ -511,7 +527,7 @@ export class Atomicals implements APIInterface {
       this.electrumApi.close();
     }
   }
-   
+
   async setContainerDataInteractive(containerName: string, filename: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();

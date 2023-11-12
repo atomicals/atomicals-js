@@ -49,7 +49,15 @@ export class GetContainerItemValidatedByManifestCommand implements CommandInterf
     const mainHash = hash256(fileBuf).toString('hex')
     const proof = expectedData['args']['proof']
     // Step 1. Query the container item to see if it's taken
-    const getItemCmd = new GetContainerItemValidatedCommand(this.electrumApi, this.container, this.requestDmitem, main, mainHash, proof, true);
+    let bitworkc = 'any';
+    let bitworkr = 'any';
+    if (expectedData['args']['bitworkc']) {
+      bitworkc = expectedData['args']['bitworkc'];
+    }
+    if (expectedData['args']['bitworkr']) {
+      bitworkr = expectedData['args']['bitworkr'];
+    }
+    const getItemCmd = new GetContainerItemValidatedCommand(this.electrumApi, this.container, this.requestDmitem, bitworkc, bitworkr, main, mainHash, proof, true);
     const getItemCmdResponse = await getItemCmd.run();
     console.log('getItemCmdResponse', getItemCmdResponse)
     return {
