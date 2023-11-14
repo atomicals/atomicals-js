@@ -310,7 +310,7 @@ export function decodePayloadCBOR(payload: any, hexify = true, addUtf8 = false):
   }
 }
 
-const errMessage = 'Invalid --bitwork value. Must be hex with a single optional . dot seperated with a number of 1 to 15 with no more than 10 hex characters. Example: 0123 or 3456.12';
+const errMessage = 'Invalid --bitwork value. Must be hex with a single optional . dot separated with a number of 1 to 15 with no more than 10 hex characters. Example: 0123 or 3456.12';
 
 export const isBitworkRefBase32Prefix = (bitwork): string | null => {
   if (/^[abcdefghjkmnpqrstuvwxyz0-9]{1,10}$/.test(bitwork)) {

@@ -44,7 +44,7 @@ export class SplitInteractiveCommand implements CommandInterface {
 
     const hasNfts = hasAtomicalType('NFT', atomicals);
     if (hasNfts) {
-      console.log('Found at least one NFT at the same location. The first output will contain the NFTs, and the second output, etc will contain the FTs split out. After you may use the splat command to seperate multiple NFTs if they exist at the same location.')
+      console.log('Found at least one NFT at the same location. The first output will contain the NFTs, and the second output, etc will contain the FTs split out. After you may use the splat command to separate multiple NFTs if they exist at the same location.')
     }
 
     if (!hasNfts && atomicalFts.length <= 1) {
