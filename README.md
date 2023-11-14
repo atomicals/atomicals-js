@@ -10,15 +10,19 @@
 ## Install
 
 ```
-Download the github repo and then run:
+Download the github repo:
+git clone https://github.com/atomicals/atomicals-js.git
 
-npm install
-npm run build
+Build:
+# If you don't have yarn installed
+# npm install -g yarn
+
+yarn install
+yarn run build
 
 See all commands at:
 
-npm run cli --help
-
+yarn run cli --help
 ```
 
 ### Quick Start - Command Line (CLI)
