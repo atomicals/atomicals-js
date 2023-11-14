@@ -80,20 +80,12 @@ WIF: L5Sa65gNR6QsBjqK.....r6o4YzcqNRnJ1p4a6GPxqQQ
 
 #### 2. Explore the CLI
 
+Get all of the commands available:
 ```
 yarn cli --help
 ```
- 
-#### 3. Quick Commands
-
-Get all of the commands available:
- 
-```
-npm run cli --help
-```
 
 Read the documentation at https://docs.atomicals.xyz
-
 
 ## ElectrumX Server RPC Interface
 
