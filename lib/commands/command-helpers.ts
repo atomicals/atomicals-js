@@ -18,7 +18,7 @@ import { IInputUtxoPartial } from "../types/UTXO.interface";
 import * as dotenv from 'dotenv'
 dotenv.config();
 
-export const NETWORK = process.env.NETWORK === 'testnet' ? networks.testnet : networks.bitcoin;
+export const NETWORK = process.env.NETWORK === 'testnet' ? networks.testnet : process.env.NETWORK == "regtest" ? networks.regtest : networks.bitcoin;
 
 function basename(path) {
     return path.split('/').reverse()[0];
