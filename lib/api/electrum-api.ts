@@ -117,6 +117,10 @@ export class ElectrumApi implements ElectrumApiInterface {
 
         function hasAttachedAtomicals(utxo): any | null {
             if (utxo && utxo.atomicals && utxo.atomicals.length) {
+                console.log('foujnd ttac');
+                return true;
+            }
+            if (utxo && utxo.height <= 0) {
                 return true;
             }
             return false;
