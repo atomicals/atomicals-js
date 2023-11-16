@@ -683,6 +683,24 @@ program.command('get-container-item')
     }
   });
 
+
+program.command('validate-container-item')
+.description('Validate a container item from the manifest')
+.argument('<containerName>', 'string')
+.argument('<itemName>', 'string')
+.argument('<manifestFile>', 'string')
+.action(async (containerName, itemName, manifestFile, options) => {
+  try {
+    const walletInfo = await validateWalletStorage();
+    const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
+    const result: any = await atomicals.getAtomicalByContainerItemValidated(containerName, itemName, manifestFile);
+    handleResultLogging(result);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+
 program.command('resolve')
   .description(`Resolve a realm or subrealm. Alias for 'get-realm'`)
   .argument('<realm_or_subrealm>', 'string')
@@ -997,22 +1015,6 @@ program.command('mint-item')
         bitworkr: options.bitworkr,
         disableMiningChalk: options.disablechalk
       });
-      handleResultLogging(result);
-    } catch (error) {
-      console.log(error);
-    }
-  });
-
-program.command('get-container-item-validated')
-  .description('Get an item from a container and see if it would validate with the provided data')
-  .argument('<containerName>', 'string')
-  .argument('<itemName>', 'string')
-  .argument('<manifestFile>', 'string')
-  .action(async (containerName, itemName, manifestFile, options) => {
-    try {
-      const walletInfo = await validateWalletStorage();
-      const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-      const result: any = await atomicals.getAtomicalByContainerItemValidated(containerName, itemName, manifestFile);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
