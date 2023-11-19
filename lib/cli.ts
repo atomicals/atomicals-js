@@ -683,7 +683,6 @@ program.command('get-container-item')
     }
   });
 
-
 program.command('validate-container-item')
 .description('Validate a container item from the manifest')
 .argument('<containerName>', 'string')
@@ -699,7 +698,6 @@ program.command('validate-container-item')
     console.log(error);
   }
 });
-
 
 program.command('resolve')
   .description(`Resolve a realm or subrealm. Alias for 'get-realm'`)

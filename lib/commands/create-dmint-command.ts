@@ -63,7 +63,6 @@ export class CreateDmintCommand implements CommandInterface {
         itemBitworkr = jsonFile['data']['args']['bitworkr'] ? jsonFile['data']['args']['bitworkr'] : 'any';
       }
       const leafVector = itemName + ':' + itemBitworkc + ':' + itemBitworkr + ':' + mainName + ':' + hashedStr;
-      console.log('leafVector', leafVector)
       leafItems.push({
         itemName,
         file,
