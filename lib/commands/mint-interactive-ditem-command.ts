@@ -100,11 +100,18 @@ export class MintInteractiveDitemCommand implements CommandInterface {
       throw new Error('No applicable rule')
     }
     // Attach any requested bitwork
-    if (data.applicable_rule.bitworkc) {
-      atomicalBuilder.setBitworkCommit(data.applicable_rule.bitworkc);
+    if (data.applicable_rule.bitworkc || expectedData['args']['bitworkc']) {
+      if (data.applicable_rule.bitworkc && expectedData['args']['bitworkc'] && (data.applicable_rule.bitworkc !== expectedData['args']['bitworkc'] && data.applicable_rule.bitworkc !== 'any')) {
+        throw new Error('applicable_rule bitworkc is not compatible with the item args bitworkc')
+      }
+      atomicalBuilder.setBitworkCommit(data.applicable_rule.bitworkc || expectedData['args']['bitworkc']);
     }
-    if (data.applicable_rule.bitworkr) {
-      atomicalBuilder.setBitworkReveal(data.applicable_rule.bitworkr);
+
+    if (data.applicable_rule.bitworkr || expectedData['args']['bitworkr']) {
+      if (data.applicable_rule.bitworkr && expectedData['args']['bitworkr'] && (data.applicable_rule.bitworkr !== expectedData['args']['bitworkr'] && data.applicable_rule.bitworkr !== 'any')) {
+        throw new Error('applicable_rule bitworkr is not compatible with the item args bitworkr')
+      }
+      atomicalBuilder.setBitworkReveal(data.applicable_rule.bitworkr || expectedData['args']['bitworkr']);
     }
 
     atomicalBuilder.setArgs({

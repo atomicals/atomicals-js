@@ -74,6 +74,7 @@ import { GetContainerItemCommand } from "./commands/get-container-item";
 import { GetContainerItemValidatedByManifestCommand } from "./commands/get-container-item-validated-by-manifest-command";
 import { CreateDmintItemManifestsCommand } from "./commands/create-dmint-manifest-command";
 import { CreateDmintCommand } from "./commands/create-dmint-command";
+import { TransferInteractiveBuilderCommand } from "./commands/transfer-interactive-builder-command";
 export { decorateAtomicals } from "./utils/atomical-format-helpers";
 export { addressToP2PKH } from "./utils/address-helpers";
 export { getExtendTaprootAddressKeypairPath } from "./utils/address-keypair-path";
@@ -615,7 +616,7 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async transferInteractiveFt(atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, atomicalIdReceipt: string): Promise<CommandResultInterface> {
+  async transferInteractiveFt(atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new TransferInteractiveFtCommand(
@@ -625,8 +626,35 @@ export class Atomicals implements APIInterface {
         funding.WIF,
         validatedWalletInfo,
         satsbyte,
+        nofunding,
         atomicalIdReceipt
       );
+      return await command.run();
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.toString(),
+        error
+      }
+    } finally {
+      this.electrumApi.close();
+    }
+  }
+
+
+  async transferInteractiveBuilder(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string): Promise<CommandResultInterface> {
+    try {
+      await this.electrumApi.open();
+      const command: CommandInterface = new TransferInteractiveBuilderCommand(
+        this.electrumApi,
+        owner.WIF,
+        funding.WIF,
+        validatedWalletInfo,
+        satsbyte,
+        nofunding,
+        atomicalIdReceipt
+      );
+      
       return await command.run();
     } catch (error: any) {
       return {

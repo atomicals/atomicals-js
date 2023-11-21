@@ -1133,6 +1133,7 @@ program.command('splat')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
   .option('--satsoutput <number>', 'Satoshis to put into each output', '1000')
+  .option('--bitworkc <string>', 'Whether to add any bitwork proof of work to the commit tx')
   .action(async (locationId, options) => {
     try {
       const walletInfo = await validateWalletStorage();
@@ -1143,6 +1144,7 @@ program.command('splat')
       const result: any = await atomicals.splatInteractive(locationId, fundingWalletRecord, ownerWalletRecord, {
         satsbyte: parseInt(options.satsbyte),
         satsoutput: parseInt(options.satsoutput),
+        bitworkc: options.bitworkc || '1'
       });
       handleResultLogging(result);
     } catch (error) {
@@ -1712,6 +1714,7 @@ program.command('transfer-ft')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
+  .option('--nofunding', 'Do not ask for separate funding, use existing utxo')
   .option('--atomicalreceipt <string>', 'Attach an atomical id to a pay receipt')
   .action(async (atomicalId, options) => {
     try {
@@ -1722,14 +1725,37 @@ program.command('transfer-ft')
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       const atomicalIdReceipt = options.atomicalreceipt;
-      const result = await atomicals.transferInteractiveFt(atomicalId, ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, atomicalIdReceipt);
+      const result = await atomicals.transferInteractiveFt(atomicalId, ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, options.nofunding, atomicalIdReceipt);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
     }
   });
 
-// temporarily remove so people don't accidentally burn arc20
+
+program.command('transfer-builder')
+  .description('Transfer plain regular UTXOs to another addresses')
+  .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
+  .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
+  .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
+  .option('--nofunding', 'Do not ask for seperate funding, use existing utxo')
+  .option('--atomicalreceipt <string>', 'Attach an atomical id to a pay receipt')
+  .action(async (options) => {
+    try {
+      const walletInfo = await validateWalletStorage();
+      const satsbyte = parseInt(options.satsbyte);
+      const config: ConfigurationInterface = validateCliInputs();
+      const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
+      let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
+      let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
+      const atomicalIdReceipt = options.atomicalreceipt;
+      const result = await atomicals.transferInteractiveBuilder(ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, options.nofunding, atomicalIdReceipt);
+      handleResultLogging(result);
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
 program.command('transfer-utxos')
   .description('Transfer plain regular UTXOs to another addresses')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
