@@ -1,4 +1,5 @@
 import { AtomicalFileData } from "../interfaces/atomical-file-data";
+import { basename } from "path";
 import * as mime from 'mime-types';
 import { chunkBuffer, fileReader, jsonFileReader } from "../utils/file-utils";
 import * as cbor from 'borc';
@@ -18,11 +19,8 @@ import { IInputUtxoPartial } from "../types/UTXO.interface";
 import * as dotenv from 'dotenv'
 dotenv.config();
 
-export const NETWORK = process.env.NETWORK === 'testnet' ? networks.testnet : networks.bitcoin;
+export const NETWORK = process.env.NETWORK === 'testnet' ? networks.testnet : process.env.NETWORK == "regtest" ? networks.regtest : networks.bitcoin;
 
-function basename(path) {
-    return path.split('/').reverse()[0];
-}
 export function logBanner(text: string) {
     console.log("====================================================================")
     console.log(text)
@@ -597,8 +595,12 @@ export const getAndCheckAtomicalInfo = async (electrumApi: ElectrumApiInterface,
     let locationInfo = locationInfoObj.locations;
     // Check to make sure that the location is controlled by the same address as supplied by the WIF
     if (!locationInfo || !locationInfo.length || locationInfo[0].address !== expectedOwnerAddress) {
-        locationInfo = locationInfo[0];
-        throw `Atomical is controlled by a different address (${locationInfo.address}) than the provided wallet (${expectedOwnerAddress})`;
+        const address = locationInfo?.[0]?.address;
+        if (info) {
+            throw `Atomical is controlled by a different address (${address}) than the provided wallet (${expectedOwnerAddress})`;
+        } else {
+            throw 'Atomical is no longer controlled.';
+        }
     }
     locationInfo = locationInfo[0];
     const inputUtxoPartial: any = IsAtomicalOwnedByWalletRecord(expectedOwnerAddress, atomicalDecorated);

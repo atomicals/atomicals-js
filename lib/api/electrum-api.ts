@@ -117,6 +117,10 @@ export class ElectrumApi implements ElectrumApiInterface {
 
         function hasAttachedAtomicals(utxo): any | null {
             if (utxo && utxo.atomicals && utxo.atomicals.length) {
+                console.log('foujnd ttac');
+                return true;
+            }
+            if (utxo && utxo.height <= 0) {
                 return true;
             }
             return false;
@@ -428,7 +432,6 @@ export class ElectrumApi implements ElectrumApiInterface {
 
     public async atomicalsGetByContainerItem(container: string, itemName: string): Promise<any> {
         const p = new Promise((resolve, reject) => {
-            console.log('h')
             this.call('blockchain.atomicals.get_by_container_item', [container, itemName]).then(function (result: any) {
                 resolve(result);
             }).catch((error) => {
@@ -441,7 +444,7 @@ export class ElectrumApi implements ElectrumApiInterface {
  
     public async atomicalsGetByContainerItemValidated(container: string, item: string, bitworkc: string, bitworkr: string, main: string, mainHash: string, proof: any, checkWithoutSealed: boolean): Promise<any> {
         const p = new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.get_by_container_item_validation', [container, item, bitworkc, bitworkr, main, mainHash, proof, checkWithoutSealed]).then(function (result: any) {
+            this.call('blockchain.atomicals.get_by_container_item_validate', [container, item, bitworkc, bitworkr, main, mainHash, proof, checkWithoutSealed]).then(function (result: any) {
                 resolve(result);
             }).catch((error) => {
                 console.log('error ', error)

@@ -683,6 +683,22 @@ program.command('get-container-item')
     }
   });
 
+program.command('validate-container-item')
+.description('Validate a container item from the manifest')
+.argument('<containerName>', 'string')
+.argument('<itemName>', 'string')
+.argument('<manifestFile>', 'string')
+.action(async (containerName, itemName, manifestFile, options) => {
+  try {
+    const walletInfo = await validateWalletStorage();
+    const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
+    const result: any = await atomicals.getAtomicalByContainerItemValidated(containerName, itemName, manifestFile);
+    handleResultLogging(result);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 program.command('resolve')
   .description(`Resolve a realm or subrealm. Alias for 'get-realm'`)
   .argument('<realm_or_subrealm>', 'string')
@@ -1003,22 +1019,6 @@ program.command('mint-item')
     }
   });
 
-program.command('get-container-item-validated')
-  .description('Get an item from a container and see if it would validate with the provided data')
-  .argument('<containerName>', 'string')
-  .argument('<itemName>', 'string')
-  .argument('<manifestFile>', 'string')
-  .action(async (containerName, itemName, manifestFile, options) => {
-    try {
-      const walletInfo = await validateWalletStorage();
-      const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-      const result: any = await atomicals.getAtomicalByContainerItemValidated(containerName, itemName, manifestFile);
-      handleResultLogging(result);
-    } catch (error) {
-      console.log(error);
-    }
-  });
-
 program.command('emit')
   .description('Emit an event for an existing Atomical with data.')
   .argument('<atomicalIdAlias>', 'string')
@@ -1151,7 +1151,7 @@ program.command('splat')
   });
 
 program.command('split')
-  .description('Split operation to seperate the FT Atomicals at a single UTXOs.')
+  .description('Split operation to separate the FT Atomicals at a single UTXOs.')
   .argument('<locationId>', 'string')
   .option('--funding <string>', 'Use wallet alias wif key to be used for funding')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
@@ -1735,7 +1735,7 @@ program.command('transfer-utxos')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
-  .option('--nofunding', 'Do not ask for seperate funding, use existing utxo')
+  .option('--nofunding', 'Do not ask for separate funding, use existing utxo')
   .option('--atomicalreceipt <string>', 'Attach an atomical id to a pay receipt')
   .action(async (options) => {
     try {

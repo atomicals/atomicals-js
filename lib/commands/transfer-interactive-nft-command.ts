@@ -86,7 +86,7 @@ export class TransferInteractiveNftCommand implements CommandInterface {
     }
 
     if (atomicalDecorated.location_info_obj.locations[0].atomicals_at_location.length > 1) {
-      throw `Multiple atomicals are located at the same address as the NFT. Use the splat command to seperate them first.`;
+      throw `Multiple atomicals are located at the same address as the NFT. Use the splat command to separate them first.`;
     }
 
     const rl = readline.createInterface({
