@@ -1,4 +1,5 @@
 import { AtomicalFileData } from "../interfaces/atomical-file-data";
+import { basename } from "path";
 import * as mime from 'mime-types';
 import { chunkBuffer, fileReader, jsonFileReader } from "../utils/file-utils";
 import * as cbor from 'borc';
@@ -20,9 +21,6 @@ dotenv.config();
 
 export const NETWORK = process.env.NETWORK === 'testnet' ? networks.testnet : networks.bitcoin;
 
-function basename(path) {
-    return path.split('/').reverse()[0];
-}
 export function logBanner(text: string) {
     console.log("====================================================================")
     console.log(text)
