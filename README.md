@@ -10,15 +10,19 @@
 ## Install
 
 ```
-Download the github repo and then run:
+Download the github repo:
+git clone https://github.com/atomicals/atomicals-js.git
 
-npm install
-npm run build
+Build:
+# If you don't have yarn installed
+# npm install -g yarn
+
+yarn install
+yarn run build
 
 See all commands at:
 
-npm run cli --help
-
+yarn run cli --help
 ```
 
 ### Quick Start - Command Line (CLI)
@@ -76,20 +80,12 @@ WIF: L5Sa65gNR6QsBjqK.....r6o4YzcqNRnJ1p4a6GPxqQQ
 
 #### 2. Explore the CLI
 
+Get all of the commands available:
 ```
 yarn cli --help
 ```
- 
-#### 3. Quick Commands
-
-Get all of the commands available:
- 
-```
-npm run cli --help
-```
 
 Read the documentation at https://docs.atomicals.xyz
-
 
 ## ElectrumX Server RPC Interface
 
