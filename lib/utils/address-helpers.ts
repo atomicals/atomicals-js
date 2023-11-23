@@ -42,7 +42,13 @@ export function detectAddressTypeToScripthash(address: string): { output: string
       address
     }
   } else if (address.indexOf('tb1') === 0) {
-
+    const output = bitcoin.address.toOutputScript(address, NETWORK);
+    return {
+      output,
+      scripthash: Buffer.from(sha256(output), "hex").reverse().toString("hex"),
+      address
+    }
+  } else if (address.indexOf('bcrt1p') === 0) {
     const output = bitcoin.address.toOutputScript(address, NETWORK);
     return {
       output,
@@ -162,6 +168,7 @@ export enum AddressTypeString {
   p2tr_testnet = 'p2tr_testnet',
   p2sh_testnet = 'p2sh_testnet',
   p2pkh_testnet = 'p2pkh_testnet',
+  p2tr_regtest = 'p2tr_regtest',
   unknown = 'unknown',
 }
 
@@ -182,6 +189,8 @@ export function getAddressType(address: string): AddressTypeString {
     return AddressTypeString.p2sh_testnet;
   } else if (address.startsWith('tb1p')) {
     return AddressTypeString.p2tr_testnet;
+  } else if (address.startsWith('bcrt1p')) {
+    return AddressTypeString.p2tr_regtest;
   } else {
     return AddressTypeString.unknown;
   }
@@ -244,7 +253,7 @@ export function utxoToInput(
         },
       };
     }
-    case AddressTypeString.p2tr || AddressTypeString.p2tr_testnet: {
+    case AddressTypeString.p2tr || AddressTypeString.p2tr_testnet || AddressTypeString.p2tr_regtest: {
       return {
         hash: utxo.txid,
         index: option.override.vout ?? utxo.vout,
