@@ -597,8 +597,12 @@ export const getAndCheckAtomicalInfo = async (electrumApi: ElectrumApiInterface,
     let locationInfo = locationInfoObj.locations;
     // Check to make sure that the location is controlled by the same address as supplied by the WIF
     if (!locationInfo || !locationInfo.length || locationInfo[0].address !== expectedOwnerAddress) {
-        locationInfo = locationInfo[0];
-        throw `Atomical is controlled by a different address (${locationInfo.address}) than the provided wallet (${expectedOwnerAddress})`;
+        const address = locationInfo?.[0]?.address;
+        if (info) {
+            throw `Atomical is controlled by a different address (${address}) than the provided wallet (${expectedOwnerAddress})`;
+        } else {
+            throw 'Atomical is no longer controlled.';
+        }
     }
     locationInfo = locationInfo[0];
     const inputUtxoPartial: any = IsAtomicalOwnedByWalletRecord(expectedOwnerAddress, atomicalDecorated);
