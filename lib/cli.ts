@@ -1151,7 +1151,7 @@ program.command('splat')
   });
 
 program.command('split')
-  .description('Split operation to seperate the FT Atomicals at a single UTXOs.')
+  .description('Split operation to separate the FT Atomicals at a single UTXOs.')
   .argument('<locationId>', 'string')
   .option('--funding <string>', 'Use wallet alias wif key to be used for funding')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
@@ -1735,7 +1735,7 @@ program.command('transfer-utxos')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
-  .option('--nofunding', 'Do not ask for seperate funding, use existing utxo')
+  .option('--nofunding', 'Do not ask for separate funding, use existing utxo')
   .option('--atomicalreceipt <string>', 'Attach an atomical id to a pay receipt')
   .action(async (options) => {
     try {
