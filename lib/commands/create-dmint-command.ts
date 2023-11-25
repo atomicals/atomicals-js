@@ -92,6 +92,7 @@ export class CreateDmintCommand implements CommandInterface {
     await jsonFileWriter(`${this.folder}/${dmintFilename}`, {
       dmint: {
         v: "1",
+        max_mints: counter,
         mint_height: this.mintHeight,
         merkle: root,
         immutable: true,
