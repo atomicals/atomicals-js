@@ -71,7 +71,7 @@
     "commander": "^10.0.0",
     "crockford-base32": "^2.0.0",
     "crypto": "^1.0.1",
-    "crypto-js": "^4.1.1",
+    "crypto-js": "^4.2.0",
     "cryptojs": "^2.5.3",
     "display-image": "^1.1.0",
     "dotenv": "^16.0.1",
