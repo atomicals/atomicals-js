@@ -1,8 +1,6 @@
 import { ElectrumApiInterface } from "../api/electrum-api.interface";
-
-import { AtomicalsGetFetchType, CommandInterface } from "./command.interface";
+import { CommandInterface } from "./command.interface";
 import * as ecc from 'tiny-secp256k1';
-import { hydrateConfig } from "../utils/hydrate-config";
 import { ECPairFactory, ECPairAPI, TinySecp256k1Interface } from 'ecpair';
 import * as readline from 'readline';
 const bitcoin = require('bitcoinjs-lib');
@@ -17,26 +15,17 @@ import { jsonFileWriter } from "../utils/file-utils";
 import { detectAddressTypeToScripthash, performAddressAliasReplacement } from "../utils/address-helpers";
 import { toXOnly } from "../utils/create-key-pair";
 import { getKeypairInfo, KeyPairInfo } from "../utils/address-keypair-path";
-import { NETWORK, calculateFTFundsRequired, calculateFundsRequired, logBanner } from "./command-helpers";
+import { NETWORK, calculateUtxoFundsRequired, logBanner } from "./command-helpers";
 import { onlyUnique } from "../utils/utils";
 import { IValidatedWalletInfo } from "../utils/validate-wallet-storage";
-import { AtomicalIdentifierType, AtomicalResolvedIdentifierReturn, compactIdToOutpoint, getAtomicalIdentifierType, isAtomicalId } from "../utils/atomical-format-helpers";
-import { GetCommand } from "./get-command";
-import { GetByTickerCommand } from "./get-by-ticker-command";
+import { compactIdToOutpoint, isAtomicalId } from "../utils/atomical-format-helpers";
 import { ATOMICALS_PROTOCOL_ENVELOPE_ID } from "../types/protocol-tags";
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 initEccLib(tinysecp as any);
 const ECPair: ECPairAPI = ECPairFactory(tinysecp);
 
 
-export interface IAtomicalBalanceSummary {
-  confirmed: number;
-  type: 'FT' | 'NFT';
-  atomical_number?: number;
-  atomical_id?: number;
-  $ticker?: string;
-  $container?: string;
-  $realm?: string;
+export interface IUtxoBalanceSummary {
   utxos: any[];
 }
 
@@ -50,13 +39,12 @@ export interface ISelectedUtxo {
 
 
 export interface AmountToSend {
-  address: string;
+  address?: string;
+  opReturn?: string;
   value: number;
 }
 
-export interface IAtomicalsInfo {
-  confirmed: number;
-  type: 'FT' | 'NFT';
+export interface IBalanceInfo {
   utxos: Array<{
     txid: string;
     script: any;
@@ -65,26 +53,24 @@ export interface IAtomicalsInfo {
   }>;
 }
 
-export interface TransferFtConfigInterface {
-  atomicalsInfo: IAtomicalsInfo;
+export interface TransferConfigInterface {
+  balanceInfo: IBalanceInfo;
   selectedUtxos: ISelectedUtxo[];
   outputs: Array<AmountToSend>
 }
 
-export class TransferInteractiveFtCommand implements CommandInterface {
-
+export class TransferInteractiveBuilderCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
-    private atomicalAliasOrId: string,
     private currentOwnerAtomicalWIF: string,
     private fundingWIF: string,
     private validatedWalletInfo: IValidatedWalletInfo,
     private satsbyte: number,
     private nofunding: boolean,
-    private atomicalIdReceipt: string
+    private atomicalIdReceipt?: string,
   ) {
-
-  }
+    console.log(this.atomicalIdReceipt)
+  } 
   async run(): Promise<any> {
     if (this.atomicalIdReceipt && !isAtomicalId(this.atomicalIdReceipt)) {
       throw new Error('AtomicalId receipt is not a valid atomical id')
@@ -94,69 +80,44 @@ export class TransferInteractiveFtCommand implements CommandInterface {
     const keypairFundingInfo: KeyPairInfo = getKeypairInfo(keypairFunding)
     const keypairAtomicalInfo: KeyPairInfo = getKeypairInfo(keypairAtomical)
 
-    const atomicalType: AtomicalResolvedIdentifierReturn = getAtomicalIdentifierType(this.atomicalAliasOrId);
-    let cmd;
-    if (atomicalType.type === AtomicalIdentifierType.ATOMICAL_ID || atomicalType.type === AtomicalIdentifierType.ATOMICAL_NUMBER) {
-      cmd = new GetCommand(this.electrumApi, atomicalType.providedIdentifier || '', AtomicalsGetFetchType.GET);
-    } else if (atomicalType.type === AtomicalIdentifierType.TICKER_NAME) {
-      cmd = new GetByTickerCommand(this.electrumApi, atomicalType.tickerName || '', AtomicalsGetFetchType.GET);
-    } else {
-      throw 'Atomical identifier is invalid. Use a ticker or atomicalId or atomical number';
-    }
-    const cmdResult = await cmd.run();
-
-    if (!cmdResult.success) {
-      throw 'Unable to resolve Atomical.';
-    }
-
+    const p2tr = bitcoin.payments.p2tr({
+      internalPubkey: toXOnly(keypairAtomical.publicKey),
+      network: NETWORK
+    });
     console.log("====================================================================")
-    console.log("Transfer Interactive (FT)")
+    console.log("Transfer Interactive Builder (UTXOs and FTs)")
     console.log("====================================================================")
-
-    const atomicalId = cmdResult.data.result.atomical_id;
-    const atomicalNumber = cmdResult.data.result.atomical_number;
-    const ticker = cmdResult.data.result.$ticker;
-
-    console.log(`Atomical Id: ${atomicalId}`);
-    console.log(`Atomical Number: ${atomicalNumber}`);
-    console.log(`Ticker Symbol: ${ticker}`);
-
-    const transferOptions: TransferFtConfigInterface = await this.promptTransferOptions(atomicalId, keypairAtomicalInfo.address);
+    const transferOptions: TransferConfigInterface = await this.promptTransferOptions(keypairAtomicalInfo.address);
     const tx = await this.buildAndSendTransaction(transferOptions, keypairAtomicalInfo, keypairFundingInfo, this.satsbyte);
     return {
       tx
     }
   }
 
-  async promptTransferOptions(atomicalId: string, address: any): Promise<TransferFtConfigInterface> {
-    const atomicalsInfo: IAtomicalBalanceSummary = await this.getBalanceSummary(atomicalId, address);
-    if (atomicalsInfo.type !== 'FT') {
-      throw 'Atomical is not an FT. It is expected to be an FT type';
-    }
-    if (atomicalsInfo.$ticker) {
-      console.log(`Ticker: ${atomicalsInfo.$ticker}`);
-    }
+  async promptTransferOptions(address: any): Promise<TransferConfigInterface> {
+    const balanceInfo: IUtxoBalanceSummary = await this.getUtxoBalanceSummary(address);
+    const sumValues = balanceInfo.utxos.reduce((accum, item) => accum + item.value, 0);
     console.log(`Current Owner Address: ${address}`);
-    console.log(`Confirmed Balance: `, atomicalsInfo.confirmed);
+    console.log(`Confirmed Balance: `, sumValues);
 
-    if (atomicalsInfo.utxos.length === 0) {
-      throw `No UTXOs available for ${atomicalId} and address ${address}`;
+    if (balanceInfo.utxos.length === 0) {
+      throw `No UTXOs available for address ${address}`;
     }
 
     console.log(`---------------------------------------------------------------------`);
     console.log(`Step 1. Select UTXOs to send`);
     console.log(`---`);
-    console.log(`UTXOs Count: `, atomicalsInfo.utxos.length);
+    console.log(`UTXOs Count: `, balanceInfo.utxos.length);
     console.log(`UTXOs: `);
     let i = 0;
-    atomicalsInfo.utxos.map((utxo) => {
+    balanceInfo.utxos.map((utxo) => {
       console.log(`${i}.`);
       console.log(JSON.stringify(utxo, null, 2));
       i++;
     });
 
-    const selectedUtxos: ISelectedUtxo[] = await this.promptUtxoSelection(atomicalsInfo);
-    await this.promptIfDetectedMultipleAtomicalsAtSameUtxos(atomicalId, selectedUtxos);
+    const selectedUtxos: ISelectedUtxo[] = await this.promptUtxoSelection(balanceInfo);
+    await this.promptIfDetectedSomeAtomicalsAtSameUtxos(selectedUtxos);
 
     console.log('Selected UTXOs For Sending: ', JSON.stringify(selectedUtxos, null, 2));
     console.log(`---------------------------------------------------------------------`);
@@ -171,30 +132,26 @@ export class TransferInteractiveFtCommand implements CommandInterface {
     console.log('Recipients: ', JSON.stringify(outputs, null, 2));
     console.log(`---------------------------------------------------------------------`);
     console.log(`Step 3. Confirm and send`);
-    await this.promptContinue(atomicalsInfo, selectedUtxos);
+    await this.promptContinue(balanceInfo, selectedUtxos);
 
     return {
-      atomicalsInfo,
+      balanceInfo,
       selectedUtxos,
       outputs
     }
   }
 
 
-  async promptIfDetectedMultipleAtomicalsAtSameUtxos(atomicalId: string, selectedUtxos: ISelectedUtxo[]) {
-    const dupMap = {};
-    dupMap[atomicalId] = true;
-    let i = 0;
+  async promptIfDetectedSomeAtomicalsAtSameUtxos(selectedUtxos: ISelectedUtxo[]) {
     let isOtherAtomicalsFound = false;
     const indexesOfSelectedUtxosWithMultipleAtomicals: number[] = [];
     for (const utxo of selectedUtxos) {
-      for (const atomical of utxo.atomicals) {
-        if (!dupMap[atomical]) {
-          isOtherAtomicalsFound = true;
-          indexesOfSelectedUtxosWithMultipleAtomicals.push(i);
-        }
+      if (!utxo.atomicals) {
+        continue;
       }
-      i++;
+      if (utxo.atomicals.length) {
+        isOtherAtomicalsFound = true;
+      }
     }
 
     if (!isOtherAtomicalsFound) {
@@ -210,8 +167,8 @@ export class TransferInteractiveFtCommand implements CommandInterface {
       let reply: string = '';
       const prompt = (query) => new Promise((resolve) => rl.question(query, resolve));
 
-      console.log(`WARNING! There are some chosen UTXOs which contain multiple Atomicals which would be transferred at the same time.`);
-      console.log(`It is recommended to use the "extract" (NFT) or "skip" (FT) operations to separate them first.`)
+      console.log(`WARNING! There are some chosen UTXOs which contain Atomicals which would be transferred at the same time.`);
+      console.log(`It is recommended to use the "extract" (NFT) or "skip" (FT) operations to seperate them first.`)
       let i = 0;
       for (const item of indexesOfSelectedUtxosWithMultipleAtomicals) {
         console.log(`${i}.`)
@@ -234,8 +191,10 @@ export class TransferInteractiveFtCommand implements CommandInterface {
     }
   }
 
-  async promptUtxoSelection(info: IAtomicalBalanceSummary): Promise<ISelectedUtxo[]> {
+  async promptUtxoSelection(info: IUtxoBalanceSummary): Promise<ISelectedUtxo[]> {
     let selectedUtxos: ISelectedUtxo[] = [];
+
+
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout
@@ -274,7 +233,7 @@ export class TransferInteractiveFtCommand implements CommandInterface {
     }
   }
 
-  async promptContinue(info: IAtomicalBalanceSummary, selectedUtxos: ISelectedUtxo[]) {
+  async promptContinue(info: IUtxoBalanceSummary, selectedUtxos: ISelectedUtxo[]) {
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout
@@ -295,29 +254,25 @@ export class TransferInteractiveFtCommand implements CommandInterface {
     }
   }
 
-  async getBalanceSummary(atomicalId, address): Promise<IAtomicalBalanceSummary> {
+  async getUtxoBalanceSummary(address): Promise<IUtxoBalanceSummary> {
     const res = await this.electrumApi.atomicalsByAddress(address);
-    if (!res.atomicals[atomicalId]) {
-      throw "No Atomicals found for " + atomicalId;
-    }
-    // console.log(JSON.stringify(res.atomicals[atomicalId], null, 2))
-    // console.log(JSON.stringify(res.utxos, null, 2))
-    const filteredUtxosByAtomical: any = [];
+    const utxosFiltered: any = [];
     for (const utxo of res.utxos) {
-      if (utxo.atomicals.find((item) => item === atomicalId)) {
-        filteredUtxosByAtomical.push({
-          txid: utxo.txid,
-          index: utxo.index,
-          value: utxo.value,
-          height: utxo.height,
-          atomicals: utxo.atomicals,
-        })
+      // DO NOT Ignore the utxos which have atomicals in them
+      // This builder is meant to be flexible. 
+      if (utxo.atomicals && utxo.atomicals.length) {
+        // continue;
       }
+      utxosFiltered.push({
+        txid: utxo.txid,
+        index: utxo.index,
+        value: utxo.value,
+        height: utxo.height,
+        atomicals: utxo.atomicals
+      });
     }
     return {
-      confirmed: res.atomicals[atomicalId].confirmed,
-      type: res.atomicals[atomicalId].type,
-      utxos: filteredUtxosByAtomical
+      utxos: utxosFiltered
     }
   }
 
@@ -337,7 +292,7 @@ export class TransferInteractiveFtCommand implements CommandInterface {
         console.log(`Recipients: `);
         let accumulatd = 0;
         amountsToSend.map((item) => {
-          console.log(`${item.address}: ${item.value}`);
+          console.log(`${item.address ? item.address : item.opReturn?.toString()}: ${item.value}`);
           accumulatd += item.value;
         })
         if (!amountsToSend.length) {
@@ -349,36 +304,50 @@ export class TransferInteractiveFtCommand implements CommandInterface {
         console.log(`'f' for Finished adding recipients`)
         console.log('-')
 
-        let reply = (await prompt("Enter address and amount separated by a space: ") as any);
+        let reply = (await prompt("Enter address and amount seperated by a space: ") as any);
 
         if (reply === 'f') {
           break;
         }
         const splitted = reply.split(/[ ,]+/);
-        let addressPart = performAddressAliasReplacement(validatedWalletInfo, splitted[0]);
-        const valuePart = parseInt(splitted[1], 10);
 
-        if (valuePart < 546 || !valuePart) {
-          console.log('Invalid value, minimum: 546')
-          continue;
-        }
+        if (splitted[0] === 'op_return') {
+          const generalData = Buffer.from(splitted[1], 'utf8')
+          const embed = bitcoin.payments.embed({ data: [generalData] });
+          const paymentRecieptOpReturn = embed.output!
+  
+          amountsToSend.push({
+            opReturn: paymentRecieptOpReturn,
+            value: 0
+          });
+        } else {
 
-        if (remainingBalance - valuePart < 0) {
-          console.log('Invalid value, maximum remaining: ' + remainingBalance);
-          continue;
+          let addressPart = performAddressAliasReplacement(validatedWalletInfo, splitted[0]);
+          const valuePart = parseInt(splitted[1], 10);
+
+          if (valuePart < 546 || !valuePart) {
+            console.log('Invalid value, minimum: 546')
+            continue;
+          }
+          if (remainingBalance - valuePart < 0) {
+            console.log('Invalid value, maximum remaining: ' + remainingBalance);
+            continue;
+          }
+          try {
+            detectAddressTypeToScripthash(addressPart.address);
+          } catch (err) {
+            console.log('Invalid address')
+            continue;
+          }
+  
+          amountsToSend.push({
+            address: addressPart.address,
+            value: valuePart
+          });
+          remainingBalance -= valuePart;
         }
-        try {
-          detectAddressTypeToScripthash(addressPart.address);
-        } catch (err) {
-          console.log('Invalid address')
-          continue;
-        }
-        amountsToSend.push({
-          address: addressPart.address,
-          value: valuePart
-        });
-        remainingBalance -= valuePart;
       }
+
       if (!this.nofunding) {
         if (remainingBalance > 0) {
           throw new Error('Remaining balance was not 0')
@@ -390,10 +359,7 @@ export class TransferInteractiveFtCommand implements CommandInterface {
       rl.close();
     }
   }
-  async buildAndSendTransaction(transferOptions: TransferFtConfigInterface, keyPairAtomical: KeyPairInfo, keyPairFunding: KeyPairInfo, satsbyte): Promise<any> {
-    if (transferOptions.atomicalsInfo.type !== 'FT') {
-      throw 'Atomical is not an FT. It is expected to be an FT type';
-    }
+  async buildAndSendTransaction(transferOptions: TransferConfigInterface, keyPairAtomical: KeyPairInfo, keyPairFunding: KeyPairInfo, satsbyte): Promise<any> {
 
     const psbt = new bitcoin.Psbt({ network: NETWORK });
     let tokenBalanceIn = 0;
@@ -413,12 +379,19 @@ export class TransferInteractiveFtCommand implements CommandInterface {
       tokenInputsLength++;
     }
 
-
     for (const output of transferOptions.outputs) {
-      psbt.addOutput({
-        value: output.value,
-        address: output.address,
-      });
+      if (output.opReturn) {
+        psbt.addOutput({
+          value: output.value,
+          script: output.opReturn
+        });
+      } else {
+        psbt.addOutput({
+          value: output.value,
+          address: output.address,
+        });
+      }
+     
       tokenBalanceOut += output.value;
       tokenOutputsLength++;
     }
@@ -443,8 +416,7 @@ export class TransferInteractiveFtCommand implements CommandInterface {
         throw 'Invalid input and output does not match for token. Developer Error.'
       }
     }
-  
-    const { expectedSatoshisDeposit } = calculateFTFundsRequired(transferOptions.selectedUtxos.length, transferOptions.outputs.length, satsbyte, 0);
+    const { expectedSatoshisDeposit } = calculateUtxoFundsRequired(transferOptions.selectedUtxos.length, transferOptions.outputs.length, satsbyte, 0);
     if (expectedSatoshisDeposit < 546) {
       throw 'Invalid expectedSatoshisDeposit. Developer Error.'
     }
@@ -458,6 +430,8 @@ export class TransferInteractiveFtCommand implements CommandInterface {
     console.log(`...`)
     let utxo = await this.electrumApi.waitUntilUTXO(keyPairFunding.address, expectedSatoshisDeposit, 5, false);
     console.log(`Detected UTXO (${utxo.txid}:${utxo.vout}) with value ${utxo.value} for funding the transfer operation...`);
+
+    let basisValue = 0;
     if (!this.nofunding) {
       // Add the funding input
       psbt.addInput({
@@ -466,13 +440,15 @@ export class TransferInteractiveFtCommand implements CommandInterface {
         witnessUtxo: { value: utxo.value, script: keyPairFunding.output },
         tapInternalKey: keyPairFunding.childNodeXOnlyPubkey,
       })
+      basisValue = utxo.value;
     }
-    const isMoreThanDustChangeRemaining = utxo.value - expectedSatoshisDeposit >= 546;
+
+    const isMoreThanDustChangeRemaining = basisValue - expectedSatoshisDeposit >= 546;
     if (isMoreThanDustChangeRemaining) {
       // Add change output
-      console.log(`Adding change output, remaining: ${utxo.value - expectedSatoshisDeposit}`)
+      console.log(`Adding change output, remaining: ${basisValue - expectedSatoshisDeposit}`)
       psbt.addOutput({
-        value: utxo.value - expectedSatoshisDeposit,
+        value: basisValue - expectedSatoshisDeposit,
         address: keyPairFunding.address,
       })
     }
@@ -482,9 +458,10 @@ export class TransferInteractiveFtCommand implements CommandInterface {
       psbt.signInput(i, keyPairAtomical.tweakedChildNode)
     }
     // Sign the final funding input
-    console.log('Signing funding input...')
-    psbt.signInput(i, keyPairFunding.tweakedChildNode)
-
+    if (!this.nofunding) {
+      console.log('Signing funding input...')
+      psbt.signInput(i, keyPairFunding.tweakedChildNode)
+    }
     psbt.finalizeAllInputs();
     const tx = psbt.extractTransaction();
     const rawtx = tx.toHex();

@@ -73,6 +73,7 @@ export class CreateDmintCommand implements CommandInterface {
     const leaves = leafItems.map(x => SHA256(x.leafVector))
     const tree = new MerkleTree(leaves, SHA256)
     const root = tree.getRoot().toString('hex')
+    let items = 0;
     for (const leafItem of leafItems) {
       const leaf = SHA256(leafItem.leafVector)
       const proof = tree.getProof(leaf)
@@ -86,6 +87,7 @@ export class CreateDmintCommand implements CommandInterface {
       jsonFiles[leafItem.itemName]['targetVector'] = leafItem.leafVector
       jsonFiles[leafItem.itemName]['targethash'] = leafItem.hashedStr
       await jsonFileWriter(`${this.folder}/${leafItem.file}`, jsonFiles[leafItem.itemName]);
+      items++;
     }
     const timestamp = (new Date()).getTime();
     const dmintFilename = 'dmint-' + timestamp + '.json';
@@ -95,6 +97,7 @@ export class CreateDmintCommand implements CommandInterface {
         mint_height: this.mintHeight,
         merkle: root,
         immutable: true,
+        items,
         rules: [
           {
             p: ".*",

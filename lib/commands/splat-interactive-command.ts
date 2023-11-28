@@ -71,6 +71,9 @@ export class SplatInteractiveCommand implements CommandInterface {
       address: inputUtxoPartial.address,
       value: inputUtxoPartial.witnessUtxo.value
     });
+    if (this.options.bitworkc) {
+      atomicalBuilder.setBitworkCommit(this.options.bitworkc);
+    }
     amountSkipped += inputUtxoPartial.witnessUtxo.value;
     for (const nft of atomicalNfts) {
       // We do not actually need to know which atomical it is, just that we create an output for each
