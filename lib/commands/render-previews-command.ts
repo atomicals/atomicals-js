@@ -1,8 +1,5 @@
-
 import { CommandInterface } from "./command.interface";
 import { FileMap } from "../interfaces/filemap.interface";
-
-const displayImage = require("display-image")
 
 export function isImage(contentType: string): boolean {
   return /^image\/(jpe?g|png|gif|bmp|webp|svg)$/.test(contentType);
@@ -41,9 +38,8 @@ export class RenderPreviewsCommand implements CommandInterface {
           console.log('Body (hex encoded): ', this.filesmap[inputIndex].files[filename].body);
         }
         if (isImage(contentType)) {
-          displayImage.fromFile(filepath).then(image => {
-            console.log(image)
-          });
+          const {default: terminalImage} = await import("terminal-image");
+          console.log(await terminalImage.file(filepath));
         } else if (isText(contentType)) {
           console.log('Body decoded: ');
           console.log(Buffer.from(this.filesmap[inputIndex].files[filename].body, 'hex').toString('utf8'));
