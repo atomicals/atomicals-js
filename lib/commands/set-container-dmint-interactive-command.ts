@@ -15,27 +15,38 @@ import { IWalletRecord } from "../utils/validate-wallet-storage";
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 initEccLib(tinysecp as any);
 
-export function validateDmint(obj) {
+interface DmintManifestInteface {
+  v: string,
+  mint_height: number,
+  items: number,
+  rules: { p: string, bitworkc?: string, bitworkr?: string }[],
+}
+
+export function validateDmint(
+  obj: {dmint?: DmintManifestInteface} | undefined,
+) {
   if (!obj) {
     return false;
   }
-  if (!obj.dmint) {
+  const dmint = obj.dmint;
+  if (!dmint) {
     return false;
   }
-  const mh = obj.dmint.mint_length;
-  if (mh) {
+  const mh = dmint.mint_height;
+  if (mh === 0) {
+    return true;
+  }
+  if (mh != undefined) {
     if (isNaN(mh)) {
       return false;
     }
     if (mh < 0 || mh > 10000000) {
       return false;
     }
-  } else {
-    return mh !== 0;
   }
-
-  
+  return false;
 }
+
 export class SetContainerDmintInteractiveCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
