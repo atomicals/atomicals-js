@@ -19,7 +19,12 @@ interface DmintManifestInteface {
   v: string,
   mint_height: number,
   items: number,
-  rules: { p: string, bitworkc?: string, bitworkr?: string }[],
+  rules: {
+    o?: { [script: string]: {v: number, id: string} },
+    p: string,
+    bitworkc?: string,
+    bitworkr?: string,
+  }[],
 }
 
 export function validateDmint(
