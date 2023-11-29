@@ -21,7 +21,7 @@ interface DmintManifestInteface {
   mint_height: number,
   items: number,
   rules: {
-    o?: { [script: string]: {v: number, id: string} },
+    o?: { [script: string]: {v: number, id?: string} },
     p: string,
     bitworkc?: string,
     bitworkr?: string,
