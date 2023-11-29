@@ -8,6 +8,7 @@ import {
   initEccLib,
 } from "bitcoinjs-lib";
 import { getAndCheckAtomicalInfo, logBanner, readJsonFileAsCompleteDataObjectEncodeAtomicalIds } from "./command-helpers";
+import { isValidBitworkString } from "../utils/atomical-format-helpers";
 import { AtomicalOperationBuilder } from "../utils/atomical-operation-builder";
 import { BaseRequestOptions } from "../interfaces/api.interface";
 import { IWalletRecord } from "../utils/validate-wallet-storage";
@@ -36,6 +37,19 @@ export function validateDmint(
   const dmint = obj.dmint;
   if (!dmint) {
     return false;
+  }
+  for (const {o, p, bitworkc, bitworkr} of dmint.rules) {
+      try {
+          new RegExp(p);
+      } catch (e) {
+          throw `Invalid pattern: ${p}.\n${e}`;
+      }
+      if (bitworkc && !isValidBitworkString(bitworkc)) {
+          return false;
+      }
+      if (bitworkr && !isValidBitworkString(bitworkr)) {
+          return false;
+      }
   }
   const mh = dmint.mint_height;
   if (mh === 0) {
