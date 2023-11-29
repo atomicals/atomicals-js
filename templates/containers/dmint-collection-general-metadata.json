@@ -8,13 +8,10 @@
   },
   "links": {
     "x": {
-      "v": "https://x./com/..."
+      "v": "https://x.com/..."
     },
     "website": {
       "v": "https://..."
-    },
-    "realm": {
-      "v": "atom:btc:realm:myrealmname.subrealm"
     },
     "discord": {
       "v": "https://discord.gg/..."

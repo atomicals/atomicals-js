@@ -104,7 +104,7 @@ export class ElectrumApiMock implements ElectrumApiInterface {
     public async serverVersion(): Promise<any> {
         return "test mock"
     }
-    public async broadcast(rawtx: string): Promise<any> {
+    public async broadcast(rawtx: string, force?: boolean): Promise<any> {
         return "send"
     }
     public async history(scripthash: string): Promise<any> {

@@ -1739,6 +1739,7 @@ program.command('transfer-builder')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
   .option('--nofunding', 'Do not ask for seperate funding, use existing utxo')
+  .option('--skipvalidation', 'Do not do FT transfer validation on broadcast (danger)')
   .option('--atomicalreceipt <string>', 'Attach an atomical id to a pay receipt')
   .action(async (options) => {
     try {
@@ -1749,7 +1750,7 @@ program.command('transfer-builder')
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       const atomicalIdReceipt = options.atomicalreceipt;
-      const result = await atomicals.transferInteractiveBuilder(ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, options.nofunding, atomicalIdReceipt);
+      const result = await atomicals.transferInteractiveBuilder(ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, options.nofunding, atomicalIdReceipt, options.skipvalidation);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);

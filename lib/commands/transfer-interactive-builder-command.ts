@@ -68,6 +68,7 @@ export class TransferInteractiveBuilderCommand implements CommandInterface {
     private satsbyte: number,
     private nofunding: boolean,
     private atomicalIdReceipt?: string,
+    private forceSkipValidation?: boolean,
   ) {
     console.log(this.atomicalIdReceipt)
   } 
@@ -466,7 +467,7 @@ export class TransferInteractiveBuilderCommand implements CommandInterface {
     const tx = psbt.extractTransaction();
     const rawtx = tx.toHex();
     console.log(`Constructed Atomicals FT Transfer, attempting to broadcast: ${tx.getId()}`);
-    let broadcastedTxId = await this.electrumApi.broadcast(rawtx);
+    let broadcastedTxId = await this.electrumApi.broadcast(rawtx, this.forceSkipValidation);
     console.log(`Success!`);
     return {
       success: true,

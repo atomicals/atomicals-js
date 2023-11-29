@@ -18,7 +18,7 @@ export interface ElectrumApiInterface {
     waitUntilUTXO: (address: string, satoshis: number, sleepTimeSec: number, exactSatoshiAmount?: boolean) => Promise<any>;
     getTx: (txid: string, verbose?: boolean) => Promise<any>;
     serverVersion: () => Promise<any>;
-    broadcast: (rawtx: string) => Promise<any>;
+    broadcast: (rawtx: string, force?: boolean) => Promise<any>;
     history: (scripthash: string) => Promise<any>;
     dump: () => Promise<any>;
     // Atomicals API

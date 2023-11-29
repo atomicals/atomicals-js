@@ -117,7 +117,6 @@ export class ElectrumApi implements ElectrumApiInterface {
 
         function hasAttachedAtomicals(utxo): any | null {
             if (utxo && utxo.atomicals && utxo.atomicals.length) {
-                console.log('foujnd ttac');
                 return true;
             }
             if (utxo && utxo.height <= 0) {
@@ -175,14 +174,24 @@ export class ElectrumApi implements ElectrumApiInterface {
         return p;
     }
 
-    public async broadcast(rawtx: string): Promise<any> {
+    public async broadcast(rawtx: string, force = false): Promise<any> {
         const p = new Promise((resolve, reject) => {
-            this.call('blockchain.transaction.broadcast', [rawtx]).then(function (result: any) {
-                resolve(result);
-            }).catch((error) => {
-                console.log('result', error);
-                reject(error);
-            })
+            if (force) {
+                this.call('blockchain.transaction.broadcast_force', [rawtx]).then(function (result: any) {
+                    resolve(result);
+                }).catch((error) => {
+                    console.log(error)
+                    reject(error);
+                })
+            } else {
+                this.call('blockchain.transaction.broadcast', [rawtx]).then(function (result: any) {
+                    resolve(result);
+                }).catch((error) => {
+                    console.log(error)
+                    reject(error);
+                })
+            }
+
         });
         return p;
     }
