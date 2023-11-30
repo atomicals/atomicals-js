@@ -517,7 +517,7 @@ export class AtomicalOperationBuilder {
         const mockBaseCommitForFeeCalculation: { scriptP2TR, hashLockP2TR } = prepareCommitRevealConfig(this.options.opType, fundingKeypair, mockAtomPayload)
         const fees: FeeCalculations = this.calculateFeesRequiredForAccumulatedCommitAndReveal(mockBaseCommitForFeeCalculation.hashLockP2TR.redeem.output.length);
         ////////////////////////////////////////////////////////////////////////
-        // Begin Reveal Transaction
+        // Begin Commit Transaction
         ////////////////////////////////////////////////////////////////////////
         if (performBitworkForCommitTx) {
             copiedData['args'] = copiedData['args'] || {};
