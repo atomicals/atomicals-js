@@ -642,7 +642,7 @@ export class Atomicals implements APIInterface {
   }
 
 
-  async transferInteractiveBuilder(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string, skipValidation = false): Promise<CommandResultInterface> {
+  async transferInteractiveBuilder(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string, atomicalIdReceiptType: string, skipValidation = false): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new TransferInteractiveBuilderCommand(
@@ -653,6 +653,7 @@ export class Atomicals implements APIInterface {
         satsbyte,
         nofunding,
         atomicalIdReceipt,
+        atomicalIdReceiptType,
         skipValidation
       );
       

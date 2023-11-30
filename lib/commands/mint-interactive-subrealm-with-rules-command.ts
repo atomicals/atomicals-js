@@ -174,9 +174,16 @@ export class MintInteractiveSubrealmWithRulesCommand implements CommandInterface
     }
     // Attach any requested bitwork
     if (bitworkc || this.options.bitworkc) {
+
+      if (bitworkc === 'any') {
+        bitworkc = undefined
+      }
       atomicalBuilder.setBitworkCommit(bitworkc || this.options.bitworkc);
     }
     if (bitworkr || this.options.bitworkr) {
+      if (bitworkr === 'any') {
+        bitworkr = undefined
+      }
       atomicalBuilder.setBitworkReveal(bitworkr || this.options.bitworkr);
     }
      // The receiver output

@@ -68,6 +68,7 @@ export class TransferInteractiveBuilderCommand implements CommandInterface {
     private satsbyte: number,
     private nofunding: boolean,
     private atomicalIdReceipt?: string,
+    private atomicalIdReceiptType?: string,
     private forceSkipValidation?: boolean,
   ) {
     console.log(this.atomicalIdReceipt)
@@ -399,9 +400,8 @@ export class TransferInteractiveBuilderCommand implements CommandInterface {
 
     if (this.atomicalIdReceipt) {
       const outpoint = compactIdToOutpoint(this.atomicalIdReceipt);
-      console.log('outpoint', outpoint);
       const atomEnvBuf = Buffer.from(ATOMICALS_PROTOCOL_ENVELOPE_ID, 'utf8');
-      const payOpBuf = Buffer.from('p', 'utf8');
+      const payOpBuf = Buffer.from(this.atomicalIdReceiptType || 'p', 'utf8');
       const outpointBuf = Buffer.from(outpoint, 'hex')
       const embed = bitcoin.payments.embed({ data: [atomEnvBuf, payOpBuf, outpointBuf] });
       const paymentRecieptOpReturn = embed.output!

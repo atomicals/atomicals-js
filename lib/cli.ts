@@ -959,7 +959,6 @@ program.command('enable-dmint')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
   .option('--satsoutput <number>', 'Satoshis to put into output', '1000')
-  .option('--disableautoencode', 'Disables auto encoding of $b variables')
   .option('--bitworkc <string>', 'Whether to add any bitwork proof of work to the commit tx')
   .action(async (containerName, jsonFilename, options) => {
     try {
@@ -1741,6 +1740,7 @@ program.command('transfer-builder')
   .option('--nofunding', 'Do not ask for seperate funding, use existing utxo')
   .option('--skipvalidation', 'Do not do FT transfer validation on broadcast (danger)')
   .option('--atomicalreceipt <string>', 'Attach an atomical id to a pay receipt')
+  .option('--atomicalreceipttype <string>', 'Attach receipt type p or d')
   .action(async (options) => {
     try {
       const walletInfo = await validateWalletStorage();
@@ -1750,7 +1750,8 @@ program.command('transfer-builder')
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       const atomicalIdReceipt = options.atomicalreceipt;
-      const result = await atomicals.transferInteractiveBuilder(ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, options.nofunding, atomicalIdReceipt, options.skipvalidation);
+      const atomicalIdReceiptType = options.atomicalreceipttype || 'p';
+      const result = await atomicals.transferInteractiveBuilder(ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, options.nofunding, atomicalIdReceipt, atomicalIdReceiptType, options.skipvalidation);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
