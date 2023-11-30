@@ -12,7 +12,7 @@ import { GetByTickerCommand } from "./get-by-ticker-command";
 import { BaseRequestOptions } from "../interfaces/api.interface";
 import { AtomicalOperationBuilder } from "../utils/atomical-operation-builder";
 import { BitworkInfo, checkBaseRequestOptions, isValidBitworkMinimum, isValidBitworkString } from "../utils/atomical-format-helpers";
-import { prepareFilesDataAsObject } from "./command-helpers";
+import { prepareFilesDataAsObject, readJsonFileAsCompleteDataObjectEncodeAtomicalIds } from "./command-helpers";
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 initEccLib(tinysecp as any);
 
@@ -44,7 +44,7 @@ const promptContinue = async (): Promise<any>  => {
 export class InitInteractiveDftCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
-    private files: string[],
+    private file: string,
     private address: string,
     private requestTicker: string,
     private mintAmount: number,
@@ -59,8 +59,8 @@ export class InitInteractiveDftCommand implements CommandInterface {
     this.requestTicker = this.requestTicker.startsWith('$') ? this.requestTicker.substring(1) : this.requestTicker;
     isValidBitworkMinimum(this.options.bitworkc);
 
-    if (this.maxMints > 100000 || this.maxMints < 1) {
-      throw new Error('max mints must be between 1 and 200,000')
+    if (this.maxMints > 500000 || this.maxMints < 1) {
+      throw new Error('max mints must be between 1 and 500,000')
     }
     
     if (this.mintAmount > 100000000 || this.mintAmount < 546) {
@@ -68,7 +68,8 @@ export class InitInteractiveDftCommand implements CommandInterface {
     }
   }
   async run(): Promise<any> {
-    let filesData = await prepareFilesDataAsObject(this.files);
+    // let filesData = await prepareFilesDataAsObject(this.files);
+    let filesData = await readJsonFileAsCompleteDataObjectEncodeAtomicalIds(this.file, true);
     console.log('Initializing Decentralized FT Token')
     console.log('-----------------------')
     let supply = this.maxMints * this.mintAmount;
@@ -76,8 +77,8 @@ export class InitInteractiveDftCommand implements CommandInterface {
     console.log('Total Supply (BTC): ', supply / 100000000);
 
     let decimals = 0;
-    if (filesData['meta'] && filesData['meta']['decimals']) {
-      decimals = parseInt(filesData['meta']['decimals'], 10);
+    if (filesData['decimals']) {
+      decimals = parseInt(filesData['decimals'], 10);
     }
     console.log('Decimals: ', decimals);
 

@@ -14,7 +14,7 @@ import { GetByTickerCommand } from "./get-by-ticker-command";
 import { BaseRequestOptions } from "../interfaces/api.interface";
 import { checkBaseRequestOptions, isValidBitworkMinimum, isValidBitworkString, isValidTickerName } from "../utils/atomical-format-helpers";
 import { AtomicalOperationBuilder } from "../utils/atomical-operation-builder";
-import { prepareFilesDataAsObject } from "./command-helpers";
+import { prepareFilesDataAsObject, readJsonFileAsCompleteDataObjectEncodeAtomicalIds } from "./command-helpers";
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 initEccLib(tinysecp as any);
 
@@ -46,7 +46,7 @@ const promptContinue = async (): Promise<any>  => {
 export class MintInteractiveFtCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
-    private files: string[],
+    private file: string,
     private supply: number,
     private address: string,
     private requestTicker: string,
@@ -60,16 +60,15 @@ export class MintInteractiveFtCommand implements CommandInterface {
   }
   async run(): Promise<any> {
 
-    let filesData = await prepareFilesDataAsObject(this.files);
-
+    let filesData = await readJsonFileAsCompleteDataObjectEncodeAtomicalIds(this.file, true);
     console.log('Initializing Direct FT Token')
     console.log('-----------------------')
     console.log('Total Supply (Satoshis): ', this.supply);
     console.log('Total Supply (BTC): ', this.supply / 100000000);
     let supply = this.supply;
     let decimals = 0;
-    if (filesData['meta'] && filesData['meta']['decimals']) {
-      decimals = parseInt(filesData['meta']['decimals'], 10);
+    if (filesData['decimals']) {
+      decimals = parseInt(filesData['decimals'], 10);
     }
     console.log('Decimals: ', decimals);
 

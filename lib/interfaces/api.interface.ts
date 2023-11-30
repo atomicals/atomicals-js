@@ -32,9 +32,9 @@ export interface APIInterface {
     mintContainerItemInteractive(container: string, itemId: string, manifestFile: string, address: string, WIF: string, owner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
 
     // Mint fungible-token methods (FT)
-    mintFtInteractive(files: string[], supply: number, address: string, requestTicker: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
+    mintFtInteractive(file: string, supply: number, address: string, requestTicker: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
     mintDftInteractive(address: string, ticker: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    initDftInteractive(files: string[], address: string, requestTicker: string, mintAmount: number, maxMints: number, mintHeight: number, mintBitworkc: string, mintBitworkr: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
+    initDftInteractive(file: string, address: string, requestTicker: string, mintAmount: number, maxMints: number, mintHeight: number, mintBitworkc: string, mintBitworkr: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
     
     // Create data transaction (Non-Atomical/Non-Token)
     mintDatInteractive(filepath: string, givenFileName: string, address: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;

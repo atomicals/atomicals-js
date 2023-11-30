@@ -758,6 +758,7 @@ export class AtomicalOperationBuilder {
         }
         if (this.options.opType === 'dat') {
             ret['data']['dataId'] = revealTxid + 'i0';
+            ret['data']['urn'] = 'atom:btc:dat:' + revealTxid + 'i0';
         }
         return ret;
     }

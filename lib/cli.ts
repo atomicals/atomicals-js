@@ -1404,10 +1404,7 @@ program.command('mint-ft')
   .description('Mint fungible token (FT) Atomical in direct issuance mode')
   .argument('<ticker>', 'string')
   .argument('<supply>', 'number')
-  .argument('<files...>', 'string')
-  .option('--meta <string...>', 'Populate the \'meta\' field with key value pairs or file contents')
-  .option('--ctx <string...>', 'Populate the \'ctx\' field with key value pairs or file contents')
-  .option('--init <string...>', 'Populate the \'init\' field with key value pairs or file contents')
+  .argument('<file>', 'string')
   .option('--initialowner <string>', 'Initial owner wallet alias to mint the Atomical into')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
@@ -1416,7 +1413,7 @@ program.command('mint-ft')
   .option('--parent <string>', 'Whether to require a parent atomical to be spent along with the mint.')
   .option('--parentowner <string>', 'Wallet owner of the parent to spend along with the mint.')
   .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for mining. Improvements mining performance to set this flag')
-  .action(async (ticker, supply, files, options) => {
+  .action(async (ticker, supply, file, options) => {
     try {
       const walletInfo = await validateWalletStorage();
       const config: ConfigurationInterface = validateCliInputs();
@@ -1428,7 +1425,7 @@ program.command('mint-ft')
       if (isNaN(supply)) {
         throw 'supply must be an integer';
       }
-      const result: any = await atomicals.mintFtInteractive(files, parseInt(supply), initialOwnerRecord.address, requestTicker, fundingRecord.WIF, {
+      const result: any = await atomicals.mintFtInteractive(file, parseInt(supply), initialOwnerRecord.address, requestTicker, fundingRecord.WIF, {
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
@@ -1452,10 +1449,7 @@ program.command('init-dft')
   .argument('<mint_amount>', 'number')
   .argument('<max_mints>', 'number')
   .argument('<mint_height>', 'number')
-  .argument('<files...>', 'string')
-  .option('--meta <string...>', 'Populate the \'meta\' field with key value pairs or file contents')
-  .option('--ctx <string...>', 'Populate the \'ctx\' field with key value pairs or file contents')
-  .option('--init <string...>', 'Populate the \'init\' field with key value pairs or file contents')
+  .argument('<file>', 'string')
   .option('--funding <string>', 'Use wallet alias wif key to be used for funding and change')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
   .option('--mintbitworkc <string>', 'Whether to require any bitwork proof of work to mint. Applies to the commit transaction.')
@@ -1465,7 +1459,7 @@ program.command('init-dft')
   .option('--parent <string>', 'Whether to require a parent atomical to be spent along with the mint.')
   .option('--parentowner <string>', 'Wallet owner of the parent to spend along with the mint.')
   .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for Bitwork mining. Improvements mining performance to set this flag')
-  .action(async (ticker, mintAmount, maxMints, mintHeight, files, options) => {
+  .action(async (ticker, mintAmount, maxMints, mintHeight, file, options) => {
     try {
       const walletInfo = await validateWalletStorage();
       const config: ConfigurationInterface = validateCliInputs();
@@ -1475,7 +1469,7 @@ program.command('init-dft')
       let parentOwnerRecord = resolveWalletAliasNew(walletInfo, options.parentowner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       const mintBitworkc = options.mintbitworkc ? options.mintbitworkc : getRandomBitwork4();
-      const result: any = await atomicals.initDftInteractive(files, walletRecord.address, requestTicker, mintAmount, maxMints, mintHeight, mintBitworkc, options.mintbitworkr, fundingRecord.WIF, {
+      const result: any = await atomicals.initDftInteractive(file, walletRecord.address, requestTicker, mintAmount, maxMints, mintHeight, mintBitworkc, options.mintbitworkr, fundingRecord.WIF, {
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,

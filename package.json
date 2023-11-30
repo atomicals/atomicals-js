@@ -1,6 +1,6 @@
 {
   "name": "atomicals-js",
-  "version": "0.1.52",
+  "version": "0.1.54",
   "description": "Atomicals Javascript Library and CLI - atomicals.xyz",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

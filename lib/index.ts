@@ -369,10 +369,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async mintFtInteractive(files: string[], supply: number, address: string, requestTicker: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async mintFtInteractive(file: string, supply: number, address: string, requestTicker: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new MintInteractiveFtCommand(this.electrumApi, files, supply, address, requestTicker, WIF, options);
+      const command: CommandInterface = new MintInteractiveFtCommand(this.electrumApi, file, supply, address, requestTicker, WIF, options);
       return await command.run();
     } catch (error: any) {
       return {
@@ -401,10 +401,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async initDftInteractive(files: string[], address: string, requestTicker: string, mintAmount: number, maxMints: number, mintHeight: number, mintBitworkc: string, mintBitworkr: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async initDftInteractive(file: string, address: string, requestTicker: string, mintAmount: number, maxMints: number, mintHeight: number, mintBitworkc: string, mintBitworkr: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new InitInteractiveDftCommand(this.electrumApi, files, address, requestTicker, mintAmount, maxMints, mintHeight, mintBitworkc, mintBitworkr, WIF, options);
+      const command: CommandInterface = new InitInteractiveDftCommand(this.electrumApi, file, address, requestTicker, mintAmount, maxMints, mintHeight, mintBitworkc, mintBitworkr, WIF, options);
       return await command.run();
     } catch (error: any) {
       return {
