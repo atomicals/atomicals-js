@@ -823,12 +823,7 @@ export class AtomicalOperationBuilder {
         return (this.options.satsbyte as any) *
             (BASE_BYTES +
                 ((1 + this.inputUtxos.length) * INPUT_BYTES_BASE) +
-                (this.additionalOutputs.length * OUTPUT_BYTES_BASE) +
-                OP_RETURN_BYTES +
-                ARGS_BYTES +
-                BITWORK_BYTES +
-                EXTRA_BUFFER +
-                hashLockP2TROutputLen
+                (this.additionalOutputs.length * OUTPUT_BYTES_BASE)
             )
     }
 
@@ -896,7 +891,7 @@ export class AtomicalOperationBuilder {
     */
     addCommitChangeOutputIfRequired(extraInputValue: number, fee: FeeCalculations, pbst: any, address: string) {
         const totalInputsValue = extraInputValue + this.getTotalAdditionalInputValues();
-        const totalOutputsValue = this.getTotalAdditionalOutputValues() + fee.revealFeePlusOutputs;
+        const totalOutputsValue = fee.revealFeePlusOutputs;
         const calculatedFee = totalInputsValue - totalOutputsValue;
         // It will be invalid, but at least we know we don't need to add change
         if (calculatedFee <= 0) {
