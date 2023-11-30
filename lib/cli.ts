@@ -847,7 +847,7 @@ program.command('find-containers')
   .description('Search containers')
   .option('--q <string>', 'Search query')
   .option('--asc <string>', 'Sort by ascending', 'true')
-  .action(async (prefix, options) => {
+  .action(async (options) => {
     try {
       await validateWalletStorage();
       const config: ConfigurationInterface = validateCliInputs();
