@@ -19,10 +19,10 @@ const ECPair: ECPairAPI = ECPairFactory(tinysecp);
 export class MintInteractiveRealmCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
+    private options: BaseRequestOptions,
     private requestRealm: string,
     private address: string,
     private fundingWIF: string,
-    private options: BaseRequestOptions
   ) {
     this.options = checkBaseRequestOptions(this.options);
     this.requestRealm = this.requestRealm.startsWith('+') ? this.requestRealm.substring(1) : this.requestRealm;
@@ -46,6 +46,7 @@ export class MintInteractiveRealmCommand implements CommandInterface {
 
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
+      rbf: this.options.rbf,
       satsbyte: this.options.satsbyte,
       address: this.address,
       disableMiningChalk: this.options.disableMiningChalk,

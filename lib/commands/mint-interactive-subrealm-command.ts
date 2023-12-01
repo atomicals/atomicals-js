@@ -28,11 +28,11 @@ export interface ResolvedRealm {
 export class MintInteractiveSubrealmCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
+    private options: BaseRequestOptions,
     private requestSubRealm: string,
     private address: string,
     private fundingWIF: string,
     private owner: IWalletRecord,
-    private options: BaseRequestOptions,
   ) {
     this.options = checkBaseRequestOptions(this.options)
     this.requestSubRealm = this.requestSubRealm.startsWith('+') ? this.requestSubRealm.substring(1) : this.requestSubRealm;

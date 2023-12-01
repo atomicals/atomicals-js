@@ -20,11 +20,11 @@ initEccLib(tinysecp as any);
 export class DeleteInteractiveCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
+    private options: BaseRequestOptions,
     private atomicalId: string,
     private files: string[],
     private owner: IWalletRecord,
     private funding: IWalletRecord,
-    private options: BaseRequestOptions
   ) {
   }
   async run(): Promise<any> {
@@ -34,6 +34,7 @@ export class DeleteInteractiveCommand implements CommandInterface {
 
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
+      rbf: this.options.rbf,
       satsbyte: this.options.satsbyte,
       address: this.owner.address,
       disableMiningChalk: this.options.disableMiningChalk,

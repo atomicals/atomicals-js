@@ -103,6 +103,7 @@ export enum REQUEST_NAME_TYPE {
 
 export interface AtomicalOperationBuilderOptions {
     electrumApi: ElectrumApiInterface;
+    rbf?: boolean;
     satsbyte?: number; // satoshis                    
     address: string;
     opType: 'nft' | 'ft' | 'dft' | 'dmt' | 'dat' | 'mod' | 'evt' | 'sl' | 'x' | 'y'
@@ -114,7 +115,6 @@ export interface AtomicalOperationBuilderOptions {
     init?: string[] | any;
     ctx?: string[] | any;
     verbose?: boolean;
-    rbf?: boolean;
     nftOptions?: {
         satsoutput: number;
     };

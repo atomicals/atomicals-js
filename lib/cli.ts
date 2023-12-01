@@ -604,9 +604,9 @@ program.command('tx')
 
 /**
  * Resolve a realm or subrealm
- * 
+ *
  * @param realm_or_subrealm Realm or subrealm to resolve
- * @param options 
+ * @param options
  */
 const resolveRealmAction = async (realm_or_subrealm, options) => {
   try {
@@ -882,12 +882,13 @@ program.command('set')
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
-      const result: any = await atomicals.setInteractive(atomicalId, jsonFilename, fundingWalletRecord, ownerWalletRecord, {
+      const result: any = await atomicals.setInteractive({
+        rbf: options.rbf,
         satsbyte: parseInt(options.satsbyte, 10),
         satsoutput: parseInt(options.satsoutput, 10),
         disableautoencode: !!options.disableautoencode,
         bitworkc: options.bitworkc ? options.bitworkc : '8',
-      });
+      }, atomicalId, jsonFilename, fundingWalletRecord, ownerWalletRecord);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -912,12 +913,13 @@ program.command('set-container-data')
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       containerName = containerName.startsWith('#') ? containerName : '#' + containerName;
-      const result: any = await atomicals.setContainerDataInteractive(containerName, jsonFilename, fundingWalletRecord, ownerWalletRecord, {
+      const result: any = await atomicals.setContainerDataInteractive({
+        rbf: options.rbf,
         satsbyte: parseInt(options.satsbyte, 10),
         satsoutput: parseInt(options.satsoutput, 10),
         disableautoencode: !!options.disableautoencode,
         bitworkc: options.bitworkc,
-      });
+      }, containerName, jsonFilename, fundingWalletRecord, ownerWalletRecord);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -967,12 +969,13 @@ program.command('enable-dmint')
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       containerName = containerName.startsWith('#') ? containerName : '#' + containerName;
-      const result: any = await atomicals.setContainerDmintInteractive(containerName, jsonFilename, fundingWalletRecord, ownerWalletRecord, {
+      const result: any = await atomicals.setContainerDmintInteractive({
+        rbf: options.rbf,
         satsbyte: parseInt(options.satsbyte, 10),
         satsoutput: parseInt(options.satsoutput, 10),
         disableautoencode: !!options.disableautoencode,
         bitworkc: options.bitworkc || '7',
-      });
+      }, containerName, jsonFilename, fundingWalletRecord, ownerWalletRecord);
 
       handleResultLogging(result);
     } catch (error) {
@@ -1001,7 +1004,8 @@ program.command('mint-item')
       let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result: any = await atomicals.mintContainerItemInteractive(containerName, itemName, manifestFile, initialOwnerAddress.address, fundingRecord.WIF, ownerWalletRecord, {
+      const result: any = await atomicals.mintContainerItemInteractive({
+        rbf: options.rbf,
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
@@ -1010,8 +1014,8 @@ program.command('mint-item')
         container: options.container,
         bitworkc: options.bitworkc,
         bitworkr: options.bitworkr,
-        disableMiningChalk: options.disablechalk
-      });
+        disableMiningChalk: options.disablechalk,
+      }, containerName, itemName, manifestFile, initialOwnerAddress.address, fundingRecord.WIF, ownerWalletRecord);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1033,10 +1037,11 @@ program.command('emit')
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
-      const result: any = await atomicals.emitInteractive(atomicalId, data, fundingWalletRecord, ownerWalletRecord, {
+      const result: any = await atomicals.emitInteractive({
+        rbf: options.rbf,
         satsbyte: parseInt(options.satsbyte, 10),
         satsoutput: parseInt(options.satsoutput, 10),
-      });
+      }, atomicalId, data, fundingWalletRecord, ownerWalletRecord);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1060,10 +1065,11 @@ program.command('set-relation')
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
-      const result: any = await atomicals.setRelationInteractive(atomicalId, relationName, values, fundingWalletRecord, ownerWalletRecord, {
+      const result: any = await atomicals.setRelationInteractive({
+        rbf: options.rbf,
         satsbyte: parseInt(options.satsbyte, 10),
-        satsoutput: parseInt(options.satsoutput, 10)
-      });
+        satsoutput: parseInt(options.satsoutput, 10),
+      }, atomicalId, relationName, values, fundingWalletRecord, ownerWalletRecord);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1088,13 +1094,14 @@ program.command('delete')
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
-      const result: any = await atomicals.deleteInteractive(atomicalId, filesToDelete, ownerWalletRecord, fundingWalletRecord, {
+      const result: any = await atomicals.deleteInteractive({
+        rbf: options.rbf,
         satsbyte: parseInt(options.satsbyte, 10),
         satsoutput: parseInt(options.satsoutput, 10),
         bitworkc: options.bitworkc ? options.bitworkc : '8',
         bitworkr: options.bitworkr,
-        disableMiningChalk: options.disablechalk
-      });
+        disableMiningChalk: options.disablechalk,
+      }, atomicalId, filesToDelete, ownerWalletRecord, fundingWalletRecord);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1115,10 +1122,11 @@ program.command('seal')
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
-      const result: any = await atomicals.sealInteractive(atomicalId, fundingWalletRecord, ownerWalletRecord, {
+      const result: any = await atomicals.sealInteractive({
+        rbf: options.rbf,
         satsbyte: parseInt(options.satsbyte),
-        bitworkc: options.bitworkc || '1'
-      });
+        bitworkc: options.bitworkc || '1',
+      }, atomicalId, fundingWalletRecord, ownerWalletRecord);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1140,11 +1148,12 @@ program.command('splat')
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
-      const result: any = await atomicals.splatInteractive(locationId, fundingWalletRecord, ownerWalletRecord, {
+      const result: any = await atomicals.splatInteractive({
+        rbf: options.rbf,
         satsbyte: parseInt(options.satsbyte),
         satsoutput: parseInt(options.satsoutput),
-        bitworkc: options.bitworkc || '1'
-      });
+        bitworkc: options.bitworkc || '1',
+      }, locationId, fundingWalletRecord, ownerWalletRecord);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1164,9 +1173,10 @@ program.command('split')
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
-      const result: any = await atomicals.splitItneractive(locationId, fundingWalletRecord, ownerWalletRecord, {
-        satsbyte: parseInt(options.satsbyte)
-      });
+      const result: any = await atomicals.splitItneractive({
+        rbf: options.rbf,
+        satsbyte: parseInt(options.satsbyte),
+      }, locationId, fundingWalletRecord, ownerWalletRecord);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1229,8 +1239,7 @@ program.command('location')
       await validateWalletStorage();
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-      const verbose = options.verbose ? true : false;
-      const result = await atomicals.resolveAtomical(atomicalAliasOrId, AtomicalsGetFetchType.LOCATION, undefined, verbose);
+      const result = await atomicals.resolveAtomical(atomicalAliasOrId, AtomicalsGetFetchType.LOCATION, undefined, options.verbose);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1327,13 +1336,14 @@ program.command('enable-subrealms')
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       const realmOrSubRealmAdded = realmOrSubRealm.indexOf('+') === 0 ? realmOrSubRealm : '+' + realmOrSubRealm;
-      const result: any = await atomicals.enableSubrealmRules(realmOrSubRealmAdded, file, fundingWalletRecord, ownerWalletRecord, {
+      const result: any = await atomicals.enableSubrealmRules({
+        rbf: options.rbf,
         satsbyte: parseInt(options.satsbyte),
         satsoutput: parseInt(options.satsoutput),
         bitworkc: options.bitworkc,
         bitworkr: options.bitworkr,
-        disableMiningChalk: options.disablechalk
-      });
+        disableMiningChalk: options.disablechalk,
+      }, realmOrSubRealmAdded, file, fundingWalletRecord, ownerWalletRecord);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1358,13 +1368,14 @@ program.command('disable-subrealms')
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       const realmOrSubRealmAdded = realmOrSubRealm.indexOf('+') === 0 ? realmOrSubRealm : '+' + realmOrSubRealm;
-      const result: any = await atomicals.disableSubrealmRules(realmOrSubRealmAdded, fundingWalletRecord, ownerWalletRecord, {
+      const result: any = await atomicals.disableSubrealmRules({
+        rbf: options.rbf,
         satsbyte: parseInt(options.satsbyte),
         satsoutput: parseInt(options.satsoutput),
         bitworkc: options.bitworkc,
         bitworkr: options.bitworkr,
-        disableMiningChalk: options.disablechalk
-      });
+        disableMiningChalk: options.disablechalk,
+      }, realmOrSubRealmAdded, fundingWalletRecord, ownerWalletRecord);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1425,7 +1436,8 @@ program.command('mint-ft')
       if (isNaN(supply)) {
         throw 'supply must be an integer';
       }
-      const result: any = await atomicals.mintFtInteractive(file, parseInt(supply), initialOwnerRecord.address, requestTicker, fundingRecord.WIF, {
+      const result: any = await atomicals.mintFtInteractive({
+        rbf: options.rbf,
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
@@ -1435,8 +1447,8 @@ program.command('mint-ft')
         bitworkr: options.bitworkr,
         parent: options.parent,
         parentOwner: parentOwnerRecord,
-        disableMiningChalk: options.disablechalk
-      });
+        disableMiningChalk: options.disablechalk,
+      }, file, parseInt(supply), initialOwnerRecord.address, requestTicker, fundingRecord.WIF);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1469,7 +1481,8 @@ program.command('init-dft')
       let parentOwnerRecord = resolveWalletAliasNew(walletInfo, options.parentowner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       const mintBitworkc = options.mintbitworkc ? options.mintbitworkc : getRandomBitwork4();
-      const result: any = await atomicals.initDftInteractive(file, walletRecord.address, requestTicker, mintAmount, maxMints, mintHeight, mintBitworkc, options.mintbitworkr, fundingRecord.WIF, {
+      const result: any = await atomicals.initDftInteractive({
+        rbf: options.rbf,
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
@@ -1480,8 +1493,8 @@ program.command('init-dft')
         bitworkr: options.bitworkr,
         parent: options.parent,
         parentOwner: parentOwnerRecord,
-        disableMiningChalk: options.disablechalk
-      });
+        disableMiningChalk: options.disablechalk,
+      }, file, walletRecord.address, requestTicker, mintAmount, maxMints, mintHeight, mintBitworkc, options.mintbitworkr, fundingRecord.WIF);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1503,10 +1516,11 @@ program.command('mint-dft')
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       let walletRecord = resolveWalletAliasNew(walletInfo, options.initialowner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result: any = await atomicals.mintDftInteractive(walletRecord.address, ticker, fundingRecord.WIF, {
+      const result: any = await atomicals.mintDftInteractive({
+        rbf: options.rbf,
         satsbyte: parseInt(options.satsbyte),
-        disableMiningChalk: options.disablechalk
-      });
+        disableMiningChalk: options.disablechalk,
+      }, walletRecord.address, ticker, fundingRecord.WIF);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1535,7 +1549,8 @@ program.command('mint-nft')
       let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
       let parentOwnerRecord = resolveWalletAliasNew(walletInfo, options.parentowner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result: any = await atomicals.mintNftInteractive(files, initialOwnerAddress.address, fundingRecord.WIF, {
+      const result: any = await atomicals.mintNftInteractive({
+        rbf: options.rbf,
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
@@ -1546,8 +1561,8 @@ program.command('mint-nft')
         bitworkr: options.bitworkr,
         parent: options.parent,
         parentOwner: parentOwnerRecord,
-        disableMiningChalk: options.disablechalk
-      });
+        disableMiningChalk: options.disablechalk,
+      }, files, initialOwnerAddress.address, fundingRecord.WIF);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1575,7 +1590,8 @@ program.command('mint-realm')
       let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
       let parentOwnerRecord = resolveWalletAliasNew(walletInfo, options.parentowner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result: any = await atomicals.mintRealmInteractive(realm, initialOwnerAddress.address, fundingRecord.WIF, {
+      const result: any = await atomicals.mintRealmInteractive({
+        rbf: options.rbf,
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
@@ -1586,8 +1602,8 @@ program.command('mint-realm')
         bitworkr: options.bitworkr,
         parent: options.parent,
         parentOwner: parentOwnerRecord,
-        disableMiningChalk: options.disablechalk
-      });
+        disableMiningChalk: options.disablechalk,
+      }, realm, initialOwnerAddress.address, fundingRecord.WIF);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1614,7 +1630,8 @@ program.command('mint-subrealm')
       let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result: any = await atomicals.mintSubrealmInteractive(subrealm, initialOwnerAddress.address, fundingRecord.WIF, ownerWalletRecord, {
+      const result: any = await atomicals.mintSubrealmInteractive({
+        rbf: options.rbf,
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
@@ -1623,8 +1640,8 @@ program.command('mint-subrealm')
         container: options.container,
         bitworkc: options.bitworkc,
         bitworkr: options.bitworkr,
-        disableMiningChalk: options.disablechalk
-      });
+        disableMiningChalk: options.disablechalk,
+      }, subrealm, initialOwnerAddress.address, fundingRecord.WIF, ownerWalletRecord);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1652,7 +1669,8 @@ program.command('mint-container')
       let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary);
       let parentOwnerRecord = resolveWalletAliasNew(walletInfo, options.parentowner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result: any = await atomicals.mintContainerInteractive(container, initialOwnerAddress.address, fundingRecord.WIF, {
+      const result: any = await atomicals.mintContainerInteractive({
+        rbf: options.rbf,
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
@@ -1664,7 +1682,7 @@ program.command('mint-container')
         parent: options.parent,
         parentOwner: parentOwnerRecord,
         disableMiningChalk: options.disablechalk
-      });
+      }, container, initialOwnerAddress.address, fundingRecord.WIF);
       handleResultLogging(result);
     } catch (error: any) {
       console.log(error);
@@ -1888,7 +1906,7 @@ program.command('store-file')
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       let walletRecord = resolveWalletAliasNew(walletInfo, options.initialowner, walletInfo.primary);
       let parentOwnerRecord = resolveWalletAliasNew(walletInfo, options.parentowner, walletInfo.primary);
-      const result: any = await atomicals.mintDatInteractive(filepath, givenFileName, walletRecord.address, walletRecord.WIF, {
+      const result: any = await atomicals.mintDatInteractive({
         meta: options.meta,
         ctx: options.ctx,
         init: options.init,
@@ -1898,8 +1916,9 @@ program.command('store-file')
         bitworkr: options.bitworkr,
         parent: options.parent,
         parentOwner: parentOwnerRecord,
-        disableMiningChalk: options.disablechalk
-      });
+        disableMiningChalk: options.disablechalk,
+        rbf: options.rbf,
+      }, filepath, givenFileName, walletRecord.address, walletRecord.WIF, );
       handleResultLogging(result);
     } catch (error) {
       console.log(error);

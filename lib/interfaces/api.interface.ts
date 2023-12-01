@@ -4,6 +4,7 @@ import { GetSubrealmInfoCommandResultInterface } from "../commands/get-subrealm-
 import { IValidatedWalletInfo, IWalletRecord } from "../utils/validate-wallet-storage";
 
 export interface BaseRequestOptions {
+    rbf?: boolean;
     meta?: string[] | any;
     ctx?: string[] | any;
     init?: string[] | any;
@@ -16,40 +17,40 @@ export interface BaseRequestOptions {
     parentOwner?: IWalletRecord;
     disableMiningChalk?: boolean;
     disableautoencode?: boolean;
-    rbf?: boolean;
 }
- 
+
 export const BASE_REQUEST_OPTS_DEFAULTS = {
     satsbyte: 10,
-    satsoutput: 1000
+    satsoutput: 1000,
+    rbf: false,
 }
 
 export interface APIInterface {
     // Mint non-fungible-token methods (NFT)
-    mintNftInteractive(files: string[], address: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    mintRealmInteractive(requestRealm: string, address: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    mintSubrealmInteractive(requestSubRealm: string, address: string, WIF: string, owner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    mintContainerInteractive(requestContainer: string, address: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    mintContainerItemInteractive(container: string, itemId: string, manifestFile: string, address: string, WIF: string, owner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
+    mintNftInteractive(options: BaseRequestOptions, files: string[], address: string, WIF: string): Promise<CommandResultInterface>;
+    mintRealmInteractive(options: BaseRequestOptions, requestRealm: string, address: string, WIF: string): Promise<CommandResultInterface>;
+    mintSubrealmInteractive(options: BaseRequestOptions, requestSubRealm: string, address: string, WIF: string, owner: IWalletRecord): Promise<CommandResultInterface>;
+    mintContainerInteractive(options: BaseRequestOptions, requestContainer: string, address: string, WIF: string): Promise<CommandResultInterface>;
+    mintContainerItemInteractive(options: BaseRequestOptions, container: string, itemId: string, manifestFile: string, address: string, WIF: string, owner: IWalletRecord): Promise<CommandResultInterface>;
 
     // Mint fungible-token methods (FT)
-    mintFtInteractive(file: string, supply: number, address: string, requestTicker: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    mintDftInteractive(address: string, ticker: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    initDftInteractive(file: string, address: string, requestTicker: string, mintAmount: number, maxMints: number, mintHeight: number, mintBitworkc: string, mintBitworkr: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    
+    mintFtInteractive(options: BaseRequestOptions, file: string, supply: number, address: string, requestTicker: string, WIF: string): Promise<CommandResultInterface>;
+    mintDftInteractive(options: BaseRequestOptions, address: string, ticker: string, WIF: string): Promise<CommandResultInterface>;
+    initDftInteractive(options: BaseRequestOptions, file: string, address: string, requestTicker: string, mintAmount: number, maxMints: number, mintHeight: number, mintBitworkc: string, mintBitworkr: string, WIF: string): Promise<CommandResultInterface>;
+
     // Create data transaction (Non-Atomical/Non-Token)
-    mintDatInteractive(filepath: string, givenFileName: string, address: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface>;
+    mintDatInteractive(options: BaseRequestOptions, filepath: string, givenFileName: string, address: string, WIF: string): Promise<CommandResultInterface>;
 
     // Modify methods
-    enableSubrealmRules(realmOrSubrealm: string, file: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    disableSubrealmRules(realmOrSubrealm: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    setInteractive(atomicalId: string, jsonFilename: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    deleteInteractive(atomicalId: string, keysToDelete: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    sealInteractive(atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    splatInteractive(atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    splitItneractive(atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    setContainerDmintInteractive(containerName: string, jsonFile: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    
+    enableSubrealmRules(options: BaseRequestOptions, realmOrSubrealm: string, file: string, funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface>;
+    disableSubrealmRules(options: BaseRequestOptions, realmOrSubrealm: string, funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface>;
+    setInteractive(options: BaseRequestOptions, atomicalId: string, jsonFilename: string, funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface>;
+    deleteInteractive(options: BaseRequestOptions, atomicalId: string, keysToDelete: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface>;
+    sealInteractive(options: BaseRequestOptions, atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface>;
+    splatInteractive(options: BaseRequestOptions, atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface>;
+    splitItneractive(options: BaseRequestOptions, atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface>;
+    setContainerDmintInteractive(options: BaseRequestOptions, containerName: string, jsonFile: string, funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface>;
+
     // Transfer methods
     transferInteractiveNft(options: BaseRequestOptions, atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, receiveAddress: string, satsbyte: number, satsoutput: number): Promise<CommandResultInterface>;
     transferInteractiveFt(options: BaseRequestOptions, atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string): Promise<CommandResultInterface>;
@@ -65,9 +66,8 @@ export interface APIInterface {
     pendingSubrealms(options: BaseRequestOptions, address: string, funding: IWalletRecord, satsbyte: number, display: boolean, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
 
     // Set/delete relationships such as container membership
-    // atomicalId: string, relationName, values: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions
-    setRelationInteractive(atomicalId: string, relationName, values: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
-    
+    setRelationInteractive(options: BaseRequestOptions, atomicalId: string, relationName, values: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface>;
+
     // Query and search
     getAtomicalFtInfo(atomicalId: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     getAtomical(atomicalId: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;

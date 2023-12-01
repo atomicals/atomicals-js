@@ -18,12 +18,12 @@ initEccLib(tinysecp as any);
 export class SetRelationInteractiveCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
+    private options: BaseRequestOptions,
     private atomicalId: string,
     private relationName: string,
     private values: string[],
     private owner: IWalletRecord,
     private funding: IWalletRecord,
-    private options: BaseRequestOptions
   ) {
 
   }
@@ -32,6 +32,7 @@ export class SetRelationInteractiveCommand implements CommandInterface {
     const { atomicalInfo, locationInfo, inputUtxoPartial } = await getAndCheckAtomicalInfo(this.electrumApi, this.atomicalId, this.owner.address);
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
+      rbf: this.options.rbf,
       satsbyte: this.options.satsbyte,
       address: this.owner.address,
       disableMiningChalk: this.options.disableMiningChalk,

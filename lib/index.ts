@@ -271,10 +271,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async mintDatInteractive(filepath: string, givenFileName: string, address: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async mintDatInteractive(options: BaseRequestOptions, filepath: string, givenFileName: string, address: string, WIF: string): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new MintInteractiveDatCommand(this.electrumApi, filepath, givenFileName, address, WIF, options);
+      const command: CommandInterface = new MintInteractiveDatCommand(this.electrumApi, options, filepath, givenFileName, address, WIF);
       return await command.run();
     } catch (error: any) {
       return {
@@ -288,10 +288,10 @@ export class Atomicals implements APIInterface {
   }
 
 
-  async mintNftInteractive(files: string[], address: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async mintNftInteractive(options: BaseRequestOptions, files: string[], address: string, WIF: string): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new MintInteractiveNftCommand(this.electrumApi, files, address, WIF, options);
+      const command: CommandInterface = new MintInteractiveNftCommand(this.electrumApi, options, files, address, WIF);
       return await command.run();
     } catch (error: any) {
       return {
@@ -304,10 +304,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async mintRealmInteractive(requestRealm: string, address: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async mintRealmInteractive(options: BaseRequestOptions, requestRealm: string, address: string, WIF: string): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new MintInteractiveRealmCommand(this.electrumApi, requestRealm, address, WIF, options);
+      const command: CommandInterface = new MintInteractiveRealmCommand(this.electrumApi, options, requestRealm, address, WIF);
       return await command.run();
     } catch (error: any) {
       return {
@@ -320,10 +320,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async mintSubrealmInteractive(requestSubRealm: string, address: string, WIF: string, owner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async mintSubrealmInteractive(options: BaseRequestOptions, requestSubRealm: string, address: string, WIF: string, owner: IWalletRecord): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new MintInteractiveSubrealmCommand(this.electrumApi, requestSubRealm, address, WIF, owner, options);
+      const command: CommandInterface = new MintInteractiveSubrealmCommand(this.electrumApi, options, requestSubRealm, address, WIF, owner);
       return await command.run();
     } catch (error: any) {
       return {
@@ -336,10 +336,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async mintContainerItemInteractive(container: string, itemId: string, manifestFile: string, address: string, WIF: string, owner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async mintContainerItemInteractive(options: BaseRequestOptions, container: string, itemId: string, manifestFile: string, address: string, WIF: string, owner: IWalletRecord): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new MintInteractiveDitemCommand(this.electrumApi, container, itemId, manifestFile, address, WIF, options);
+      const command: CommandInterface = new MintInteractiveDitemCommand(this.electrumApi, options, container, itemId, manifestFile, address, WIF);
       return await command.run();
     } catch (error: any) {
       return {
@@ -352,10 +352,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async mintContainerInteractive(requestContainer: string, address: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async mintContainerInteractive(options: BaseRequestOptions, requestContainer: string, address: string, WIF: string): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new MintInteractiveContainerCommand(this.electrumApi, requestContainer, address, WIF, options);
+      const command: CommandInterface = new MintInteractiveContainerCommand(this.electrumApi, options, requestContainer, address, WIF);
       return await command.run();
     } catch (error: any) {
       return {
@@ -369,10 +369,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async mintFtInteractive(file: string, supply: number, address: string, requestTicker: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async mintFtInteractive(options: BaseRequestOptions, file: string, supply: number, address: string, requestTicker: string, WIF: string): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new MintInteractiveFtCommand(this.electrumApi, file, supply, address, requestTicker, WIF, options);
+      const command: CommandInterface = new MintInteractiveFtCommand(this.electrumApi, options, file, supply, address, requestTicker, WIF);
       return await command.run();
     } catch (error: any) {
       return {
@@ -385,10 +385,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async mintDftInteractive(address: string, ticker: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async mintDftInteractive(options: BaseRequestOptions, address: string, ticker: string, WIF: string): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new MintInteractiveDftCommand(this.electrumApi, address, ticker, WIF, options);
+      const command: CommandInterface = new MintInteractiveDftCommand(this.electrumApi, options, address, ticker, WIF);
       return await command.run();
     } catch (error: any) {
       return {
@@ -401,10 +401,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async initDftInteractive(file: string, address: string, requestTicker: string, mintAmount: number, maxMints: number, mintHeight: number, mintBitworkc: string, mintBitworkr: string, WIF: string, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async initDftInteractive(options: BaseRequestOptions, file: string, address: string, requestTicker: string, mintAmount: number, maxMints: number, mintHeight: number, mintBitworkc: string, mintBitworkr: string, WIF: string): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new InitInteractiveDftCommand(this.electrumApi, file, address, requestTicker, mintAmount, maxMints, mintHeight, mintBitworkc, mintBitworkr, WIF, options);
+      const command: CommandInterface = new InitInteractiveDftCommand(this.electrumApi, options, file, address, requestTicker, mintAmount, maxMints, mintHeight, mintBitworkc, mintBitworkr, WIF);
       return await command.run();
     } catch (error: any) {
       return {
@@ -417,10 +417,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async disableSubrealmRules(realmOrSubrealm: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async disableSubrealmRules(options: BaseRequestOptions, realmOrSubrealm: string, funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new DisableSubrealmRulesInteractiveCommand(this.electrumApi, realmOrSubrealm, funding, atomicalOwner, options);
+      const command: CommandInterface = new DisableSubrealmRulesInteractiveCommand(this.electrumApi, options, realmOrSubrealm, funding, atomicalOwner);
       return await command.run();
     } catch (error: any) {
       return {
@@ -433,10 +433,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async enableSubrealmRules(realmOrSubrealm: string, file: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async enableSubrealmRules(options: BaseRequestOptions, realmOrSubrealm: string, file: string, funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new EnableSubrealmRulesCommand(this.electrumApi, realmOrSubrealm, file, funding, atomicalOwner, options);
+      const command: CommandInterface = new EnableSubrealmRulesCommand(this.electrumApi, options, realmOrSubrealm, file, funding, atomicalOwner);
       return await command.run();
     } catch (error: any) {
       return {
@@ -449,10 +449,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async setRelationInteractive(atomicalId: string, relationName, values: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async setRelationInteractive(options: BaseRequestOptions, atomicalId: string, relationName, values: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new SetRelationInteractiveCommand(this.electrumApi, atomicalId, relationName, values, atomicalOwner, funding, options);
+      const command: CommandInterface = new SetRelationInteractiveCommand(this.electrumApi, options, atomicalId, relationName, values, atomicalOwner, funding);
       return await command.run();
     } catch (error: any) {
       return {
@@ -465,10 +465,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async splatInteractive(atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async splatInteractive(options: BaseRequestOptions, atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new SplatInteractiveCommand(this.electrumApi, atomicalId, atomicalOwner, funding, options);
+      const command: CommandInterface = new SplatInteractiveCommand(this.electrumApi, options, atomicalId, atomicalOwner, funding);
       return await command.run();
     } catch (error: any) {
       return {
@@ -481,11 +481,11 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async splitItneractive(atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async splitItneractive(options: BaseRequestOptions, atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface> {
     try {
 
       await this.electrumApi.open();
-      const command: CommandInterface = new SplitInteractiveCommand(this.electrumApi, atomicalId, atomicalOwner, funding, options);
+      const command: CommandInterface = new SplitInteractiveCommand(this.electrumApi, options, atomicalId, atomicalOwner, funding);
       return await command.run();
     } catch (error: any) {
       return {
@@ -497,26 +497,10 @@ export class Atomicals implements APIInterface {
       this.electrumApi.close();
     }
   }
-  async emitInteractive(atomicalId: string, files: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async emitInteractive(options: BaseRequestOptions, atomicalId: string, files: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new EmitInteractiveCommand(this.electrumApi, atomicalId, files, atomicalOwner, funding, options);
-      return await command.run();
-    } catch (error: any) {
-      return {
-        success: false,
-        message: error.toString(),
-        error
-      }
-    } finally {
-      this.electrumApi.close();
-    }
-  }
-
-  async setInteractive(atomicalId: string, filename: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
-    try {
-      await this.electrumApi.open();
-      const command: CommandInterface = new SetInteractiveCommand(this.electrumApi, atomicalId, filename, atomicalOwner, funding, options);
+      const command: CommandInterface = new EmitInteractiveCommand(this.electrumApi, options, atomicalId, files, atomicalOwner, funding);
       return await command.run();
     } catch (error: any) {
       return {
@@ -529,10 +513,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async setContainerDataInteractive(containerName: string, filename: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async setInteractive(options: BaseRequestOptions, atomicalId: string, filename: string, funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new SetContainerDataInteractiveCommand(this.electrumApi, containerName, filename, atomicalOwner, funding, options);
+      const command: CommandInterface = new SetInteractiveCommand(this.electrumApi, options, atomicalId, filename, atomicalOwner, funding);
       return await command.run();
     } catch (error: any) {
       return {
@@ -545,10 +529,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async setContainerDmintInteractive(containerName: string, filename: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async setContainerDataInteractive(options: BaseRequestOptions, containerName: string, filename: string, funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new SetContainerDmintInteractiveCommand(this.electrumApi, containerName, filename, atomicalOwner, funding, options);
+      const command: CommandInterface = new SetContainerDataInteractiveCommand(this.electrumApi, options, containerName, filename, atomicalOwner, funding);
       return await command.run();
     } catch (error: any) {
       return {
@@ -561,10 +545,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async deleteInteractive(atomicalId: string, filesToDelete: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async setContainerDmintInteractive(options: BaseRequestOptions, containerName: string, filename: string, funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new DeleteInteractiveCommand(this.electrumApi, atomicalId, filesToDelete, funding, atomicalOwner, options);
+      const command: CommandInterface = new SetContainerDmintInteractiveCommand(this.electrumApi, options, containerName, filename, atomicalOwner, funding);
       return await command.run();
     } catch (error: any) {
       return {
@@ -577,10 +561,26 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async sealInteractive(atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface> {
+  async deleteInteractive(options: BaseRequestOptions, atomicalId: string, filesToDelete: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new SealInteractiveCommand(this.electrumApi, atomicalId, atomicalOwner, funding, options);
+      const command: CommandInterface = new DeleteInteractiveCommand(this.electrumApi, options, atomicalId, filesToDelete, funding, atomicalOwner);
+      return await command.run();
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.toString(),
+        error
+      }
+    } finally {
+      this.electrumApi.close();
+    }
+  }
+
+  async sealInteractive(options: BaseRequestOptions, atomicalId: string, funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface> {
+    try {
+      await this.electrumApi.open();
+      const command: CommandInterface = new SealInteractiveCommand(this.electrumApi, options, atomicalId, atomicalOwner, funding);
       return await command.run();
     } catch (error: any) {
       return {
