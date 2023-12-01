@@ -130,7 +130,10 @@ export class ElectrumApi implements ElectrumApiInterface {
             const checkForUtxo = async () => {
                 console.log('...');
                 try {
-                    const response: any = await this.getUnspentAddress(address);
+                    const response: any = await this.getUnspentAddress(address).catch((e) => {
+                        console.error(e);
+                        return {unconfirmed: 0, confirmed: 0, utxos: []};
+                    });
                     const utxos = response.utxos;
                     for (const utxo of utxos) {
                         // Do not use utxos that have attached atomicals
@@ -154,7 +157,7 @@ export class ElectrumApi implements ElectrumApiInterface {
                     }
 
                 } catch (error) {
-                    console.log('error', error);
+                    console.error(error);
                     reject(error);
                     clearInterval(intervalId);
                 }
