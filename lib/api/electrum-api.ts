@@ -16,8 +16,8 @@ export class ElectrumApi implements ElectrumApiInterface {
     
     }
 
-    static createClient(url: string) {
-        return new ElectrumApi(url);
+    static createClient(url: string, usePost = true) {
+        return new ElectrumApi(url, usePost);
     }
 
     public async open(): Promise<any> {
