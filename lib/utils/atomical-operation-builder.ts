@@ -564,8 +564,8 @@ export class AtomicalOperationBuilder {
                 if (performBitworkForCommitTx && hasValidBitwork(checkTxid, this.bitworkInfoCommit?.prefix as any, this.bitworkInfoCommit?.ext as any)) {
                     process.stdout.clearLine(0);
                     process.stdout.cursorTo(0);
-                    process.stdout.write(chalk.green(checkTxid, ' nonces: ' + noncesGenerated));
-                    console.log('\nBitwork matches commit txid! ', prelimTx.getId(), '@ time: ' + Math.floor(Date.now() / 1000))
+                    process.stdout.write(chalk.green(checkTxid, ` nonces: ${noncesGenerated} (${nonce})`));
+                    console.log('\nBitwork matches commit txid! ', prelimTx.getId(), `@ time: ${unixtime}`)
                     // We found a solution, therefore broadcast it 
                     const interTx = psbtStart.extractTransaction();
                     const rawtx = interTx.toHex();
