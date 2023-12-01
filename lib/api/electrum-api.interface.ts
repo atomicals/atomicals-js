@@ -15,7 +15,7 @@ export interface ElectrumApiInterface {
     sendTransaction: (rawtx: string) => Promise<string>;
     getUnspentAddress: (address: string) => Promise<IUnspentResponse>;
     getUnspentScripthash: (address: string) => Promise<IUnspentResponse>;
-    waitUntilUTXO: (address: string, satoshis: number, sleepTimeSec: number, exactSatoshiAmount?: boolean) => Promise<any>;
+    waitUntilUTXO: (address: string, satoshis: number, sleepTimeSec: number, exactSatoshiAmount?: boolean) => Promise<UTXO>;
     getTx: (txid: string, verbose?: boolean) => Promise<any>;
     serverVersion: () => Promise<any>;
     broadcast: (rawtx: string, force?: boolean) => Promise<any>;

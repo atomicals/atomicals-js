@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable prettier/prettier */
-import { detectAddressTypeToScripthash } from "../utils/address-helpers"
-import { UTXO } from "../types/UTXO.interface"
+import axios, { AxiosResponse } from 'axios';
 import { ElectrumApiInterface, IUnspentResponse } from "./electrum-api.interface";
-import axios from 'axios';
+import { UTXO } from "../types/UTXO.interface"
+import { detectAddressTypeToScripthash } from "../utils/address-helpers"
 
 export class ElectrumApi implements ElectrumApiInterface {
     private isOpenFlag = false;
@@ -113,19 +113,14 @@ export class ElectrumApi implements ElectrumApiInterface {
         return p;
     }
 
-    async waitUntilUTXO(address: string, satoshis: number, intervalSeconds = 10, exactSatoshiAmount = false): Promise<any> {
-
+    async waitUntilUTXO(address: string, satoshis: number, intervalSeconds = 10, exactSatoshiAmount = false): Promise<UTXO> {
         function hasAttachedAtomicals(utxo): any | null {
             if (utxo && utxo.atomicals && utxo.atomicals.length) {
                 return true;
             }
-            if (utxo && utxo.height <= 0) {
-                return true;
-            }
-            return false;
+            return utxo && utxo.height <= 0;
         }
-
-        return new Promise<any[]>((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             let intervalId: any;
             const checkForUtxo = async () => {
                 console.log('...');
