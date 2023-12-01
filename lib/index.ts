@@ -593,17 +593,19 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async transferInteractiveNft(atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, receiveAddress: string, satsbyte: number, satsoutput: number): Promise<CommandResultInterface> {
+  async transferInteractiveNft(options: BaseRequestOptions, atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, receiveAddress: string, satsbyte: number, satsoutput: number): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new TransferInteractiveNftCommand(
         this.electrumApi,
+        options,
         atomicalId,
         owner.WIF,
         receiveAddress,
         funding.WIF,
         satsbyte,
-        satsoutput);
+        satsoutput,
+      );
       return await command.run();
     } catch (error: any) {
       return {
@@ -616,18 +618,19 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async transferInteractiveFt(atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string): Promise<CommandResultInterface> {
+  async transferInteractiveFt(options: BaseRequestOptions, atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new TransferInteractiveFtCommand(
         this.electrumApi,
+        options,
         atomicalId,
         owner.WIF,
         funding.WIF,
         validatedWalletInfo,
         satsbyte,
         nofunding,
-        atomicalIdReceipt
+        atomicalIdReceipt,
       );
       return await command.run();
     } catch (error: any) {
@@ -642,11 +645,12 @@ export class Atomicals implements APIInterface {
   }
 
 
-  async transferInteractiveBuilder(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string, atomicalIdReceiptType: string, skipValidation = false): Promise<CommandResultInterface> {
+  async transferInteractiveBuilder(options: BaseRequestOptions, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string, atomicalIdReceiptType: string, forceSkipValidation = false): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new TransferInteractiveBuilderCommand(
         this.electrumApi,
+        options,
         owner.WIF,
         funding.WIF,
         validatedWalletInfo,
@@ -654,7 +658,7 @@ export class Atomicals implements APIInterface {
         nofunding,
         atomicalIdReceipt,
         atomicalIdReceiptType,
-        skipValidation
+        forceSkipValidation,
       );
       
       return await command.run();
@@ -669,17 +673,19 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async transferInteractiveUtxos(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt?: string): Promise<CommandResultInterface> {
+  async transferInteractiveUtxos(options: BaseRequestOptions, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new TransferInteractiveUtxosCommand(
         this.electrumApi,
+        options,
         owner.WIF,
         funding.WIF,
         validatedWalletInfo,
         satsbyte,
         nofunding,
-        atomicalIdReceipt);
+        atomicalIdReceipt,
+      );
       return await command.run();
     } catch (error: any) {
       return {
@@ -1064,10 +1070,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async pendingSubrealms(address: string, funding: IWalletRecord, satsbyte: number, display = false, keepElectrumAlive = false): Promise<CommandResultInterface> {
+  async pendingSubrealms(options: BaseRequestOptions, address: string, funding: IWalletRecord, satsbyte: number, display = false, keepElectrumAlive = false): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new PendingSubrealmsCommand(this.electrumApi, address, funding.WIF, satsbyte, display);
+      const command: CommandInterface = new PendingSubrealmsCommand(this.electrumApi, options, address, funding.WIF, satsbyte, display);
       return await command.run();
     } catch (error: any) {
       return {
@@ -1306,15 +1312,17 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async mergeInteractiveUtxos(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number): Promise<CommandResultInterface> {
+  async mergeInteractiveUtxos(options: BaseRequestOptions, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new MergeInteractiveUtxosCommand(
         this.electrumApi,
+        options,
         owner.WIF,
         funding.WIF,
         validatedWalletInfo,
-        satsbyte);
+        satsbyte,
+      );
       return await command.run();
     } catch (error: any) {
       return {

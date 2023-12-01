@@ -1387,7 +1387,7 @@ program.command('pending-subrealms')
       const display = options.display ? true : false;
       const satsbyte = parseInt(options.satsbyte);
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result = await atomicals.pendingSubrealms(ownerWalletRecord.address, fundingWalletRecord, satsbyte, display);
+      const result = await atomicals.pendingSubrealms(options, ownerWalletRecord.address, fundingWalletRecord, satsbyte, display);
       if (options.verbose) {
         handleResultLogging(result);
       }
@@ -1694,7 +1694,7 @@ program.command('transfer-nft')
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       const receive: { output: any, address: string } = performAddressAliasReplacement(walletInfo, address);
-      const result = await atomicals.transferInteractiveNft(atomicalId, ownerWalletRecord, fundingWalletRecord, receive.address, satsbyte, satsoutput);
+      const result = await atomicals.transferInteractiveNft(options, atomicalId, ownerWalletRecord, fundingWalletRecord, receive.address, satsbyte, satsoutput);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1718,7 +1718,7 @@ program.command('transfer-ft')
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       const atomicalIdReceipt = options.atomicalreceipt;
-      const result = await atomicals.transferInteractiveFt(atomicalId, ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, options.nofunding, atomicalIdReceipt);
+      const result = await atomicals.transferInteractiveFt(options, atomicalId, ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, options.nofunding, atomicalIdReceipt);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1745,7 +1745,7 @@ program.command('transfer-builder')
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       const atomicalIdReceipt = options.atomicalreceipt;
       const atomicalIdReceiptType = options.atomicalreceipttype || 'p';
-      const result = await atomicals.transferInteractiveBuilder(ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, options.nofunding, atomicalIdReceipt, atomicalIdReceiptType, options.skipvalidation);
+      const result = await atomicals.transferInteractiveBuilder(options, ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, options.nofunding, atomicalIdReceipt, atomicalIdReceiptType, options.skipvalidation);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1768,7 +1768,7 @@ program.command('transfer-utxos')
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       const atomicalIdReceipt = options.atomicalreceipt;
-      const result = await atomicals.transferInteractiveUtxos(ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, options.nofunding, atomicalIdReceipt);
+      const result = await atomicals.transferInteractiveUtxos(options, ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte, options.nofunding, atomicalIdReceipt);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1788,7 +1788,7 @@ program.command('merge-atomicals')
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
       let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const result = await atomicals.mergeInteractiveUtxos(ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte);
+      const result = await atomicals.mergeInteractiveUtxos(options, ownerWalletRecord, fundingWalletRecord, walletInfo, satsbyte);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);

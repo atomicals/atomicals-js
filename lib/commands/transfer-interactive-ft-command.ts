@@ -17,13 +17,14 @@ import { jsonFileWriter } from "../utils/file-utils";
 import { detectAddressTypeToScripthash, performAddressAliasReplacement } from "../utils/address-helpers";
 import { toXOnly } from "../utils/create-key-pair";
 import { getKeypairInfo, KeyPairInfo } from "../utils/address-keypair-path";
-import { NETWORK, calculateFTFundsRequired, calculateFundsRequired, logBanner } from "./command-helpers";
+import { NETWORK, RBF_INPUT_SEQUENCE, calculateFTFundsRequired, logBanner } from "./command-helpers";
 import { onlyUnique } from "../utils/utils";
 import { IValidatedWalletInfo } from "../utils/validate-wallet-storage";
 import { AtomicalIdentifierType, AtomicalResolvedIdentifierReturn, compactIdToOutpoint, getAtomicalIdentifierType, isAtomicalId } from "../utils/atomical-format-helpers";
 import { GetCommand } from "./get-command";
 import { GetByTickerCommand } from "./get-by-ticker-command";
 import { ATOMICALS_PROTOCOL_ENVELOPE_ID } from "../types/protocol-tags";
+import { BaseRequestOptions } from "../interfaces/api.interface";
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 initEccLib(tinysecp as any);
 const ECPair: ECPairAPI = ECPairFactory(tinysecp);
@@ -75,13 +76,14 @@ export class TransferInteractiveFtCommand implements CommandInterface {
 
   constructor(
     private electrumApi: ElectrumApiInterface,
+    private options: BaseRequestOptions,
     private atomicalAliasOrId: string,
     private currentOwnerAtomicalWIF: string,
     private fundingWIF: string,
     private validatedWalletInfo: IValidatedWalletInfo,
     private satsbyte: number,
     private nofunding: boolean,
-    private atomicalIdReceipt: string
+    private atomicalIdReceipt: string,
   ) {
 
   }
@@ -409,6 +411,9 @@ export class TransferInteractiveFtCommand implements CommandInterface {
         witnessUtxo: { value: utxo.value, script: Buffer.from(output, 'hex') },
         tapInternalKey: keyPairAtomical.childNodeXOnlyPubkey,
       })
+      if (this.options.rbf) {
+        psbt.setInputSequence(utxo.index, RBF_INPUT_SEQUENCE)
+      }
       tokenBalanceIn += utxo.value;
       tokenInputsLength++;
     }
@@ -466,6 +471,9 @@ export class TransferInteractiveFtCommand implements CommandInterface {
         witnessUtxo: { value: utxo.value, script: keyPairFunding.output },
         tapInternalKey: keyPairFunding.childNodeXOnlyPubkey,
       })
+      if (this.options.rbf) {
+        psbt.setInputSequence(utxo.outputIndex, RBF_INPUT_SEQUENCE)
+      }
     }
     const isMoreThanDustChangeRemaining = utxo.value - expectedSatoshisDeposit >= 546;
     if (isMoreThanDustChangeRemaining) {

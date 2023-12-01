@@ -16,6 +16,7 @@ export interface BaseRequestOptions {
     parentOwner?: IWalletRecord;
     disableMiningChalk?: boolean;
     disableautoencode?: boolean;
+    rbf?: boolean;
 }
  
 export const BASE_REQUEST_OPTS_DEFAULTS = {
@@ -50,18 +51,18 @@ export interface APIInterface {
     setContainerDmintInteractive(containerName: string, jsonFile: string, funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions): Promise<CommandResultInterface>;
     
     // Transfer methods
-    transferInteractiveNft(atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, receiveAddress: string, satsbyte: number, satsoutput: number, atomicalIdReceipt?: string): Promise<CommandResultInterface>;
-    transferInteractiveFt(atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt?: string): Promise<CommandResultInterface>;
-    transferInteractiveUtxos(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean): Promise<CommandResultInterface>;
-    transferInteractiveBuilder(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt?: string, atomicalIdReceiptType?: string, skipValidation?: boolean): Promise<CommandResultInterface>;
-    mergeInteractiveUtxos(owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number): Promise<CommandResultInterface>;
+    transferInteractiveNft(options: BaseRequestOptions, atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, receiveAddress: string, satsbyte: number, satsoutput: number): Promise<CommandResultInterface>;
+    transferInteractiveFt(options: BaseRequestOptions, atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string): Promise<CommandResultInterface>;
+    transferInteractiveUtxos(options: BaseRequestOptions, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string): Promise<CommandResultInterface>;
+    transferInteractiveBuilder(options: BaseRequestOptions, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string, atomicalIdReceiptType: string, forceSkipValidation: boolean): Promise<CommandResultInterface>;
+    mergeInteractiveUtxos(options: BaseRequestOptions, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number): Promise<CommandResultInterface>;
 
     // Summaries of specific types of tokens such as: Realm, Container, and Tickers
     summarySubrealms(address: string, filter: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     summaryContainers(address: string, filter: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     summaryRealms(address: string, filter: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     summaryTickers(address: string, filter: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
-    pendingSubrealms(address: string, funding: IWalletRecord, satsbyte: number, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
+    pendingSubrealms(options: BaseRequestOptions, address: string, funding: IWalletRecord, satsbyte: number, display: boolean, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
 
     // Set/delete relationships such as container membership
     // atomicalId: string, relationName, values: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord, options: BaseRequestOptions
