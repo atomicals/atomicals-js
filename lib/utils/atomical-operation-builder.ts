@@ -13,7 +13,15 @@ import {
     Psbt,
 } from "bitcoinjs-lib";
 initEccLib(tinysecp as any);
-import { AtomicalsPayload, NETWORK, calculateFundsRequired, getAndCheckAtomicalInfo, prepareCommitRevealConfig, prepareFilesDataAsObject } from "../commands/command-helpers";
+import {
+    AtomicalsPayload,
+    NETWORK,
+    RBF_INPUT_SEQUENCE,
+    calculateFundsRequired,
+    getAndCheckAtomicalInfo,
+    prepareCommitRevealConfig,
+    prepareFilesDataAsObject
+} from "../commands/command-helpers";
 import { getFundingUtxo } from "./select-funding-utxo";
 import { sleeper } from "./utils";
 import { witnessStackToScriptWitness } from "../commands/witness_stack_to_script_witness";
@@ -106,6 +114,7 @@ export interface AtomicalOperationBuilderOptions {
     init?: string[] | any;
     ctx?: string[] | any;
     verbose?: boolean;
+    rbf?: boolean;
     nftOptions?: {
         satsoutput: number;
     };
@@ -185,6 +194,10 @@ export class AtomicalOperationBuilder {
                 throw new Error('dmtOptions required for dmt type')
             }
         }
+    }
+
+    setRBF(value: boolean) {
+        this.options.rbf = value;
     }
 
     setRequestContainer(name: string) {
@@ -545,6 +558,9 @@ export class AtomicalOperationBuilder {
                     witnessUtxo: { value: fundingUtxo.value, script: Buffer.from(fundingKeypair.output, 'hex') },
                     tapInternalKey: fundingKeypair.childNodeXOnlyPubkey,
                 });
+                if (this.options.rbf) {
+                    psbtStart.setInputSequence(fundingUtxo.index, RBF_INPUT_SEQUENCE);
+                }
 
                 psbtStart.addOutput({
                     address: updatedBaseCommit.scriptP2TR.address,
@@ -627,6 +643,9 @@ export class AtomicalOperationBuilder {
                     tapLeafScript
                 ]
             });
+            if (this.options.rbf) {
+                psbt.setInputSequence(utxoOfCommitAddress.vout, RBF_INPUT_SEQUENCE);
+            }
             totalInputsforReveal += utxoOfCommitAddress.value;
 
             // Add any additional inputs that were assigned
@@ -637,6 +656,9 @@ export class AtomicalOperationBuilder {
                     witnessUtxo: additionalInput.utxo.witnessUtxo,
                     tapInternalKey: additionalInput.keypairInfo.childNodeXOnlyPubkey
                 });
+                if (this.options.rbf) {
+                    psbt.setInputSequence(additionalInput.utxo.index, RBF_INPUT_SEQUENCE);
+                }
                 totalInputsforReveal += additionalInput.utxo.witnessUtxo.value;
             }
 
@@ -659,6 +681,9 @@ export class AtomicalOperationBuilder {
                     witnessUtxo: parentAtomicalInfo.parentUtxoPartial.witnessUtxo,
                     tapInternalKey: parentAtomicalInfo.parentKeyInfo.childNodeXOnlyPubkey
                 });
+                if (this.options.rbf) {
+                    psbt.setInputSequence(parentAtomicalInfo.parentUtxoPartial.index, RBF_INPUT_SEQUENCE);
+                }
                 totalInputsforReveal += parentAtomicalInfo.parentUtxoPartial.witnessUtxo.value;
                 psbt.addOutput({
                     address: parentAtomicalInfo.parentKeyInfo.address,
