@@ -565,16 +565,16 @@ export class AtomicalOperationBuilder {
                     process.stdout.clearLine(0);
                     process.stdout.cursorTo(0);
                     process.stdout.write(chalk.green(checkTxid, ` nonces: ${noncesGenerated} (${nonce})`));
-                    console.log('\nBitwork matches commit txid! ', prelimTx.getId(), `@ time: ${unixtime}`)
+                    console.log('\nBitwork matches commit txid! ', checkTxid, `@ time: ${unixtime}`)
                     // We found a solution, therefore broadcast it 
                     const interTx = psbtStart.extractTransaction();
                     const rawtx = interTx.toHex();
                     AtomicalOperationBuilder.finalSafetyCheckForExcessiveFee(psbtStart, interTx);
                     if (!(await this.broadcastWithRetries(rawtx))) {
-                        console.log('Error sending', prelimTx.getId(), rawtx);
-                        throw new Error('Unable to broadcast commit transaction after attempts: ' + prelimTx.getId());
+                        console.log('Error sending', checkTxid, rawtx);
+                        throw new Error('Unable to broadcast commit transaction after attempts: ' + checkTxid);
                     } else {
-                        console.log('Success sent tx: ', prelimTx.getId());
+                        console.log('Success sent tx: ', checkTxid);
                     }
                     commitMinedWithBitwork = true;
                     performBitworkForCommitTx = false;
