@@ -209,15 +209,15 @@ program.command('wallet-create')
   .description('Creates and displays new 12-word secret mnemonic phrase along with the primary and funding addresses')
   .action(async (options) => {
     const result = await Atomicals.walletCreate();
-    console.log('Generated mnemonic phrase:');
-    console.log(`phrase: ${result.data.phrase}`);
-    console.log(`Primary address (P2TR): ${result.data.primary.address}`);
-    console.log(`Primary address WIF: ${result.data.primary.WIF}`);
-    console.log(`Primary address path: ${result.data.primary.path}`);
-    console.log(`Funding address (P2TR): ${result.data.funding.address}`);
-    console.log(`Funding address WIF: ${result.data.funding.WIF}`);
-    console.log(`Funding address path: ${result.data.funding.path}`);
-    console.log(result)
+    console.log('Generated mnemonic phrase:', result);
+    console.log(`phrase: ${result.data.wallet.phrase}`);
+    console.log(`Primary address (P2TR): ${result.data.wallet.primary.address}`);
+    console.log(`Primary address WIF: ${result.data.wallet.primary.WIF}`);
+    console.log(`Primary address path: ${result.data.wallet.primary.path}`);
+    console.log(`Funding address (P2TR): ${result.data.wallet.funding.address}`);
+    console.log(`Funding address WIF: ${result.data.wallet.funding.WIF}`);
+    console.log(`Funding address path: ${result.data.wallet.funding.path}`);
+    console.log(JSON.stringify(result, null, 2));
     console.log(`------------------------------------------------------`);
   });
 
@@ -242,9 +242,10 @@ program.command('wallet-init')
   .description('Initializes a new wallet at wallet.json')
   .option('--phrase <string>', 'Provide a wallet phrase')
   .option('--path <string>', 'Provide a path base', `m/86'/0'/0'`)
+  .option('--n <number>', 'Provider number of alias')
   .action(async (options) => {
     try {
-      const result = await Atomicals.walletInit(options.phrase, options.path);
+      const result = await Atomicals.walletInit(options.phrase, options.path, options.n ? parseInt(options.n, 10) : undefined);
       console.log('Wallet created at wallet.json');
       console.log(`phrase: ${result.data.phrase}`);
       console.log(`Primary address (P2TR): ${result.data.primary.address}`);
@@ -253,6 +254,7 @@ program.command('wallet-init')
       console.log(`Funding address (P2TR): ${result.data.funding.address}`);
       console.log(`Funding address WIF: ${result.data.funding.WIF}`);
       console.log(`Funding address path: ${result.data.funding.path}`);
+      console.log(`Full Data: ${JSON.stringify(result.data, null, 2)}`);
       console.log(`------------------------------------------------------`);
     } catch (err: any) {
       console.log('Error', err);

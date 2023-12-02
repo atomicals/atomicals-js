@@ -1,13 +1,14 @@
 import { CommandResultInterface } from "./command-result.interface";
 import { CommandInterface } from "./command.interface";
-import { createPrimaryAndFundingKeyPairs } from "../utils/create-key-pair";
+import { createPrimaryAndFundingImportedKeyPairs } from "../utils/create-key-pair";
 import { jsonFileExists, jsonFileWriter } from "../utils/file-utils";
 import { walletPathResolver } from "../utils/wallet-path-resolver";
+import * as fs from 'fs';
 
 const walletPath = walletPathResolver();
 
 export class WalletInitCommand implements CommandInterface {
-    constructor(private phrase: string | undefined, private path: string) {
+    constructor(private phrase: string | undefined, private path: string, private n?: number) {
 
     }
     async run(): Promise<CommandResultInterface> {
@@ -15,9 +16,12 @@ export class WalletInitCommand implements CommandInterface {
             throw "wallet.json exists, please remove it first to initialize another wallet. You may also use 'wallet-create' command to generate a new wallet."
         }
 
-        const wallet = await createPrimaryAndFundingKeyPairs(this.phrase, this.path);
-
-        await jsonFileWriter(walletPath, {
+        const { wallet, imported } = await createPrimaryAndFundingImportedKeyPairs(this.phrase, this.path, this.n);
+        const walletDir = `wallets/`;
+        if (!fs.existsSync(walletDir)) {
+          fs.mkdirSync(walletDir);
+        }
+        const created = {
             phrase: wallet.phrase,
             primary: {
                 address: wallet.primary.address,
@@ -28,11 +32,13 @@ export class WalletInitCommand implements CommandInterface {
                 address: wallet.funding.address,
                 path: wallet.funding.path,
                 WIF: wallet.funding.WIF
-            }
-        });
+            },
+            imported
+        };
+        await jsonFileWriter(walletPath, created);
         return {
             success: true,
-            data: wallet
+            data: created
         }
     }
     async walletExists() {
