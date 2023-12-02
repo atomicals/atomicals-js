@@ -54,7 +54,7 @@ export class ElectrumApi implements ElectrumApiInterface {
     }
 
     public sendTransaction(signedRawTx: string): Promise<any> {
-       return this.broadcast(signedRawTx);
+        return this.broadcast(signedRawTx);
     }
 
     public getTx(txId: string, verbose = false): Promise<any> {
@@ -62,12 +62,12 @@ export class ElectrumApi implements ElectrumApiInterface {
             this.call('blockchain.transaction.get', [txId, verbose ? 1 : 0]
             ).then((result: any) => {
                 resolve({success: true, tx: result});
-            }).catch(reject)
+            }).catch((error) => reject(error))
         });
     }
 
     public getUnspentAddress(address: string): Promise<IUnspentResponse | any> {
-        const { scripthash } = detectAddressTypeToScripthash(address)
+        const {scripthash} = detectAddressTypeToScripthash(address)
         return this.getUnspentScripthash(scripthash)
     }
 
@@ -95,7 +95,7 @@ export class ElectrumApi implements ElectrumApiInterface {
                     })
                 }
                 resolve(data);
-            }).catch(reject)
+            }).catch((error) => reject(error))
         });
     }
 
@@ -148,96 +148,68 @@ export class ElectrumApi implements ElectrumApiInterface {
     }
 
     public serverVersion(): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('server.version', []).then(resolve).catch(reject)
-        });
+        return this.call('server.version', []);
     }
 
     public broadcast(rawtx: string, force = false): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call(
-                force
-                    ? 'blockchain.transaction.broadcast_force'
-                    : 'blockchain.transaction.broadcast',
-                [rawtx],
-            ).then(resolve).catch(reject)
-        });
+        return this.call(
+            force
+                ? 'blockchain.transaction.broadcast_force'
+                : 'blockchain.transaction.broadcast',
+            [rawtx],
+        );
     }
 
     public dump(): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.dump', []).then(resolve).catch(reject)
-        });
+        return this.call('blockchain.atomicals.dump', []);
     }
 
     public atomicalsGetGlobal(hashes: number): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.get_global', [hashes]).then(resolve).catch(reject)
-        });
+        return this.call('blockchain.atomicals.get_global', [hashes]);
     }
 
     public atomicalsGet(atomicalAliasOrId: string | number): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.get', [atomicalAliasOrId]).then(resolve).catch(reject)
-        });
+        return this.call('blockchain.atomicals.get', [atomicalAliasOrId]);
     }
 
     public atomicalsGetFtInfo(atomicalAliasOrId: string | number): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.get_ft_info', [atomicalAliasOrId]).then(resolve).catch(reject)
-        });
+        return this.call('blockchain.atomicals.get_ft_info', [atomicalAliasOrId]);
     }
 
     public atomicalsGetLocation(atomicalAliasOrId: string | number): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.get_location', [atomicalAliasOrId]).then(resolve).catch(reject)
-        });
+        return this.call('blockchain.atomicals.get_location', [atomicalAliasOrId]);
     }
 
     public atomicalsGetStateHistory(atomicalAliasOrId: string | number): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.get_state_history', [atomicalAliasOrId]).then(resolve).catch(reject)
-        });
+        return this.call('blockchain.atomicals.get_state_history', [atomicalAliasOrId]);
     }
 
     public atomicalsGetState(atomicalAliasOrId: string | number, verbose: boolean): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.get_state', [atomicalAliasOrId, verbose ? 1 : 0]).then(resolve).catch(reject)
-        });
+        return this.call('blockchain.atomicals.get_state', [atomicalAliasOrId, verbose ? 1 : 0]);
     }
 
     public atomicalsGetEventHistory(atomicalAliasOrId: string | number): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.get_events', [atomicalAliasOrId]).then(resolve).catch(reject)
-        });
+        return this.call('blockchain.atomicals.get_events', [atomicalAliasOrId]);
     }
 
     public atomicalsGetTxHistory(atomicalAliasOrId: string | number): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.get_tx_history', [atomicalAliasOrId]).then(resolve).catch(reject)
-        });
+        return this.call('blockchain.atomicals.get_tx_history', [atomicalAliasOrId]);
     }
 
     public history(scripthash: string): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('blockchain.scripthash.get_history', [scripthash]).then(resolve).catch(reject)
-        });
+        return this.call('blockchain.scripthash.get_history', [scripthash]);
     }
 
     public atomicalsList(limit: number, offset: number, asc = false): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.list', [limit, offset, asc ? 1 : 0]).then(resolve).catch(reject)
-        });
+        return this.call('blockchain.atomicals.list', [limit, offset, asc ? 1 : 0]);
     }
 
     public atomicalsByScripthash(scripthash: string, verbose = true): Promise<any> {
-        return new Promise((resolve, reject) => {
-            const params: any[] = [scripthash];
-            if (verbose) {
-                params.push(true)
-            }
-            this.call('blockchain.atomicals.listscripthash', params).then(resolve).catch(reject)
-        });
+        const params: any[] = [scripthash];
+        if (verbose) {
+            params.push(true);
+        }
+        return this.call('blockchain.atomicals.listscripthash', params);
     }
 
     public atomicalsByAddress(address: string): Promise<any> {
@@ -246,112 +218,87 @@ export class ElectrumApi implements ElectrumApiInterface {
     }
 
     public atomicalsAtLocation(location: string): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.at_location', [location]).then(resolve).catch(reject)
-        });
+        return this.call('blockchain.atomicals.at_location', [location]);
     }
 
     public txs(txs: string[], verbose: boolean): Promise<any> {
         return Promise.all(
-            txs.map((tx) => new Promise((resolve, reject) => {
-                this.call('blockchain.transaction.get', [tx, verbose ? 1 : 0]).then(resolve).catch(reject)
-            }))
+            txs.map((tx) => this.call('blockchain.transaction.get', [tx, verbose ? 1 : 0]))
         );
     }
 
     public atomicalsGetRealmInfo(realmOrSubRealm: string, verbose?: boolean): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.get_realm_info', [realmOrSubRealm, verbose ? 1 : 0]).then(resolve).catch(reject)
-        });
+        return this.call('blockchain.atomicals.get_realm_info', [realmOrSubRealm, verbose ? 1 : 0]);
     }
 
     public atomicalsGetByRealm(realm: string): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.get_by_realm', [realm]).then(resolve).catch(reject)
-        });
+        return this.call('blockchain.atomicals.get_by_realm', [realm]);
     }
 
     public atomicalsGetByTicker(ticker: string): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.get_by_ticker', [ticker]).then(resolve).catch(reject)
-        });
+        return this.call('blockchain.atomicals.get_by_ticker', [ticker]);
     }
 
     public atomicalsGetByContainer(container: string): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.get_by_container', [container]).then(resolve).catch(reject)
-        });
+        return this.call('blockchain.atomicals.get_by_container', [container]);
     }
+
     public atomicalsGetContainerItems(container: string, limit: number, offset: number): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.get_container_items', [container, limit, offset]).then(resolve).catch(reject)
-        });
+        return this.call('blockchain.atomicals.get_container_items', [container, limit, offset]);
     }
 
     public atomicalsGetByContainerItem(container: string, itemName: string): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call('blockchain.atomicals.get_by_container_item', [container, itemName]).then(resolve).catch(reject)
-        });
+        return this.call('blockchain.atomicals.get_by_container_item', [container, itemName]);
     }
 
     public atomicalsGetByContainerItemValidated(container: string, item: string, bitworkc: string, bitworkr: string, main: string, mainHash: string, proof: any, checkWithoutSealed: boolean): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.call(
-                'blockchain.atomicals.get_by_container_item_validate',
-                [container, item, bitworkc, bitworkr, main, mainHash, proof, checkWithoutSealed]
-            ).then(resolve).catch(reject)
-        });
+        return this.call(
+            'blockchain.atomicals.get_by_container_item_validate',
+            [container, item, bitworkc, bitworkr, main, mainHash, proof, checkWithoutSealed],
+        );
     }
 
     public atomicalsFindTickers(prefix: string | null, asc?: boolean): Promise<any> {
-        return new Promise((resolve, reject) => {
-            const args: any = []
-            args.push(prefix ? prefix : null)
-            if (!asc) {
-                args.push(1)
-            } else {
-                args.push(0)
-            }
-            this.call('blockchain.atomicals.find_tickers', args).then(resolve).catch(reject)
-        });
+        const args: any = []
+        args.push(prefix ? prefix : null)
+        if (!asc) {
+            args.push(1)
+        } else {
+            args.push(0)
+        }
+        return this.call('blockchain.atomicals.find_tickers', args);
     }
 
     public atomicalsFindContainers(prefix: string | null, asc?: boolean): Promise<any> {
-        return new Promise((resolve, reject) => {
-            const args: any = []
-            args.push(prefix ? prefix : null)
-            if (!asc) {
-                args.push(1)
-            } else {
-                args.push(0)
-            }
-            this.call('blockchain.atomicals.find_containers', args).then(resolve).catch(reject)
-        });
+        const args: any = []
+        args.push(prefix ? prefix : null)
+        if (!asc) {
+            args.push(1)
+        } else {
+            args.push(0)
+        }
+        return this.call('blockchain.atomicals.find_containers', args);
     }
 
     public atomicalsFindRealms(prefix: string | null, asc?: boolean): Promise<any> {
-        return new Promise((resolve, reject) => {
-            const args: any = []
-            args.push(prefix ? prefix : null)
-            if (!asc) {
-                args.push(1)
-            } else {
-                args.push(0)
-            }
-            this.call('blockchain.atomicals.find_realms', args).then(resolve).catch(reject)
-        });
+        const args: any = []
+        args.push(prefix ? prefix : null)
+        if (!asc) {
+            args.push(1)
+        } else {
+            args.push(0)
+        }
+        return this.call('blockchain.atomicals.find_realms', args);
     }
 
     public atomicalsFindSubRealms(parentRealmId: string, prefix: string | null, asc?: boolean): Promise<any> {
-        return new Promise((resolve, reject) => {
-            const args: any = []
-            args.push(prefix ? prefix : null)
-            if (!asc) {
-                args.push(1)
-            } else {
-                args.push(0)
-            }
-            this.call('blockchain.atomicals.find_subrealms', [parentRealmId, args]).then(resolve).catch(reject)
-        });
+        const args: any = []
+        args.push(prefix ? prefix : null)
+        if (!asc) {
+            args.push(1)
+        } else {
+            args.push(0)
+        }
+        return this.call('blockchain.atomicals.find_subrealms', [parentRealmId, args]);
     }
 }
