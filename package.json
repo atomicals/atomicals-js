@@ -1,6 +1,6 @@
 {
   "name": "atomicals-js",
-  "version": "0.1.54",
+  "version": "0.1.55",
   "description": "Atomicals Javascript Library and CLI - atomicals.xyz",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,8 +10,7 @@
     "build": "tsc && gulp build",
     "cli": "node dist/cli.js",
     "test": "mocha --timeout=30000 --reporter spec \"test/**/*.test.js\"",
-    "e2e": "mocha --grep e2e  --timeout=300000 --reporter spec",
-    "postbuild": "echo '#!/usr/bin/env node\n' | cat - dist/cli.js > temp && mv temp dist/cli.js"
+    "e2e": "mocha --grep e2e  --timeout=300000 --reporter spec"
   },
   "bin": {
     "atomicals": "./dist/cli.js"
