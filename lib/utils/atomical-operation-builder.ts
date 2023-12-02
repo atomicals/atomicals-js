@@ -553,14 +553,12 @@ export class AtomicalOperationBuilder {
                 let psbtStart = new Psbt({ network: NETWORK });
                 psbtStart.setVersion(1);
                 psbtStart.addInput({
+                    sequence: this.options.rbf ? RBF_INPUT_SEQUENCE : undefined,
                     hash: fundingUtxo.txid,
                     index: fundingUtxo.index,
                     witnessUtxo: { value: fundingUtxo.value, script: Buffer.from(fundingKeypair.output, 'hex') },
                     tapInternalKey: fundingKeypair.childNodeXOnlyPubkey,
                 });
-                if (this.options.rbf) {
-                    psbtStart.setInputSequence(fundingUtxo.index, RBF_INPUT_SEQUENCE);
-                }
 
                 psbtStart.addOutput({
                     address: updatedBaseCommit.scriptP2TR.address,
@@ -636,6 +634,7 @@ export class AtomicalOperationBuilder {
             let psbt = new Psbt({ network: NETWORK });
             psbt.setVersion(1);
             psbt.addInput({
+                sequence: this.options.rbf ? RBF_INPUT_SEQUENCE : undefined,
                 hash: utxoOfCommitAddress.txid,
                 index: utxoOfCommitAddress.vout,
                 witnessUtxo: { value: utxoOfCommitAddress.value, script: hashLockP2TR.output! },
@@ -643,22 +642,17 @@ export class AtomicalOperationBuilder {
                     tapLeafScript
                 ]
             });
-            if (this.options.rbf) {
-                psbt.setInputSequence(utxoOfCommitAddress.vout, RBF_INPUT_SEQUENCE);
-            }
             totalInputsforReveal += utxoOfCommitAddress.value;
 
             // Add any additional inputs that were assigned
             for (const additionalInput of this.inputUtxos) {
                 psbt.addInput({
+                    sequence: this.options.rbf ? RBF_INPUT_SEQUENCE : undefined,
                     hash: additionalInput.utxo.hash,
                     index: additionalInput.utxo.index,
                     witnessUtxo: additionalInput.utxo.witnessUtxo,
                     tapInternalKey: additionalInput.keypairInfo.childNodeXOnlyPubkey
                 });
-                if (this.options.rbf) {
-                    psbt.setInputSequence(additionalInput.utxo.index, RBF_INPUT_SEQUENCE);
-                }
                 totalInputsforReveal += additionalInput.utxo.witnessUtxo.value;
             }
 
@@ -676,14 +670,12 @@ export class AtomicalOperationBuilder {
 
             if (parentAtomicalInfo) {
                 psbt.addInput({
+                    sequence: this.options.rbf ? RBF_INPUT_SEQUENCE : undefined,
                     hash: parentAtomicalInfo.parentUtxoPartial.hash,
                     index: parentAtomicalInfo.parentUtxoPartial.index,
                     witnessUtxo: parentAtomicalInfo.parentUtxoPartial.witnessUtxo,
                     tapInternalKey: parentAtomicalInfo.parentKeyInfo.childNodeXOnlyPubkey
                 });
-                if (this.options.rbf) {
-                    psbt.setInputSequence(parentAtomicalInfo.parentUtxoPartial.index, RBF_INPUT_SEQUENCE);
-                }
                 totalInputsforReveal += parentAtomicalInfo.parentUtxoPartial.witnessUtxo.value;
                 psbt.addOutput({
                     address: parentAtomicalInfo.parentKeyInfo.address,

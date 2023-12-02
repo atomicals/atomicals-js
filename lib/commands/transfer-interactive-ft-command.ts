@@ -406,14 +406,12 @@ export class TransferInteractiveFtCommand implements CommandInterface {
       // Add the atomical input, the value from the input counts towards the total satoshi amount required
       const { output } = detectAddressTypeToScripthash(keyPairAtomical.address);
       psbt.addInput({
+        sequence: this.options.rbf ? RBF_INPUT_SEQUENCE : undefined,
         hash: utxo.txid,
         index: utxo.index,
         witnessUtxo: { value: utxo.value, script: Buffer.from(output, 'hex') },
         tapInternalKey: keyPairAtomical.childNodeXOnlyPubkey,
       })
-      if (this.options.rbf) {
-        psbt.setInputSequence(utxo.index, RBF_INPUT_SEQUENCE)
-      }
       tokenBalanceIn += utxo.value;
       tokenInputsLength++;
     }
@@ -466,14 +464,12 @@ export class TransferInteractiveFtCommand implements CommandInterface {
     if (!this.nofunding) {
       // Add the funding input
       psbt.addInput({
+        sequence: this.options.rbf ? RBF_INPUT_SEQUENCE : undefined,
         hash: utxo.txid,
         index: utxo.outputIndex,
         witnessUtxo: { value: utxo.value, script: keyPairFunding.output },
         tapInternalKey: keyPairFunding.childNodeXOnlyPubkey,
       })
-      if (this.options.rbf) {
-        psbt.setInputSequence(utxo.outputIndex, RBF_INPUT_SEQUENCE)
-      }
     }
     const isMoreThanDustChangeRemaining = utxo.value - expectedSatoshisDeposit >= 546;
     if (isMoreThanDustChangeRemaining) {

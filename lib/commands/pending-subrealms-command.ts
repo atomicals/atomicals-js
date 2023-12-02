@@ -224,14 +224,12 @@ export class PendingSubrealmsCommand implements CommandInterface {
     console.log(`Detected UTXO (${utxo.txid}:${utxo.vout}) with value ${utxo.value} for funding the operation...`);
     // Add the funding input
     psbt.addInput({
+      sequence: this.options.rbf ? RBF_INPUT_SEQUENCE : undefined,
       hash: utxo.txid,
       index: utxo.outputIndex,
       witnessUtxo: { value: utxo.value, script: keypairFundingInfo.output },
       tapInternalKey: keypairFundingInfo.childNodeXOnlyPubkey,
     });
-    if (this.options.rbf) {
-      psbt.setInputSequence(utxo.outputIndex, RBF_INPUT_SEQUENCE)
-    }
 
     for (const paymentOutput of paymentOutputs) {
       psbt.addOutput({

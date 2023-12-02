@@ -160,14 +160,12 @@ export class TransferInteractiveNftCommand implements CommandInterface {
     const psbt = new bitcoin.Psbt({ network: NETWORK })
     // Add the atomical input, the value from the input counts towards the total satoshi amount required
     psbt.addInput({
+      sequence: this.options.rbf ? RBF_INPUT_SEQUENCE : undefined,
       hash: location.txid,
       index: location.index,
       witnessUtxo: { value: location.value, script: Buffer.from(location.script, 'hex') },
       tapInternalKey: keypairAtomical.childNodeXOnlyPubkey,
     })
-    if (this.options.rbf) {
-      psbt.setInputSequence(location.index, RBF_INPUT_SEQUENCE)
-    }
     // There is a funding deficit
     // Could fund with the atomical input value, but we wont
     // const requiresDeposit = expectedSatoshisDeposit > 0;
@@ -183,14 +181,12 @@ export class TransferInteractiveNftCommand implements CommandInterface {
     console.log(`Detected UTXO (${utxo.txid}:${utxo.vout}) with value ${utxo.value} for funding the transfer operation...`);
     // Add the funding input
     psbt.addInput({
+      sequence: this.options.rbf ? RBF_INPUT_SEQUENCE : undefined,
       hash: utxo.txid,
       index: utxo.outputIndex,
       witnessUtxo: { value: utxo.value, script: keypairFundingInfo.output },
       tapInternalKey: keypairFundingInfo.childNodeXOnlyPubkey,
     })
-    if (this.options.rbf) {
-      psbt.setInputSequence(utxo.outputIndex, RBF_INPUT_SEQUENCE)
-    }
     psbt.addOutput({
       value: this.satsoutput,
       address: receiveAddress,
