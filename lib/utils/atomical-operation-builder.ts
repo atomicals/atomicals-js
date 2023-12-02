@@ -25,9 +25,9 @@ const DEFAULT_SATS_ATOMICAL_UTXO = 1000;
 const SEND_RETRY_SLEEP_SECONDS = 15;
 const SEND_RETRY_ATTEMPTS = 20;
 const DUST_AMOUNT = 546;
-const BASE_BYTES = 10;
-const INPUT_BYTES_BASE = 148;
-const OUTPUT_BYTES_BASE = 34;
+const BASE_BYTES = 10.5;
+const INPUT_BYTES_BASE = 57.5;
+const OUTPUT_BYTES_BASE = 43;
 const OP_RETURN_BYTES: number = 20;
 const EXCESSIVE_FEE_LIMIT: number = 500000; // Limit to 1/200 of a BTC for now
 
@@ -821,24 +821,24 @@ export class AtomicalOperationBuilder {
         const BITWORK_BYTES = 5 + 10 + 4 + 10 + 4 + 10 + 1 + 10;
         const EXTRA_BUFFER = 10;
 
-        return (this.options.satsbyte as any) *
+        return Math.ceil((this.options.satsbyte as any) *
             (BASE_BYTES +
                 ((1 + this.inputUtxos.length) * INPUT_BYTES_BASE) +
                 (this.additionalOutputs.length * OUTPUT_BYTES_BASE) +
-                OP_RETURN_BYTES +
+                (OP_RETURN_BYTES +
                 ARGS_BYTES +
                 BITWORK_BYTES +
                 EXTRA_BUFFER +
-                hashLockP2TROutputLen
-            )
+                hashLockP2TROutputLen) / 4   // When used as witness data in a segwit input, the size in vbytes is the size in bytes divided by four.
+            ))
     }
 
     calculateFeesRequiredForCommit(): number {
-        return (this.options.satsbyte as any) *
+        return Math.ceil((this.options.satsbyte as any) *
             (BASE_BYTES +
                 (1 * INPUT_BYTES_BASE) +
                 (1 * OUTPUT_BYTES_BASE)
-            )
+            ))
     }
 
     getAdditionalFundingRequiredForReveal(): number | null {
@@ -882,10 +882,11 @@ export class AtomicalOperationBuilder {
             return;
         }
         // There were some excess satoshis, but let's verify that it meets the dust threshold to make change
-        if (excessSatoshisFound >= DUST_AMOUNT) {
+        const changeValue = excessSatoshisFound - OUTPUT_BYTES_BASE * this.options.satsbyte!! // minus an extra output for change
+        if (changeValue >= DUST_AMOUNT) {
             this.addOutput({
                 address: address,
-                value: excessSatoshisFound
+                value: changeValue
             })
         }
     }
@@ -897,7 +898,7 @@ export class AtomicalOperationBuilder {
     */
     addCommitChangeOutputIfRequired(extraInputValue: number, fee: FeeCalculations, pbst: any, address: string) {
         const totalInputsValue = extraInputValue + this.getTotalAdditionalInputValues();
-        const totalOutputsValue = this.getTotalAdditionalOutputValues() + fee.revealFeePlusOutputs;
+        const totalOutputsValue = fee.revealFeePlusOutputs;
         const calculatedFee = totalInputsValue - totalOutputsValue;
         // It will be invalid, but at least we know we don't need to add change
         if (calculatedFee <= 0) {
@@ -910,10 +911,11 @@ export class AtomicalOperationBuilder {
             return;
         }
         // There were some excess satoshis, but let's verify that it meets the dust threshold to make change
-        if (differenceBetweenCalculatedAndExpected >= DUST_AMOUNT) {
+        const changeValue = differenceBetweenCalculatedAndExpected - OUTPUT_BYTES_BASE * this.options.satsbyte!! // minus an extra output for change
+        if (changeValue >= DUST_AMOUNT) {
             pbst.addOutput({
                 address: address,
-                value: differenceBetweenCalculatedAndExpected
+                value: changeValue
             })
         }
     }
