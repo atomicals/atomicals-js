@@ -55,8 +55,12 @@ export const createKeyPair = async (phrase: string = '', path = `m/44'/0'/0'/0/0
         // tweakedChildNode: tweakedChildNodePrimary
     }
 }
+export interface WalletRequestDefinition {
+    phrase?: string | undefined
+    path?: string | undefined
+}
 
-export const createPrimaryAndFundingKeyPairs = async (phrase?: string | undefined, path?: string | undefined) => {
+export const createPrimaryAndFundingImportedKeyPairs = async (phrase?: string | undefined, path?: string | undefined, n?: number) => {
     let phraseResult: any = phrase;
     if (!phraseResult) {
         phraseResult = await createMnemonicPhrase();
@@ -66,10 +70,20 @@ export const createPrimaryAndFundingKeyPairs = async (phrase?: string | undefine
     if (path) {
         pathUsed = path;
     }
+    const imported = {}
+ 
+    if (n) {
+        for (let i = 2; i < n + 2; i++) {
+            imported[i+''] = await createKeyPair(phraseResult, `${pathUsed}/0/` + i)
+        }
+    }
     return {
-        phrase: phraseResult,
-        primary: await createKeyPair(phraseResult, `${pathUsed}/0/0`),
-        funding: await createKeyPair(phraseResult, `${pathUsed}/1/0`)
+        wallet: {
+            phrase: phraseResult,
+            primary: await createKeyPair(phraseResult, `${pathUsed}/0/0`),
+            funding: await createKeyPair(phraseResult, `${pathUsed}/1/0`)
+        },
+        imported
     }
 }
 
