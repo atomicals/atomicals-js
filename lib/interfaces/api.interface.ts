@@ -53,9 +53,9 @@ export interface APIInterface {
 
     // Transfer methods
     transferInteractiveNft(options: BaseRequestOptions, atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, receiveAddress: string, satsbyte: number, satsoutput: number): Promise<CommandResultInterface>;
-    transferInteractiveFt(options: BaseRequestOptions, atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string): Promise<CommandResultInterface>;
-    transferInteractiveUtxos(options: BaseRequestOptions, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string): Promise<CommandResultInterface>;
-    transferInteractiveBuilder(options: BaseRequestOptions, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string, atomicalIdReceiptType: string, forceSkipValidation: boolean): Promise<CommandResultInterface>;
+    transferInteractiveFt(options: BaseRequestOptions, atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt?: string): Promise<CommandResultInterface>;
+    transferInteractiveUtxos(options: BaseRequestOptions, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt?: string): Promise<CommandResultInterface>;
+    transferInteractiveBuilder(options: BaseRequestOptions, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt?: string, atomicalIdReceiptType?: string, forceSkipValidation?: boolean): Promise<CommandResultInterface>;
     mergeInteractiveUtxos(options: BaseRequestOptions, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number): Promise<CommandResultInterface>;
 
     // Summaries of specific types of tokens such as: Realm, Container, and Tickers

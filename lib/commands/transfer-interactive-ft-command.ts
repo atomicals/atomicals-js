@@ -83,7 +83,7 @@ export class TransferInteractiveFtCommand implements CommandInterface {
     private validatedWalletInfo: IValidatedWalletInfo,
     private satsbyte: number,
     private nofunding: boolean,
-    private atomicalIdReceipt: string,
+    private atomicalIdReceipt?: string,
   ) {
 
   }

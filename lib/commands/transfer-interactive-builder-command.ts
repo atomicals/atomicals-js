@@ -69,9 +69,9 @@ export class TransferInteractiveBuilderCommand implements CommandInterface {
     private validatedWalletInfo: IValidatedWalletInfo,
     private satsbyte: number,
     private nofunding: boolean,
-    private atomicalIdReceipt: string,
-    private atomicalIdReceiptType: string,
-    private forceSkipValidation: boolean,
+    private atomicalIdReceipt?: string,
+    private atomicalIdReceiptType?: string,
+    private forceSkipValidation?: boolean,
   ) {
     console.log(this.atomicalIdReceipt)
   } 

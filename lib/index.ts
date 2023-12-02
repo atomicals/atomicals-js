@@ -618,7 +618,7 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async transferInteractiveFt(options: BaseRequestOptions, atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string): Promise<CommandResultInterface> {
+  async transferInteractiveFt(options: BaseRequestOptions, atomicalId: string, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt?: string): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new TransferInteractiveFtCommand(
@@ -645,7 +645,7 @@ export class Atomicals implements APIInterface {
   }
 
 
-  async transferInteractiveBuilder(options: BaseRequestOptions, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string, atomicalIdReceiptType: string, forceSkipValidation = false): Promise<CommandResultInterface> {
+  async transferInteractiveBuilder(options: BaseRequestOptions, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt?: string, atomicalIdReceiptType?: string, forceSkipValidation = false): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new TransferInteractiveBuilderCommand(
@@ -673,7 +673,7 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async transferInteractiveUtxos(options: BaseRequestOptions, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt: string): Promise<CommandResultInterface> {
+  async transferInteractiveUtxos(options: BaseRequestOptions, owner: IWalletRecord, funding: IWalletRecord, validatedWalletInfo: IValidatedWalletInfo, satsbyte: number, nofunding: boolean, atomicalIdReceipt?: string): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new TransferInteractiveUtxosCommand(
