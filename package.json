@@ -10,7 +10,11 @@
     "build": "tsc && gulp build",
     "cli": "node dist/cli.js",
     "test": "mocha --timeout=30000 --reporter spec \"test/**/*.test.js\"",
-    "e2e": "mocha --grep e2e  --timeout=300000 --reporter spec"
+    "e2e": "mocha --grep e2e  --timeout=300000 --reporter spec",
+    "postbuild": "echo '#!/usr/bin/env node\n' | cat - dist/cli.js > temp && mv temp dist/cli.js"
+  },
+  "bin": {
+    "atomicals": "./dist/cli.js"
   },
   "repository": {
     "type": "git",
