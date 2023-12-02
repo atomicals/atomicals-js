@@ -115,7 +115,7 @@ export class ElectrumApi implements ElectrumApiInterface {
                         console.error(e);
                         return {unconfirmed: 0, confirmed: 0, utxos: []};
                     });
-                    const utxos = response.utxos;
+                    const utxos = response.utxos.sort((a, b) => a.value - b.value);
                     for (const utxo of utxos) {
                         // Do not use utxos that have attached atomicals
                         if (hasAttachedAtomicals(utxo)) {
