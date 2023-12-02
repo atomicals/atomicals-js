@@ -4,7 +4,7 @@ import { detectAddressTypeToScripthash, detectScriptToAddressType } from "../uti
 import * as readline from 'readline';
 import * as chalk from 'chalk';
 import { KeyPairInfo, getKeypairInfo } from "../utils/address-keypair-path";
-import { NETWORK, logBanner } from "./command-helpers";
+import { NETWORK, RBF_INPUT_SEQUENCE, logBanner } from "./command-helpers";
 import * as ecc from 'tiny-secp256k1';
 const bitcoin = require('bitcoinjs-lib');
 bitcoin.initEccLib(ecc);
@@ -23,6 +23,7 @@ import { jsonFileWriter } from "../utils/file-utils";
 import { compactIdToOutpoint } from "../utils/atomical-format-helpers";
 import { ATOMICALS_PROTOCOL_ENVELOPE_ID } from "../types/protocol-tags";
 import { ApplicableRule } from "../interfaces/atomical-status.interface";
+import { BaseRequestOptions } from "../interfaces/api.interface";
 
 export interface PendingSubrealmsCommandResultInterface {
   success: boolean;
@@ -59,6 +60,7 @@ export interface SubrealmAwaitingPaymentItemInterface {
 export class PendingSubrealmsCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
+    private options: BaseRequestOptions,
     private address: string,
     private fundingWIF: string,
     private satsbyte: number,
@@ -222,6 +224,7 @@ export class PendingSubrealmsCommand implements CommandInterface {
     console.log(`Detected UTXO (${utxo.txid}:${utxo.vout}) with value ${utxo.value} for funding the operation...`);
     // Add the funding input
     psbt.addInput({
+      sequence: this.options.rbf ? RBF_INPUT_SEQUENCE : undefined,
       hash: utxo.txid,
       index: utxo.outputIndex,
       witnessUtxo: { value: utxo.value, script: keypairFundingInfo.output },

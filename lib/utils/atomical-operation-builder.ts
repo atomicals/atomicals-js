@@ -13,7 +13,15 @@ import {
     Psbt,
 } from "bitcoinjs-lib";
 initEccLib(tinysecp as any);
-import { AtomicalsPayload, NETWORK, calculateFundsRequired, getAndCheckAtomicalInfo, prepareCommitRevealConfig, prepareFilesDataAsObject } from "../commands/command-helpers";
+import {
+    AtomicalsPayload,
+    NETWORK,
+    RBF_INPUT_SEQUENCE,
+    calculateFundsRequired,
+    getAndCheckAtomicalInfo,
+    prepareCommitRevealConfig,
+    prepareFilesDataAsObject
+} from "../commands/command-helpers";
 import { getFundingUtxo } from "./select-funding-utxo";
 import { sleeper } from "./utils";
 import { witnessStackToScriptWitness } from "../commands/witness_stack_to_script_witness";
@@ -95,6 +103,7 @@ export enum REQUEST_NAME_TYPE {
 
 export interface AtomicalOperationBuilderOptions {
     electrumApi: ElectrumApiInterface;
+    rbf?: boolean;
     satsbyte?: number; // satoshis                    
     address: string;
     opType: 'nft' | 'ft' | 'dft' | 'dmt' | 'dat' | 'mod' | 'evt' | 'sl' | 'x' | 'y'
@@ -185,6 +194,10 @@ export class AtomicalOperationBuilder {
                 throw new Error('dmtOptions required for dmt type')
             }
         }
+    }
+
+    setRBF(value: boolean) {
+        this.options.rbf = value;
     }
 
     setRequestContainer(name: string) {
@@ -540,6 +553,7 @@ export class AtomicalOperationBuilder {
                 let psbtStart = new Psbt({ network: NETWORK });
                 psbtStart.setVersion(1);
                 psbtStart.addInput({
+                    sequence: this.options.rbf ? RBF_INPUT_SEQUENCE : undefined,
                     hash: fundingUtxo.txid,
                     index: fundingUtxo.index,
                     witnessUtxo: { value: fundingUtxo.value, script: Buffer.from(fundingKeypair.output, 'hex') },
@@ -620,6 +634,7 @@ export class AtomicalOperationBuilder {
             let psbt = new Psbt({ network: NETWORK });
             psbt.setVersion(1);
             psbt.addInput({
+                sequence: this.options.rbf ? RBF_INPUT_SEQUENCE : undefined,
                 hash: utxoOfCommitAddress.txid,
                 index: utxoOfCommitAddress.vout,
                 witnessUtxo: { value: utxoOfCommitAddress.value, script: hashLockP2TR.output! },
@@ -632,6 +647,7 @@ export class AtomicalOperationBuilder {
             // Add any additional inputs that were assigned
             for (const additionalInput of this.inputUtxos) {
                 psbt.addInput({
+                    sequence: this.options.rbf ? RBF_INPUT_SEQUENCE : undefined,
                     hash: additionalInput.utxo.hash,
                     index: additionalInput.utxo.index,
                     witnessUtxo: additionalInput.utxo.witnessUtxo,
@@ -654,6 +670,7 @@ export class AtomicalOperationBuilder {
 
             if (parentAtomicalInfo) {
                 psbt.addInput({
+                    sequence: this.options.rbf ? RBF_INPUT_SEQUENCE : undefined,
                     hash: parentAtomicalInfo.parentUtxoPartial.hash,
                     index: parentAtomicalInfo.parentUtxoPartial.index,
                     witnessUtxo: parentAtomicalInfo.parentUtxoPartial.witnessUtxo,

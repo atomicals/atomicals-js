@@ -18,10 +18,10 @@ const ECPair: ECPairAPI = ECPairFactory(tinysecp);
 export class MintInteractiveDftCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
+    private options: BaseRequestOptions,
     private address: string,
     private ticker: string,
     private fundingWIF: string,
-    private options: BaseRequestOptions,
   ) {
     this.options = checkBaseRequestOptions(this.options)
     this.ticker = this.ticker.startsWith('$') ? this.ticker.substring(1) : this.ticker;
@@ -84,6 +84,7 @@ export class MintInteractiveDftCommand implements CommandInterface {
     console.log('atomicalDecorated', atomicalResponse, atomicalDecorated);
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
+      rbf: this.options.rbf,
       satsbyte: this.options.satsbyte,
       address: this.address,
       disableMiningChalk: this.options.disableMiningChalk,

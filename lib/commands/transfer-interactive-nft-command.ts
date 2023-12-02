@@ -17,10 +17,11 @@ import { AtomicalIdentifierType, AtomicalResolvedIdentifierReturn, decorateAtomi
 import { toXOnly } from "../utils/create-key-pair";
 import { AtomicalStatus } from "../interfaces/atomical-status.interface";
 import { getKeypairInfo, KeyPairInfo } from "../utils/address-keypair-path";
-import { NETWORK, calculateFundsRequired, logBanner } from "./command-helpers";
+import { NETWORK, RBF_INPUT_SEQUENCE, calculateFundsRequired, logBanner } from "./command-helpers";
 import { GetCommand } from "./get-command";
 import { GetByRealmCommand } from "./get-by-realm-command";
 import { GetByContainerCommand } from "./get-by-container-command";
+import { BaseRequestOptions } from "../interfaces/api.interface";
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 initEccLib(tinysecp as any);
 const ECPair: ECPairAPI = ECPairFactory(tinysecp);
@@ -28,6 +29,7 @@ const ECPair: ECPairAPI = ECPairFactory(tinysecp);
 export class TransferInteractiveNftCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
+    private options: BaseRequestOptions,
     private atomicalAliasOrId: string,
     private currentOwnerAtomicalWIF: string,
     private receiveAddress: string,
@@ -158,6 +160,7 @@ export class TransferInteractiveNftCommand implements CommandInterface {
     const psbt = new bitcoin.Psbt({ network: NETWORK })
     // Add the atomical input, the value from the input counts towards the total satoshi amount required
     psbt.addInput({
+      sequence: this.options.rbf ? RBF_INPUT_SEQUENCE : undefined,
       hash: location.txid,
       index: location.index,
       witnessUtxo: { value: location.value, script: Buffer.from(location.script, 'hex') },
@@ -178,6 +181,7 @@ export class TransferInteractiveNftCommand implements CommandInterface {
     console.log(`Detected UTXO (${utxo.txid}:${utxo.vout}) with value ${utxo.value} for funding the transfer operation...`);
     // Add the funding input
     psbt.addInput({
+      sequence: this.options.rbf ? RBF_INPUT_SEQUENCE : undefined,
       hash: utxo.txid,
       index: utxo.outputIndex,
       witnessUtxo: { value: utxo.value, script: keypairFundingInfo.output },

@@ -25,12 +25,12 @@ export interface ResolvedRealm {
 export class MintInteractiveDitemCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
+    private options: BaseRequestOptions,
     private container: string,
     private requestDmitem: string,
     private manifestJsonFile: string,
     private address: string,
     private fundingWIF: string,
-    private options: BaseRequestOptions,
   ) {
     this.options = checkBaseRequestOptions(this.options)
     this.container = this.container.startsWith('#') ? this.container.substring(1) : this.container;
@@ -76,6 +76,7 @@ export class MintInteractiveDitemCommand implements CommandInterface {
     console.log(getItemCmdResponse)
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
+      rbf: this.options.rbf,
       satsbyte: this.options.satsbyte,
       address: this.address,
       disableMiningChalk: this.options.disableMiningChalk,

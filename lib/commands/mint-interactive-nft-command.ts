@@ -17,10 +17,10 @@ export class MintInteractiveNftCommand implements CommandInterface {
 
   constructor(
     private electrumApi: ElectrumApiInterface,
+    private options: BaseRequestOptions,
     private files: string[],
     private address: string,
     private fundingWIF: string,
-    private options: BaseRequestOptions
   ) {
     this.options = checkBaseRequestOptions(this.options);
   }
@@ -28,6 +28,7 @@ export class MintInteractiveNftCommand implements CommandInterface {
   async run(): Promise<any> {
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
+      rbf: this.options.rbf,
       satsbyte: this.options.satsbyte,
       address: this.address,
       disableMiningChalk: this.options.disableMiningChalk,

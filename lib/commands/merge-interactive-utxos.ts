@@ -14,9 +14,10 @@ import { jsonFileWriter } from "../utils/file-utils";
 import { detectAddressTypeToScripthash, performAddressAliasReplacement } from "../utils/address-helpers";
 import { toXOnly } from "../utils/create-key-pair";
 import { getKeypairInfo, KeyPairInfo } from "../utils/address-keypair-path";
-import { NETWORK, calculateUtxoFundsRequired, logBanner } from "./command-helpers";
+import { NETWORK, RBF_INPUT_SEQUENCE, calculateUtxoFundsRequired, logBanner } from "./command-helpers";
 import { onlyUnique } from "../utils/utils";
 import { IValidatedWalletInfo } from "../utils/validate-wallet-storage";
+import { BaseRequestOptions } from "../interfaces/api.interface";
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 initEccLib(tinysecp as any);
 const ECPair: ECPairAPI = ECPairFactory(tinysecp);
@@ -58,10 +59,11 @@ export interface TransferConfigInterface {
 export class MergeInteractiveUtxosCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
+    private options: BaseRequestOptions,
     private currentOwnerAtomicalWIF: string,
     private fundingWIF: string,
     private validatedWalletInfo: IValidatedWalletInfo,
-    private satsbyte: number
+    private satsbyte: number,
   ) {
   }
   async run(): Promise<any> {
@@ -344,6 +346,7 @@ export class MergeInteractiveUtxosCommand implements CommandInterface {
       // Add the atomical input, the value from the input counts towards the total satoshi amount required
       const { output } = detectAddressTypeToScripthash(keyPairAtomical.address);
       psbt.addInput({
+        sequence: this.options.rbf ? RBF_INPUT_SEQUENCE : undefined,
         hash: utxo.txid,
         index: utxo.index,
         witnessUtxo: { value: utxo.value, script: Buffer.from(output, 'hex') },
@@ -383,6 +386,7 @@ export class MergeInteractiveUtxosCommand implements CommandInterface {
     console.log(`Detected UTXO (${utxo.txid}:${utxo.vout}) with value ${utxo.value} for funding the transfer operation...`);
     // Add the funding input
     psbt.addInput({
+      sequence: this.options.rbf ? RBF_INPUT_SEQUENCE : undefined,
       hash: utxo.txid,
       index: utxo.outputIndex,
       witnessUtxo: { value: utxo.value, script: keyPairFunding.output },

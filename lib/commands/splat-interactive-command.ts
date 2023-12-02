@@ -22,10 +22,10 @@ initEccLib(tinysecp as any);
 export class SplatInteractiveCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
+    private options: BaseRequestOptions,
     private locationId: string,
     private owner: IWalletRecord,
     private funding: IWalletRecord,
-    private options: BaseRequestOptions
   ) {
   }
   async run(): Promise<any> {
@@ -51,6 +51,7 @@ export class SplatInteractiveCommand implements CommandInterface {
     const inputUtxoPartial: IInputUtxoPartial | any = GetUtxoPartialFromLocation(this.owner.address, response.data.location_info);
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
+      rbf: this.options.rbf,
       satsbyte: this.options.satsbyte,
       address: this.owner.address,
       disableMiningChalk: this.options.disableMiningChalk,

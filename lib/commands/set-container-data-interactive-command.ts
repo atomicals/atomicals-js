@@ -18,11 +18,11 @@ initEccLib(tinysecp as any);
 export class SetContainerDataInteractiveCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
+    private options: BaseRequestOptions,
     private containerName: string,
     private filename: string,
     private owner: IWalletRecord,
     private funding: IWalletRecord,
-    private options: BaseRequestOptions
   ) {
 
   }
@@ -33,6 +33,7 @@ export class SetContainerDataInteractiveCommand implements CommandInterface {
     const { atomicalInfo, locationInfo, inputUtxoPartial } = await getAndCheckAtomicalInfo(this.electrumApi, this.containerName, this.owner.address, 'NFT', 'container');
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
+      rbf: this.options.rbf,
       satsbyte: this.options.satsbyte,
       address: this.owner.address,
       disableMiningChalk: this.options.disableMiningChalk,

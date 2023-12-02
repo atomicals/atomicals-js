@@ -46,12 +46,12 @@ const promptContinue = async (): Promise<any>  => {
 export class MintInteractiveFtCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
+    private options: BaseRequestOptions,
     private file: string,
     private supply: number,
     private address: string,
     private requestTicker: string,
     private fundingWIF: string,
-    private options: BaseRequestOptions
   ) {
     this.options = checkBaseRequestOptions(this.options)
     this.requestTicker = this.requestTicker.startsWith('$') ? this.requestTicker.substring(1) : this.requestTicker;
@@ -104,6 +104,7 @@ export class MintInteractiveFtCommand implements CommandInterface {
 
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
+      rbf: this.options.rbf,
       satsbyte: this.options.satsbyte,
       address: this.address,
       disableMiningChalk: this.options.disableMiningChalk,

@@ -19,6 +19,8 @@ import { IInputUtxoPartial } from "../types/UTXO.interface";
 import * as dotenv from 'dotenv'
 dotenv.config();
 
+export const RBF_INPUT_SEQUENCE = 0xfffffffd;
+
 export const NETWORK = process.env.NETWORK === 'testnet' ? networks.testnet : process.env.NETWORK == "regtest" ? networks.regtest : networks.bitcoin;
 
 export function logBanner(text: string) {
