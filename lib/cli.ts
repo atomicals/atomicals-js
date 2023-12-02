@@ -186,7 +186,7 @@ const program = new Command();
 program
   .name('Atomicals CLI Utility')
   .description('Command line utility for interacting with Atomicals')
-  .version('1.0.0');
+  .version(require('../package.json').version);
 
 program.command('server-version')
   .description('Get electrumx server version info')
