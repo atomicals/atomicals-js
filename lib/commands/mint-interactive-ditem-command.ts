@@ -8,8 +8,6 @@ import {
   initEccLib,
 } from "bitcoinjs-lib";
 import { detectAddressTypeToScripthash } from "../utils/address-helpers";
-import { AtomicalStatus } from "../interfaces/atomical-status.interface";
-import { GetCommand } from "./get-command";
 import { BaseRequestOptions } from "../interfaces/api.interface";
 import { checkBaseRequestOptions } from "../utils/atomical-format-helpers";
 import { GetByContainerCommand } from "./get-by-container-command";
@@ -19,9 +17,7 @@ import { GetContainerItemValidatedCommand } from "./get-container-item-validated
 import { hash256 } from "bitcoinjs-lib/src/crypto";
 const tinysecp: TinySecp256k1Interface = require('tiny-secp256k1');
 initEccLib(tinysecp as any);
-export interface ResolvedRealm {
-  atomical: AtomicalStatus
-}
+
 export class MintInteractiveDitemCommand implements CommandInterface {
   constructor(
     private electrumApi: ElectrumApiInterface,
@@ -35,6 +31,7 @@ export class MintInteractiveDitemCommand implements CommandInterface {
     this.options = checkBaseRequestOptions(this.options)
     this.container = this.container.startsWith('#') ? this.container.substring(1) : this.container;
   }
+
   async run(): Promise<any> {
     try {
       detectAddressTypeToScripthash(this.address);
@@ -52,8 +49,9 @@ export class MintInteractiveDitemCommand implements CommandInterface {
         data: getResponse.data
       }
     }
-    const parentContainerId = getResponse.data.result.atomical_id;
+
     // Step 0. Get the details from the manifest
+    const parentContainerId = getResponse.data.result.atomical_id;
     const jsonFile: any = await jsonFileReader(this.manifestJsonFile);
     const expectedData = jsonFile['data'];
     if (expectedData['args']['request_dmitem'] !== this.requestDmitem) {
@@ -63,17 +61,35 @@ export class MintInteractiveDitemCommand implements CommandInterface {
     const main = expectedData['args']['main']
     const mainHash = hash256(fileBuf).toString('hex')
     const proof = expectedData['args']['proof']
+
     // Step 1. Query the container item to see if it's taken
     const getItemCmd = new GetContainerItemValidatedCommand(this.electrumApi, this.container, this.requestDmitem, 'any', 'any', main, mainHash, proof, false);
     const getItemCmdResponse = await getItemCmd.run();
-    if (getItemCmdResponse.data.atomical_id) {
-      return {
-        success: false,
-        msg: 'Container item is already claimed. Choose another item',
-        data: getItemCmdResponse.data
+    const data = getItemCmdResponse.data;
+    console.log(getItemCmdResponse)
+    if (data.atomical_id) {
+      throw new Error('Container item is already claimed. Choose another item')
+    }
+    if (!data.proof_valid) {
+      throw new Error('Item proof is invalid')
+    }
+    if (data.status) {
+      throw new Error(`Item already contains status: ${data.status}`)
+    }
+    if (!data.applicable_rule) {
+      throw new Error('No applicable rule')
+    }
+    if (data.applicable_rule.bitworkc || expectedData['args']['bitworkc']) {
+      if (data.applicable_rule.bitworkc && expectedData['args']['bitworkc'] && (data.applicable_rule.bitworkc !== expectedData['args']['bitworkc'] && data.applicable_rule.bitworkc !== 'any')) {
+        throw new Error('applicable_rule bitworkc is not compatible with the item args bitworkc')
       }
     }
-    console.log(getItemCmdResponse)
+    if (data.applicable_rule.bitworkr || expectedData['args']['bitworkr']) {
+      if (data.applicable_rule.bitworkr && expectedData['args']['bitworkr'] && (data.applicable_rule.bitworkr !== expectedData['args']['bitworkr'] && data.applicable_rule.bitworkr !== 'any')) {
+        throw new Error('applicable_rule bitworkr is not compatible with the item args bitworkr')
+      }
+    }
+
     const atomicalBuilder = new AtomicalOperationBuilder({
       electrumApi: this.electrumApi,
       rbf: this.options.rbf,
@@ -89,6 +105,7 @@ export class MintInteractiveDitemCommand implements CommandInterface {
       init: this.options.init,
       verbose: true
     });
+
     // Set to request a container
     atomicalBuilder.setRequestItem(this.requestDmitem, parentContainerId);
  
@@ -96,24 +113,9 @@ export class MintInteractiveDitemCommand implements CommandInterface {
       [expectedData['args']['main']]: fileBuf
     });
 
-    const data = getItemCmdResponse.data;
-    if (!data.applicable_rule) {
-      throw new Error('No applicable rule')
-    }
     // Attach any requested bitwork
-    if (data.applicable_rule.bitworkc || expectedData['args']['bitworkc']) {
-      if (data.applicable_rule.bitworkc && expectedData['args']['bitworkc'] && (data.applicable_rule.bitworkc !== expectedData['args']['bitworkc'] && data.applicable_rule.bitworkc !== 'any')) {
-        throw new Error('applicable_rule bitworkc is not compatible with the item args bitworkc')
-      }
-      atomicalBuilder.setBitworkCommit(data.applicable_rule.bitworkc || expectedData['args']['bitworkc']);
-    }
-
-    if (data.applicable_rule.bitworkr || expectedData['args']['bitworkr']) {
-      if (data.applicable_rule.bitworkr && expectedData['args']['bitworkr'] && (data.applicable_rule.bitworkr !== expectedData['args']['bitworkr'] && data.applicable_rule.bitworkr !== 'any')) {
-        throw new Error('applicable_rule bitworkr is not compatible with the item args bitworkr')
-      }
-      atomicalBuilder.setBitworkReveal(data.applicable_rule.bitworkr || expectedData['args']['bitworkr']);
-    }
+    atomicalBuilder.setBitworkCommit(data.applicable_rule.bitworkc || expectedData['args']['bitworkc']);
+    atomicalBuilder.setBitworkReveal(data.applicable_rule.bitworkr || expectedData['args']['bitworkr']);
 
     atomicalBuilder.setArgs({
       ...expectedData['args']
