@@ -13,7 +13,6 @@ export class GetFtInfoCommand implements CommandInterface {
     const command: CommandInterface = new ResolveCommand(this.electrumApi, this.atomicalAliasOrId, AtomicalsGetFetchType.GET);
     const resolved: any = await command.run();
     let response;
-    console.log('v',resolved)
     response = await this.electrumApi.atomicalsGetFtInfo(resolved.data.result.atomical_id);
     const updatedRes = Object.assign({},
       response,
