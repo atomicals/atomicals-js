@@ -62,7 +62,7 @@ export class GetContainerItemValidatedByManifestCommand implements CommandInterf
     console.log('getItemCmdResponse', getItemCmdResponse)
     return {
       success: true,
-      result: getItemCmdResponse
+      data: getItemCmdResponse
     }
   }
 }
