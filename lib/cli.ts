@@ -1170,7 +1170,7 @@ program.command('splat')
       console.log(error);
     }
   });
-
+/*
 program.command('split')
   .description('Split operation to separate the FT Atomicals at a single UTXOs.')
   .argument('<locationId>', 'string')
@@ -1194,7 +1194,7 @@ program.command('split')
       console.log(error);
     }
   });
-
+*/
 program.command('get')
   .description('Get the status of an Atomical')
   .argument('<atomicalAliasOrId>', 'string')
