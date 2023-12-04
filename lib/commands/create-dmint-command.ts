@@ -37,7 +37,8 @@ export class CreateDmintCommand implements CommandInterface {
     const leafItems: any = [];
     const jsonFiles = {};
     for (const file of files) {
-      if (file === '.' || file === '..' || file.startsWith('dmint')) {
+      if (file.startsWith('.') || file.startsWith('dmint')) {
+        console.log(`Skipping ${file}...`);
         continue;
       }
       counter++;
