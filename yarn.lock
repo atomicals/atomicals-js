@@ -6026,6 +6026,11 @@ strtok3@^6.2.4:
     "@tokenizer/token" "^0.3.0"
     peek-readable "^4.1.0"
 
+success-motivational-quotes@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/success-motivational-quotes/-/success-motivational-quotes-1.0.8.tgz#4a5c31c4a8f48e4f240e28f12f7f36009555f434"
+  integrity sha512-EfLnDThsqCQg+dJoDntdPY/OSDGag8hE+O/cuHnGbOv8pzmrZeiyKn0X00LSTNAHWfNETo0XRvsEXVoxqsNclw==
+
 supports-color@8.1.1:
   version "8.1.1"
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-8.1.1.tgz#cd6fc17e28500cff56c1b86c0a7fd4a54a73005c"

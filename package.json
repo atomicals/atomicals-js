@@ -1,6 +1,6 @@
 {
   "name": "atomicals-js",
-  "version": "0.1.55",
+  "version": "0.1.57",
   "description": "Atomicals Javascript Library and CLI - atomicals.xyz",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -75,6 +75,7 @@
     "path": "^0.12.7",
     "qrcode-terminal": "^0.12.0",
     "rpc-websockets": "^7.5.0",
+    "success-motivational-quotes": "^1.0.8",
     "terminal-image": "^2.0.0",
     "tiny-secp256k1": "^2.2.1",
     "varuint-bitcoin": "^1.1.2"

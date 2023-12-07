@@ -12,19 +12,52 @@ import { fileReader, jsonFileReader, jsonFileWriter } from './utils/file-utils';
 import * as cbor from 'borc';
 import { toOutputScript } from 'bitcoinjs-lib/src/address';
 import { compactIdToOutpoint, outpointToCompactId } from './utils/atomical-format-helpers';
+import * as quotes from 'success-motivational-quotes'; 
+import * as chalk from 'chalk';
+ 
 dotenv.config();
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // General Helper Functions
 /////////////////////////////////////////////////////////////////////////////////////////////
-function printOperationResult(data: any, error?: boolean) {
+function printSuccess(data: any, showDonation?: boolean) {
+  console.log(JSON.stringify(data, null, 2));
+  if (!showDonation) {
+    return;
+  }
+
+  if (process.env.DISABLE_DONATE_QUOTE && process.env.DISABLE_DONATE_QUOTE === 'true') {
+    return;
+  }
+  console.log(chalk.blue("\n\n------------------------------------------------------------------------------"));
+
+  let q = 'Recommend to your children virtue; that alone can make them happy, not gold.';
+  let by = 'Ludwig van Beethoven';
+  try {
+    const quoteObj = quotes.getTodaysQuote();
+    q = quoteObj.body;
+    by = quoteObj.by;
+  } catch (ex) {
+    // Lib not installed
+  }
+  console.log(chalk.green(q));
+  console.log(chalk.green('- ' + by));
+  console.log(chalk.blue("------------------------------------------------------------------------------\n"))
+  const donate = 'bc1pl6k2z5ra403zfeyevzsu7llh0mdqqn4802p4uqfhz6l7qzddq2mqduqvc6';
+  console.log('Thank you for your support and contributions to Atomicals CLI development! ❤️');
+  console.log(`Donation address: ${donate}\n`);
+  console.log(`Even a little goes a long way!\n`);
+  console.log(`Scan QR Code to Donate:`);
+  qrcode.generate(donate, { small: true });
+}
+function printFailure(data: any) {
   console.log(JSON.stringify(data, null, 2));
 }
-function handleResultLogging(result: any) {
-  if (!result || !result.success) {
-    printOperationResult(result, true);
+function handleResultLogging(result: any, showDonation?: boolean) {
+  if (!result || !result.success || !result.data) {
+    printFailure(result);
   } else {
-    printOperationResult(result.data);
+    printSuccess(result.data, showDonation);
   }
 }
 
@@ -1022,7 +1055,7 @@ program.command('mint-item')
         bitworkr: options.bitworkr,
         disableMiningChalk: options.disablechalk,
       }, containerName, itemName, manifestFile, initialOwnerAddress.address, fundingRecord.WIF, ownerWalletRecord);
-      handleResultLogging(result);
+      handleResultLogging(result, true);
     } catch (error) {
       console.log(error);
     }
@@ -1171,6 +1204,7 @@ program.command('splat')
     }
   });
 
+/*
 program.command('split')
   .description('Split operation to separate the FT Atomicals at a single UTXOs.')
   .argument('<locationId>', 'string')
@@ -1194,6 +1228,7 @@ program.command('split')
       console.log(error);
     }
   });
+*/
 
 program.command('get')
   .description('Get the status of an Atomical')
@@ -1206,7 +1241,7 @@ program.command('get')
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       const verbose = options.verbose ? true : false;
       const result = await atomicals.resolveAtomical(atomicalAliasOrId, AtomicalsGetFetchType.GET, undefined, verbose);
-      handleResultLogging(result);
+      handleResultLogging(result, true);
     } catch (error) {
       console.log(error);
     }
@@ -1539,7 +1574,7 @@ program.command('mint-dft')
         satsbyte: parseInt(options.satsbyte),
         disableMiningChalk: options.disablechalk,
       }, walletRecord.address, ticker, fundingRecord.WIF);
-      handleResultLogging(result);
+      handleResultLogging(result, true);
     } catch (error) {
       console.log(error);
     }
@@ -1624,7 +1659,7 @@ program.command('mint-realm')
         parentOwner: parentOwnerRecord,
         disableMiningChalk: options.disablechalk,
       }, realm, initialOwnerAddress.address, fundingRecord.WIF);
-      handleResultLogging(result);
+      handleResultLogging(result, true);
     } catch (error) {
       console.log(error);
     }
