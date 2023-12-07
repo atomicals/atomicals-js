@@ -29,7 +29,8 @@ export class CreateDmintItemManifestsCommand implements CommandInterface {
     const filemap = {};
     const leafItems: any = [];
     for (const file of files) {
-      if (file === '.' || file === '..') {
+      if (file.startsWith('.')) {
+        console.log(`Skipping ${file}...`);
         continue;
       }
       const basePath = basename(file);
