@@ -108,8 +108,8 @@ export class MintInteractiveDitemCommand implements CommandInterface {
 
     // Set to request a container
     atomicalBuilder.setRequestItem(this.requestDmitem, parentContainerId);
- 
-    await atomicalBuilder.setData({
+
+    atomicalBuilder.setData({
       [expectedData['args']['main']]: fileBuf
     });
 
@@ -122,7 +122,7 @@ export class MintInteractiveDitemCommand implements CommandInterface {
     });
     
      // The receiver output
-     atomicalBuilder.addOutput({
+    atomicalBuilder.addOutput({
       address: this.address,
       value: this.options.satsoutput as any || 1000
     });
@@ -130,7 +130,7 @@ export class MintInteractiveDitemCommand implements CommandInterface {
     
     return {
       success: true,
-      result
+      data: result,
     }
   }
 }
