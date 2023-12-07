@@ -1,19 +1,18 @@
-import { ElectrumApiInterface } from "../api/electrum-api.interface";
-const bitcoin = require('bitcoinjs-lib');
-import ECPairFactory from 'ecpair';
+import { type ElectrumApiInterface } from "../api/electrum-api.interface";
+import { type UTXO } from "../types/UTXO.interface";
+import * as bitcoin from 'bitcoinjs-lib';
 import * as ecc from 'tiny-secp256k1';
 import * as qrcode from 'qrcode-terminal';
 bitcoin.initEccLib(ecc);
-const ECPair = ECPairFactory(ecc);
 
-export const getInputUtxoFromTxid = async (utxo: { txId: string, outputIndex: number, value: number }, electrumx: ElectrumApiInterface) => {
+export const getInputUtxoFromTxid = async (utxo: UTXO, electrumx: ElectrumApiInterface) => {
   const txResult = await electrumx.getTx(utxo.txId);
 
   if (!txResult || !txResult.success) {
     throw `Transaction not found in getInputUtxoFromTxid ${utxo.txId}`;
   }
   const tx = txResult.tx;
-  utxo['nonWitnessUtxo'] = Buffer.from(tx, 'hex');
+  utxo.nonWitnessUtxo = Buffer.from(tx, 'hex');
 
   const reconstructedTx = bitcoin.Transaction.fromHex(tx.tx);
   if (reconstructedTx.getId() !== utxo.txId) {
@@ -58,7 +57,7 @@ export const getFundingUtxo = async (electrumxApi, address: string, amount: numb
   }
   console.log(`...`)
   console.log(`...`)
-  let fundingUtxo = await electrumxApi.waitUntilUTXO(address, amount, seconds ? 5 : seconds, false);
+  const fundingUtxo = await electrumxApi.waitUntilUTXO(address, amount, seconds ? 5 : seconds, false);
   console.log(`Detected Funding UTXO (${fundingUtxo.txid}:${fundingUtxo.vout}) with value ${fundingUtxo.value} for funding...`);
   return fundingUtxo
 }

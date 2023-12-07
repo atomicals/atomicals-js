@@ -9,6 +9,7 @@ export interface UTXO {
   outputIndex: number;
   atomicals?: any[];
   atomicals_at_location?: any[];
+  nonWitnessUtxo?: Buffer;
 }
 
 export interface BalanceData {
