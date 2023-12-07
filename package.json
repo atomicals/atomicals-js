@@ -26,9 +26,10 @@
     "url": "https://github.com/atomicals/atomicals-js/issues"
   },
   "keywords": [
-    "bitcoin"
+    "bitcoin",
+    "atomicals"
   ],
-  "homepage": "https://github.com/atomicals/atomicals-js#readme",
+  "homepage": "https://github.com/atomicals/atomicals-js",
   "devDependencies": {
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
