@@ -390,8 +390,8 @@ program.command('wallets')
       const balancesOnly = options.balances ? options.balances : null;
       const identify = options.identify ? options.identify : null;
       const show = options.address ? options.address : null;
-      const type = options.type ? options.type : 'all';
-      if (type && (type.toLowerCase() !== 'all' && type.toLowerCase() !== 'nft' && type.toLowerCase() != 'ft')) {
+      const type = options.type ? options.type.toLowerCase() : 'all';
+      if (type !== 'all' && type !== 'nft' && type != 'ft') {
         throw `Invalid type ${type}`
       }
       const walletInfo = await validateWalletStorage();
