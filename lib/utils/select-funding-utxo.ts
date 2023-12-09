@@ -26,9 +26,7 @@ export const getFundingSelectedUtxo = async (address: string, minFundingSatoshis
   // Query for a UTXO
   const listunspents = await electrumx.getUnspentAddress(address);
   const utxos = listunspents.utxos.filter((utxo) => {
-    if (utxo.value >= minFundingSatoshis) {
-      return utxo;
-    }
+    return utxo.value >= minFundingSatoshis
   });
   if (!utxos.length) {
     throw new Error(`Unable to select funding utxo, check at least 1 utxo contains ${minFundingSatoshis} satoshis`);
