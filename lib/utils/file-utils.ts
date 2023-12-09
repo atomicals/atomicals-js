@@ -1,8 +1,4 @@
-
-
 import * as fs from 'fs';
-
-import { JsonStreamStringify } from 'json-stream-stringify';
 
 export const fileReader = async (filePath, encoding?: any) => {
 	return new Promise((resolve, reject) => {
