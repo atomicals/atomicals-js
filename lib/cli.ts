@@ -143,7 +143,7 @@ function showWalletDetails(obj: any, type: 'nft' | 'ft', showExtra = false, show
       if (!obj.atomicals_balances.hasOwnProperty(atomicalId)) {
         continue;
       }
-      if (obj.atomicals_balances[atomicalId]['type'].toUpperCase() !== type.toUpperCase()) {
+      if (obj.atomicals_balances[atomicalId]['type'].toLowerCase() !== type) {
         continue;
       }
       atomicals_balances_summarized[atomicalId] = {
