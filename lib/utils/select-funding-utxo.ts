@@ -22,7 +22,7 @@ export const getInputUtxoFromTxid = async (utxo: UTXO, electrumx: ElectrumApiInt
   return utxo;
 }
 
-export const getFundingSelectedUtxo = async (address: string, minFundingSatoshis: number, electrumx: ElectrumApiInterface): Promise<any> => {
+export const getFundingSelectedUtxo = async (address: string, minFundingSatoshis: number, electrumx: ElectrumApiInterface): Promise<UTXO> => {
   // Query for a UTXO
   let listunspents = await electrumx.getUnspentAddress(address);
   let utxos = listunspents.utxos.filter((utxo) => {
@@ -39,10 +39,10 @@ export const getFundingSelectedUtxo = async (address: string, minFundingSatoshis
 
 /**
      * Gets a funding UTXO and also displays qr code for quick deposit
-     * @param electrumxApi 
-     * @param address 
-     * @param amount 
-     * @returns 
+     * @param electrumxApi
+     * @param address
+     * @param amount
+     * @returns
      */
 export const getFundingUtxo = async (electrumxApi, address: string, amount: number, suppressDepositAddressInfo = false, seconds = 5) => {
   // We are expected to perform commit work, therefore we must fund with an existing UTXO first to generate the commit deposit address
