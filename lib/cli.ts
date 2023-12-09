@@ -110,7 +110,7 @@ function showWalletFTBalancesDetails(obj: any, showutxos = false, accumulated) {
   return accumulated
 }
 
-function showWalletDetails(obj: any, type: 'nft' | 'ft', showExtra = false, showBalancesOnly = false) {
+function showWalletDetails(obj: any, type: 'nft' | 'ft' | 'all', showExtra = false, showBalancesOnly = false) {
   if (showBalancesOnly) {
     const atomicalsUtxosByAtomicalId = groupAtomicalsUtxosByAtomicalId(obj.atomicals_utxos);
 
@@ -143,7 +143,7 @@ function showWalletDetails(obj: any, type: 'nft' | 'ft', showExtra = false, show
       if (!obj.atomicals_balances.hasOwnProperty(atomicalId)) {
         continue;
       }
-      if (obj.atomicals_balances[atomicalId]['type'].toLowerCase() !== type) {
+      if (type !== "all" && obj.atomicals_balances[atomicalId]['type'].toLowerCase() !== type) {
         continue;
       }
       atomicals_balances_summarized[atomicalId] = {
