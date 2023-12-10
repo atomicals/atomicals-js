@@ -10,7 +10,9 @@ A realm should not contain the profile object directly as data because that woul
 Instead, use a delegation pattern to link to another Atomical NFT that contains the profile information.
 
 The advantage is that if a realm changes hands, then the new owner can quickly update the realm to point to their own Atomical NFT
-profile object immediately that they may have created earlier or migrated from other realms.
+profile object immediately that they may have created earlier or migrated from other realms. **Note: We actually recommend always using the `"d"` delegation
+pattern even for any kind of realm zone record or profile data. The clients and services can easily resolve the type of profile with the `v` version field
+in the delegate to know how to handle the data in the delegate. This will ensure the Realm histories are unpolluted and kept as simple as possible.
 
 Example:
 
@@ -18,15 +20,12 @@ In the realm data store just a delegation like this:
 
 ```
 {
-  "profile": {
-    "d": "<atomical_id>"
-  }
+  "d": "<atomical_id>"
 }
 ```
 The convention to use "d" for delegation is intended to be as concise as possible and indicate to services and sites to follow through to the "d" atomicalid
 
-Then in the <atomical_id> NFT have the base-profile.json informationo below.
-
+Then in the <atomical_id> NFT have the base-profile.json information.
 
 ## base-profile.json
 
