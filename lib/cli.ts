@@ -1438,7 +1438,7 @@ program.command('pending-subrealms')
   .option('--display', 'Show pending subrealms for an address or wallet')
   .option('--verbose', 'Show verbose raw output')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
-  .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
+  .option('--satsbyte <number>', 'Satoshis per byte in fees', '120')
   .action(async (options) => {
     try {
       const walletInfo = await validateWalletStorage();
