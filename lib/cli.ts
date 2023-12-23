@@ -313,9 +313,10 @@ program.command('address-script')
   .argument('<addressOrAlias>', 'string')
   .action(async (addressOrAlias, options) => {
     const walletInfo = await validateWalletStorage();
-    const result: { output: any, address: string } = performAddressAliasReplacement(walletInfo, addressOrAlias || undefined);
+    const result: { output: any, address: string, scripthash: string } = performAddressAliasReplacement(walletInfo, addressOrAlias || undefined);
     console.log('Address:', result.address)
     console.log('Script:', result.output.toString('hex'))
+    console.log('Scripthash:', result.scripthash.toString())
     console.log(`------------------------------------------------------`);
   });
 
@@ -1546,7 +1547,7 @@ program.command('init-dft')
         parent: options.parent,
         parentOwner: parentOwnerRecord,
         disableMiningChalk: options.disablechalk,
-      }, file, walletRecord.address, requestTicker, mintAmount, maxMints, mintHeight, mintBitworkc, options.mintbitworkr, fundingRecord.WIF);
+      }, file, walletRecord.address, requestTicker, mintAmount, maxMints, mintHeight, mintBitworkc, options.mintbitworkr ? options.mintbitworkr : getRandomBitwork4(), fundingRecord.WIF);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
