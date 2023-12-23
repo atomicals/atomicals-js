@@ -67,9 +67,9 @@ function logMiningProgressToConsole(dowork: boolean, disableMiningChalk, txid, n
         }
         return;
     }
-    process.stdout.clearLine(0);
-    process.stdout.cursorTo(0);
-    process.stdout.write(chalk.red(txid, ' nonces: ', nonces));
+    process.stdout.clearLine?.(0);
+    process.stdout.cursorTo?.(0);
+    process.stdout.write?.(chalk.red(txid, ' nonces: ', nonces));
 }
 function printBitworkLog(bitworkInfo: BitworkInfo, commit?: boolean) {
     if (!bitworkInfo) {
@@ -579,9 +579,9 @@ export class AtomicalOperationBuilder {
                 // add a `true ||` at the front to test invalid minting
                 // console.log('this.bitworkInfoCommit?.prefix', this.bitworkInfoCommit)
                 if (performBitworkForCommitTx && hasValidBitwork(checkTxid, this.bitworkInfoCommit?.prefix as any, this.bitworkInfoCommit?.ext as any)) {
-                    process.stdout.clearLine(0);
-                    process.stdout.cursorTo(0);
-                    process.stdout.write(chalk.green(checkTxid, ` nonces: ${noncesGenerated} (${nonce})`));
+                    process.stdout.clearLine?.(0);
+                    process.stdout.cursorTo?.(0);
+                    process.stdout.write?.(chalk.green(checkTxid, ` nonces: ${noncesGenerated} (${nonce})`));
                     console.log('\nBitwork matches commit txid! ', prelimTx.getId(), `@ time: ${unixtime}`)
                     // We found a solution, therefore broadcast it
                     const interTx = psbtStart.extractTransaction();
@@ -740,9 +740,9 @@ export class AtomicalOperationBuilder {
             logMiningProgressToConsole(performBitworkForRevealTx, this.options.disableMiningChalk, checkTxid, noncesGenerated);
             let shouldBroadcast = !performBitworkForRevealTx;
             if (performBitworkForRevealTx && hasValidBitwork(checkTxid, this.bitworkInfoReveal?.prefix as any, this.bitworkInfoReveal?.ext as any)) {
-                process.stdout.clearLine(0);
-                process.stdout.cursorTo(0);
-                process.stdout.write(chalk.green(checkTxid, ' nonces: ' + noncesGenerated));
+                process.stdout.clearLine?.(0);
+                process.stdout.cursorTo?.(0);
+                process.stdout.write?.(chalk.green(checkTxid, ' nonces: ' + noncesGenerated));
                 console.log('\nBitwork matches reveal txid! ', revealTx.getId(), '@ time: ' + Math.floor(Date.now() / 1000))
                 shouldBroadcast = true;
             }
