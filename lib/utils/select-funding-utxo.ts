@@ -24,11 +24,9 @@ export const getInputUtxoFromTxid = async (utxo: UTXO, electrumx: ElectrumApiInt
 
 export const getFundingSelectedUtxo = async (address: string, minFundingSatoshis: number, electrumx: ElectrumApiInterface): Promise<UTXO> => {
   // Query for a UTXO
-  let listunspents = await electrumx.getUnspentAddress(address);
-  let utxos = listunspents.utxos.filter((utxo) => {
-    if (utxo.value >= minFundingSatoshis) {
-      return utxo;
-    }
+  const listunspents = await electrumx.getUnspentAddress(address);
+  const utxos = listunspents.utxos.filter((utxo) => {
+    return utxo.value >= minFundingSatoshis
   });
   if (!utxos.length) {
     throw new Error(`Unable to select funding utxo, check at least 1 utxo contains ${minFundingSatoshis} satoshis`);
