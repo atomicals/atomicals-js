@@ -110,7 +110,7 @@ function showWalletFTBalancesDetails(obj: any, showutxos = false, accumulated) {
   return accumulated
 }
 
-function showWalletDetails(obj: any, type: 'nft' | 'ft', showExtra = false, showBalancesOnly = false) {
+function showWalletDetails(obj: any, type: 'nft' | 'ft' | 'all', showExtra = false, showBalancesOnly = false) {
   if (showBalancesOnly) {
     const atomicalsUtxosByAtomicalId = groupAtomicalsUtxosByAtomicalId(obj.atomicals_utxos);
 
@@ -139,12 +139,15 @@ function showWalletDetails(obj: any, type: 'nft' | 'ft', showExtra = false, show
     console.log(JSON.stringify(obj, null, 2));
   } else {
     const atomicals_balances_summarized = {}
-    for (const prop in obj.atomicals_balances) {
-      if (!obj.atomicals_balances.hasOwnProperty(prop)) {
+    for (const atomicalId in obj.atomicals_balances) {
+      if (!obj.atomicals_balances.hasOwnProperty(atomicalId)) {
         continue;
       }
-      atomicals_balances_summarized[prop] = {
-        ...obj.atomicals_balances[prop],
+      if (type !== "all" && obj.atomicals_balances[atomicalId]['type'].toLowerCase() !== type) {
+        continue;
+      }
+      atomicals_balances_summarized[atomicalId] = {
+        ...obj.atomicals_balances[atomicalId],
         data: undefined
       }
     }
@@ -374,7 +377,7 @@ program.command('wallets')
   .option('--balances', 'Show FT token balances')
   .option('--noqr', 'Hide QR codes')
   .option('--alias <string>', 'Restrict to only showing one of the imported wallets identified by the alias')
-  .option('--type <string>', 'Show NFT or FT types only. By default shows both')
+  .option('--type <string>', 'Show NFT or FT types only. By default shows both. Not compatible with --balances and --extra')
   .option('--identify <string>', 'Restrict to only showing one of the imported wallets identified by the address (if it is found)')
   .option('--address <string>', 'Show the data and a QR code for an arbitrary address. Not expected to be loaded into local wallets.')
   .action(async (options) => {
@@ -388,8 +391,8 @@ program.command('wallets')
       const balancesOnly = options.balances ? options.balances : null;
       const identify = options.identify ? options.identify : null;
       const show = options.address ? options.address : null;
-      const type = options.type ? options.type : 'all';
-      if (type && (type.toLowerCase() !== 'all' && type.toLowerCase() !== 'nft' && type.toLowerCase() != 'ft')) {
+      const type = options.type ? options.type.toLowerCase() : 'all';
+      if (type !== 'all' && type !== 'nft' && type != 'ft') {
         throw `Invalid type ${type}`
       }
       const walletInfo = await validateWalletStorage();
