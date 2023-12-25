@@ -38,6 +38,9 @@ ELECTRUMX_WSS=wss://electrumx.atomicals.xyz:50012
 
 // Optional (defaults to wallet.json)
 WALLET_PATH=path-to-wallet.json
+
+// The number of concurrent processes to be used. This should not exceed the number of CPU cores available. If not set, the default behavior is to use all available CPU cores minus one.
+CONCURRENCY=4
 ```
 
 _ELECTRUMX_WSS_: URL of the ElectrumX with Atomicals support. Note that only `wss` endpoints are accessible from web browsers.
