@@ -675,8 +675,16 @@ export class AtomicalOperationBuilder {
         // Close the electrum API connection
         this.options.electrumApi.close();
 
-        // Determine the number of concurrent workers to spawn
-        const concurrency = os.cpus().length - 1;
+        // Set the default concurrency level to the number of CPU cores minus 1
+        const defaultConcurrency = os.cpus().length - 1;
+        // Read the concurrency level from .env file
+        const envConcurrency = process.env.CONCURRENCY ? parseInt(process.env.CONCURRENCY, 10) : NaN;
+        // Use envConcurrency if it is a positive number and less than or equal to defaultConcurrency; otherwise, use defaultConcurrency
+        const concurrency = (!isNaN(envConcurrency) && envConcurrency > 0 && envConcurrency <= defaultConcurrency)
+            ? envConcurrency
+            : defaultConcurrency;
+        // Logging the set concurrency level to the console
+        console.log(`Concurrency set to: ${concurrency}`);
         const workerOptions = this.options;
         const workerBitworkInfoCommit = this.bitworkInfoCommit;
 
