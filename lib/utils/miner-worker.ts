@@ -38,6 +38,8 @@ const ECPair: ECPairAPI = ECPairFactory(tinysecp);
 
 interface WorkerInput {
     copiedData: AtomicalsPayload;
+    seqStart: number;
+    seqEnd: number;
     workerOptions: AtomicalOperationBuilderOptions;
     fundingWIF: string;
     fundingUtxo: any;
@@ -54,6 +56,8 @@ if (parentPort) {
         // Extract parameters from the message
         const {
             copiedData,
+            seqStart,
+            seqEnd,
             workerOptions,
             fundingWIF,
             fundingUtxo,
@@ -64,7 +68,7 @@ if (parentPort) {
             ihashLockP2TR,
         } = message;
 
-        let sequence = 0;
+        let sequence = seqStart;
         let workerPerformBitworkForCommitTx = performBitworkForCommitTx;
         let scriptP2TR = iscriptP2TR;
         let hashLockP2TR = ihashLockP2TR;
@@ -118,35 +122,17 @@ if (parentPort) {
             address: updatedBaseCommit.scriptP2TR.address,
             value: getOutputValueForCommit(fees),
         };
-        let finalCopyData, finalPrelimTx;
+        let finalCopyData, finalPrelimTx, finalSequence;
 
         // Start mining loop, terminates when a valid proof of work is found or stopped manually
         do {
             // Introduce a minor delay to avoid overloading the CPU
             await sleep(0);
-
             sequence++;
-            // If the sequence has exceeded the max sequence allowed, generate a new set of nonce and time and reset the sequence until we find one.
-            if (sequence >= MAX_SEQUENCE) {
-                copiedData["args"]["nonce"] = Math.floor(
-                    Math.random() * 10000000
-                );
-                copiedData["args"]["time"] = Math.floor(Date.now() / 1000);
 
-                atomPayload = new AtomicalsPayload(copiedData);
-                const newBaseCommit: { scriptP2TR; hashLockP2TR; hashscript } =
-                    workerPrepareCommitRevealConfig(
-                        workerOptions.opType,
-                        fundingKeypair,
-                        atomPayload
-                    );
-                updatedBaseCommit = newBaseCommit;
-                fixedOutput = {
-                    address: updatedBaseCommit.scriptP2TR.address,
-                    value: getOutputValueForCommit(fees),
-                };
-
-                sequence = 0;
+            // This worker has tried all assigned sequence range but it did not find solution.
+            if (sequence > seqEnd) {
+                finalSequence = -1;
             }
 
             // Create a new PSBT (Partially Signed Bitcoin Transaction)
@@ -178,12 +164,6 @@ if (parentPort) {
             prelimTx = psbtStart.extractTransaction();
             const checkTxid = prelimTx.getId();
 
-            logMiningProgressToConsole(
-                workerPerformBitworkForCommitTx,
-                workerOptions.disableMiningChalk,
-                checkTxid,
-                sequence
-            );
             // Check if there is a valid proof of work
             if (
                 workerPerformBitworkForCommitTx &&
@@ -209,36 +189,18 @@ if (parentPort) {
             }
         } while (workerPerformBitworkForCommitTx);
 
-        // send a result or message back to the main thread
-        console.log("got one finalCopyData:" + JSON.stringify(finalCopyData));
-        console.log("got one finalPrelimTx:" + JSON.stringify(finalPrelimTx));
-        console.log("got one final sequence:" + JSON.stringify(sequence));
-
-        parentPort!.postMessage({
-            finalCopyData,
-            sequence,
-        });
+        if (finalSequence && finalSequence != -1){
+            // send a result or message back to the main thread
+            console.log("got one finalCopyData:" + JSON.stringify(finalCopyData));
+            console.log("got one finalPrelimTx:" + JSON.stringify(finalPrelimTx));
+            console.log("got one finalSequence:" + JSON.stringify(sequence));
+    
+            parentPort!.postMessage({
+                finalCopyData,
+                finalSequence: sequence,
+            });
+        }
     });
-}
-
-function logMiningProgressToConsole(
-    dowork: boolean,
-    disableMiningChalk,
-    txid,
-    seq
-) {
-    if (!dowork) {
-        return;
-    }
-
-    if (seq % 10000 === 0) {
-        console.log(
-            "sequence: ",
-            seq,
-            ", time: ",
-            Math.floor(Date.now() / 1000)
-        );
-    }
 }
 
 function getOutputValueForCommit(fees: FeeCalculations): number {
