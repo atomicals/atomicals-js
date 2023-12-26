@@ -75,12 +75,11 @@ export const BASE_BYTES = 10.5;
 export const INPUT_BYTES_BASE = 57.5;
 export const OUTPUT_BYTES_BASE = 43;
 export const EXCESSIVE_FEE_LIMIT: number = 500000; // Limit to 1/200 of a BTC for now
-export const MAX_NONCE = 10000000;
+export const MAX_SEQUENCE = 0xffffffff;
 
 interface WorkerOut {
     finalCopyData: AtomicalsPayload;
-    finalPrelimTx: Transaction;
-    finalBaseCommit: any;
+    finalSequence: number;
 }
 
 export enum REALM_CLAIM_TYPE {
@@ -661,7 +660,7 @@ export class AtomicalOperationBuilder {
         ////////////////////////////////////////////////////////////////////////
         // Begin Commit Transaction
         ////////////////////////////////////////////////////////////////////////
-        
+
         // Attempt to get funding UTXO information
         const fundingUtxo = await getFundingUtxo(
             this.options.electrumApi,
@@ -678,11 +677,16 @@ export class AtomicalOperationBuilder {
         // Set the default concurrency level to the number of CPU cores minus 1
         const defaultConcurrency = os.cpus().length - 1;
         // Read the concurrency level from .env file
-        const envConcurrency = process.env.CONCURRENCY ? parseInt(process.env.CONCURRENCY, 10) : NaN;
+        const envConcurrency = process.env.CONCURRENCY
+            ? parseInt(process.env.CONCURRENCY, 10)
+            : NaN;
         // Use envConcurrency if it is a positive number and less than or equal to defaultConcurrency; otherwise, use defaultConcurrency
-        const concurrency = (!isNaN(envConcurrency) && envConcurrency > 0 && envConcurrency <= defaultConcurrency)
-            ? envConcurrency
-            : defaultConcurrency;
+        const concurrency =
+            !isNaN(envConcurrency) &&
+            envConcurrency > 0 &&
+            envConcurrency <= defaultConcurrency
+                ? envConcurrency
+                : defaultConcurrency;
         // Logging the set concurrency level to the console
         console.log(`Concurrency set to: ${concurrency}`);
         const workerOptions = this.options;
@@ -697,7 +701,7 @@ export class AtomicalOperationBuilder {
         });
 
         let isWorkDone = false;
-        
+
         // Function to stop all worker threads
         const stopAllWorkers = () => {
             workers.forEach((worker) => {
@@ -706,8 +710,8 @@ export class AtomicalOperationBuilder {
             workers = [];
         };
 
-        // Calculate the range of nonces to be assigned to each worker
-        const nonceRangePerWorker = Math.floor(MAX_NONCE / concurrency);
+        // Calculate the range of sequences to be assigned to each worker
+        const seqRangePerWorker = Math.floor(MAX_SEQUENCE / concurrency);
 
         // Initialize and start worker threads
         for (let i = 0; i < concurrency; i++) {
@@ -721,7 +725,7 @@ export class AtomicalOperationBuilder {
                 if (!isWorkDone) {
                     isWorkDone = true;
                     stopAllWorkers();
- 
+
                     const atomPayload = new AtomicalsPayload(
                         message.finalCopyData
                     );
@@ -742,9 +746,7 @@ export class AtomicalOperationBuilder {
                     psbtStart.addInput({
                         hash: fundingUtxo.txid,
                         index: fundingUtxo.index,
-                        sequence: workerOptions.rbf
-                            ? RBF_INPUT_SEQUENCE
-                            : undefined,
+                        sequence: message.finalSequence,
                         tapInternalKey: Buffer.from(
                             fundingKeypair.childNodeXOnlyPubkey as number[]
                         ),
@@ -768,10 +770,7 @@ export class AtomicalOperationBuilder {
                     psbtStart.signInput(0, fundingKeypair.tweakedChildNode);
                     psbtStart.finalizeAllInputs();
 
-                    let prelimTx = psbtStart.extractTransaction();
                     const interTx = psbtStart.extractTransaction();
-                    const finalPrelimTx: Transaction =
-                        message.finalPrelimTx as Transaction;
 
                     const rawtx = interTx.toHex();
                     AtomicalOperationBuilder.finalSafetyCheckForExcessiveFee(
@@ -779,17 +778,13 @@ export class AtomicalOperationBuilder {
                         interTx
                     );
                     if (!this.broadcastWithRetries(rawtx)) {
-                        console.log(
-                            "Error sending",
-                            finalPrelimTx.getId(),
-                            rawtx
-                        );
+                        console.log("Error sending", interTx.getId(), rawtx);
                         throw new Error(
                             "Unable to broadcast commit transaction after attempts: " +
-                                prelimTx.getId()
+                                interTx.getId()
                         );
                     } else {
-                        console.log("Success sent tx: ", prelimTx.getId());
+                        console.log("Success sent tx: ", interTx.getId());
                     }
 
                     commitMinedWithBitwork = true;
@@ -819,19 +814,17 @@ export class AtomicalOperationBuilder {
             });
 
             // Calculate nonce range for this worker
-            const nonceStart = i * nonceRangePerWorker;
-            let nonceEnd = nonceStart + nonceRangePerWorker - 1;
+            const nonceStart = i * seqRangePerWorker;
+            let nonceEnd = nonceStart + seqRangePerWorker - 1;
 
             // Ensure the last worker covers the remaining range
             if (i === concurrency - 1) {
-                nonceEnd = MAX_NONCE - 1;
+                nonceEnd = MAX_SEQUENCE - 1;
             }
 
             // Send necessary data to the worker
             const messageToWorker = {
                 copiedData,
-                nonceStart,
-                nonceEnd,
                 workerOptions,
                 fundingWIF,
                 fundingUtxo,
@@ -850,7 +843,7 @@ export class AtomicalOperationBuilder {
         // Await results from workers
         const messageFromWorker = await workerPromise;
         console.log("Workers have completed their tasks.");
-        
+
         ////////////////////////////////////////////////////////////////////////
         // Begin Reveal Transaction
         ////////////////////////////////////////////////////////////////////////
@@ -1106,7 +1099,6 @@ export class AtomicalOperationBuilder {
     }
 
     static translateFromBase32ToHex(bitwork: string): string {
-
         return bitwork;
     }
 
@@ -1144,7 +1136,7 @@ export class AtomicalOperationBuilder {
         // Total: 41 + 25 = 66
         const REVEAL_INPUT_BYTES_BASE = 66;
         let hashLockCompactSizeBytes = 9;
-        if (hashLockP2TROutputLen <=252) {
+        if (hashLockP2TROutputLen <= 252) {
             hashLockCompactSizeBytes = 1;
         } else if (hashLockP2TROutputLen <= 0xffff) {
             hashLockCompactSizeBytes = 3;
