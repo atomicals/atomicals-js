@@ -679,14 +679,11 @@ export class AtomicalOperationBuilder {
         // Read the concurrency level from .env file
         const envConcurrency = process.env.CONCURRENCY
             ? parseInt(process.env.CONCURRENCY, 10)
-            : NaN;
-        // Use envConcurrency if it is a positive number and less than or equal to defaultConcurrency; otherwise, use defaultConcurrency
-        const concurrency =
-            !isNaN(envConcurrency) &&
-            envConcurrency > 0 &&
-            envConcurrency <= defaultConcurrency
-                ? envConcurrency
-                : defaultConcurrency;
+            : -1;
+        // Use envConcurrency if it is a positive number; otherwise, use defaultConcurrency
+        const concurrency = envConcurrency > 0
+            ? envConcurrency
+            : defaultConcurrency;
         // Logging the set concurrency level to the console
         console.log(`Concurrency set to: ${concurrency}`);
         const workerOptions = this.options;
