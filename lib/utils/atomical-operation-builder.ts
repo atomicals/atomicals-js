@@ -840,7 +840,7 @@ export class AtomicalOperationBuilder {
             workers.push(worker);
         }
 
-        console.log("Waiting for workers to complete...");
+        console.log("Stay calm and grab a drink! Miner workers have started mining... ");
 
         // Await results from workers
         const messageFromWorker = await workerPromise;

@@ -133,6 +133,14 @@ if (parentPort) {
             if (sequence > seqEnd) {
                 finalSequence = -1;
             }
+            if (sequence % 10000 == 0) {
+                console.log(
+                    "Started mining for sequence: " +
+                        sequence +
+                        " - " +
+                        Math.min(sequence + 10000, MAX_SEQUENCE)
+                );
+            }
 
             // Create a new PSBT (Partially Signed Bitcoin Transaction)
             let psbtStart = new Psbt({ network: NETWORK });
