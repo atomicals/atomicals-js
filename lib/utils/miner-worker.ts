@@ -128,7 +128,6 @@ if (parentPort) {
         do {
             // Introduce a minor delay to avoid overloading the CPU
             await sleep(0);
-            sequence++;
 
             // This worker has tried all assigned sequence range but it did not find solution.
             if (sequence > seqEnd) {
@@ -187,15 +186,22 @@ if (parentPort) {
                 finalPrelimTx = prelimTx;
                 finalSequence = sequence;
                 workerPerformBitworkForCommitTx = false;
+                break;
             }
+
+            sequence++;
         } while (workerPerformBitworkForCommitTx);
 
-        if (finalSequence && finalSequence != -1){
+        if (finalSequence && finalSequence != -1) {
             // send a result or message back to the main thread
-            console.log("got one finalCopyData:" + JSON.stringify(finalCopyData));
-            console.log("got one finalPrelimTx:" + JSON.stringify(finalPrelimTx));
+            console.log(
+                "got one finalCopyData:" + JSON.stringify(finalCopyData)
+            );
+            console.log(
+                "got one finalPrelimTx:" + JSON.stringify(finalPrelimTx)
+            );
             console.log("got one finalSequence:" + JSON.stringify(sequence));
-    
+
             parentPort!.postMessage({
                 finalCopyData,
                 finalSequence: sequence,
