@@ -185,6 +185,7 @@ if (parentPort) {
 
                 finalCopyData = copiedData;
                 finalPrelimTx = prelimTx;
+                finalSequence = sequence;
                 workerPerformBitworkForCommitTx = false;
             }
         } while (workerPerformBitworkForCommitTx);
