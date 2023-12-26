@@ -20,7 +20,7 @@ export class ElectrumApi implements ElectrumApiInterface {
         return new ElectrumApi(url, usePost);
     }
 
-    public open(): Promise<any> {
+    public async open(): Promise<any> {
         return new Promise((resolve) => {
             if (this.isOpenFlag) {
                 resolve(true);
@@ -35,7 +35,7 @@ export class ElectrumApi implements ElectrumApiInterface {
         return this.isOpenFlag;
     }
 
-    public close(): Promise<any> {
+    public async close(): Promise<any> {
         this.isOpenFlag = false;
         return Promise.resolve(true);
     }
