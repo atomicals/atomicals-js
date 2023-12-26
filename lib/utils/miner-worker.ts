@@ -314,13 +314,9 @@ export const appendMintUpdateRevealScript = (
     payload: AtomicalsPayload,
     log: boolean = true
 ) => {
-    let ops = `${Buffer.from(keypair.childNodeXOnlyPubkey, "utf8").toString(
-        "hex"
-    )} OP_CHECKSIG OP_0 OP_IF `;
-    ops += `${Buffer.from(ATOMICALS_PROTOCOL_ENVELOPE_ID, "utf8").toString(
-        "hex"
-    )}`;
-    ops += ` ${Buffer.from(opType, "utf8").toString("hex")}`;
+    let ops = `${Buffer.from(keypair.childNodeXOnlyPubkey).toString("hex")} OP_CHECKSIG OP_0 OP_IF `;
+    ops += `${Buffer.from(ATOMICALS_PROTOCOL_ENVELOPE_ID).toString("hex")}`;
+    ops += ` ${Buffer.from(opType).toString("hex")}`;
     const chunks = chunkBuffer(payload.cbor(), 520);
     for (let chunk of chunks) {
         ops += ` ${chunk.toString("hex")}`;
