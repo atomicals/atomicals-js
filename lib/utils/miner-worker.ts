@@ -27,6 +27,7 @@ import {
     DUST_AMOUNT,
     EXCESSIVE_FEE_LIMIT,
     FeeCalculations,
+    MAX_SEQUENCE,
     OUTPUT_BYTES_BASE,
 } from "./atomical-operation-builder";
 import { Worker } from "worker_threads";
@@ -37,8 +38,6 @@ const ECPair: ECPairAPI = ECPairFactory(tinysecp);
 
 interface WorkerInput {
     copiedData: AtomicalsPayload;
-    nonceStart: any;
-    nonceEnd: any;
     workerOptions: AtomicalOperationBuilderOptions;
     fundingWIF: string;
     fundingUtxo: any;
@@ -52,11 +51,9 @@ interface WorkerInput {
 // This is the worker's message event listener
 if (parentPort) {
     parentPort.on("message", async (message: WorkerInput) => {
-        // Destructuring relevant data from the message object
+        // Extract parameters from the message
         const {
             copiedData,
-            nonceStart,
-            nonceEnd,
             workerOptions,
             fundingWIF,
             fundingUtxo,
@@ -67,53 +64,90 @@ if (parentPort) {
             ihashLockP2TR,
         } = message;
 
-        // Initialize worker-specific variables
-        let workerNonce = nonceStart;
-        let workerNoncesGenerated = nonceStart;
+        let sequence = 0;
         let workerPerformBitworkForCommitTx = performBitworkForCommitTx;
         let scriptP2TR = iscriptP2TR;
         let hashLockP2TR = ihashLockP2TR;
 
-        // Convert the WIF (Wallet Import Format) to a keypair
         const fundingKeypairRaw = ECPair.fromWIF(fundingWIF);
         const fundingKeypair = getKeypairInfo(fundingKeypairRaw);
 
-        // Variables to hold final results
-        let finalCopyData;
-        let finalPrelimTx;
-        let finalBaseCommit;
+        copiedData["args"]["nonce"] = Math.floor(Math.random() * 10000000);
+        copiedData["args"]["time"] = Math.floor(Date.now() / 1000);
 
-        // Record current Unix time
-        let unixtime = Math.floor(Date.now() / 1000);
-        copiedData["args"]["time"] = unixtime;
+        let atomPayload = new AtomicalsPayload(copiedData);
+
+        let updatedBaseCommit: { scriptP2TR; hashLockP2TR; hashscript } =
+            workerPrepareCommitRevealConfig(
+                workerOptions.opType,
+                fundingKeypair,
+                atomPayload
+            );
+
+        const tabInternalKey = Buffer.from(
+            fundingKeypair.childNodeXOnlyPubkey as number[]
+        );
+        const witnessUtxo = {
+            value: fundingUtxo.value,
+            script: Buffer.from(fundingKeypair.output, "hex"),
+        };
+
+        const totalInputsValue = fundingUtxo.value;
+        const totalOutputsValue = getOutputValueForCommit(fees);
+        const calculatedFee = totalInputsValue - totalOutputsValue;
+
+        let needChangeFeeOutput = false;
+        // In order to keep the fee-rate unchanged, we should add extra fee for the new added change output.
+        const expectedFee =
+            fees.commitFeeOnly +
+            (workerOptions.satsbyte as any) * OUTPUT_BYTES_BASE;
+        // console.log('expectedFee', expectedFee);
+        const differenceBetweenCalculatedAndExpected =
+            calculatedFee - expectedFee;
+        if (
+            calculatedFee > 0 &&
+            differenceBetweenCalculatedAndExpected > 0 &&
+            differenceBetweenCalculatedAndExpected >= DUST_AMOUNT
+        ) {
+            // There were some excess satoshis, but let's verify that it meets the dust threshold to make change
+            needChangeFeeOutput = true;
+        }
+
+        let prelimTx;
+        let fixedOutput = {
+            address: updatedBaseCommit.scriptP2TR.address,
+            value: getOutputValueForCommit(fees),
+        };
+        let finalCopyData, finalPrelimTx;
 
         // Start mining loop, terminates when a valid proof of work is found or stopped manually
         do {
             // Introduce a minor delay to avoid overloading the CPU
-            await sleep(0); // Changed from 1 second for a non-blocking wait
+            await sleep(0);
 
-            // Set nonce and timestamp in the data to be committed
-            copiedData["args"]["nonce"] = workerNonce;
-            if (workerNoncesGenerated % 5000 == 0) {
-                unixtime = Math.floor(Date.now() / 1000);
-                copiedData["args"]["time"] = unixtime;
-                workerNonce =
-                    Math.floor(Math.random() * (nonceEnd - nonceStart + 1)) +
-                    nonceStart;
-            } else {
-                workerNonce++;
-            }
-
-            // Create a new atomic payload instance
-            const atomPayload = new AtomicalsPayload(copiedData);
-
-            // Prepare commit and reveal configurations
-            const updatedBaseCommit: { scriptP2TR; hashLockP2TR; hashscript } =
-                workerPrepareCommitRevealConfig(
-                    workerOptions.opType,
-                    fundingKeypair,
-                    atomPayload
+            sequence++;
+            // If the sequence has exceeded the max sequence allowed, generate a new set of nonce and time and reset the sequence until we find one.
+            if (sequence >= MAX_SEQUENCE) {
+                copiedData["args"]["nonce"] = Math.floor(
+                    Math.random() * 10000000
                 );
+                copiedData["args"]["time"] = Math.floor(Date.now() / 1000);
+
+                atomPayload = new AtomicalsPayload(copiedData);
+                const newBaseCommit: { scriptP2TR; hashLockP2TR; hashscript } =
+                    workerPrepareCommitRevealConfig(
+                        workerOptions.opType,
+                        fundingKeypair,
+                        atomPayload
+                    );
+                updatedBaseCommit = newBaseCommit;
+                fixedOutput = {
+                    address: updatedBaseCommit.scriptP2TR.address,
+                    value: getOutputValueForCommit(fees),
+                };
+
+                sequence = 0;
+            }
 
             // Create a new PSBT (Partially Signed Bitcoin Transaction)
             let psbtStart = new Psbt({ network: NETWORK });
@@ -123,41 +157,32 @@ if (parentPort) {
             psbtStart.addInput({
                 hash: fundingUtxo.txid,
                 index: fundingUtxo.index,
-                sequence: workerOptions.rbf ? RBF_INPUT_SEQUENCE : undefined,
-                tapInternalKey: Buffer.from(
-                    fundingKeypair.childNodeXOnlyPubkey as number[]
-                ),
-                witnessUtxo: {
-                    value: fundingUtxo.value,
-                    script: Buffer.from(fundingKeypair.output, "hex"),
-                },
+                sequence: sequence,
+                tapInternalKey: tabInternalKey,
+                witnessUtxo: witnessUtxo,
             });
-            psbtStart.addOutput({
-                address: updatedBaseCommit.scriptP2TR.address,
-                value: getOutputValueForCommit(fees),
-            });
+            psbtStart.addOutput(fixedOutput);
 
-            // Add change output if required
-            addCommitChangeOutputIfRequired(
-                fundingUtxo.value,
-                fees,
-                psbtStart,
-                fundingKeypair.address,
-                workerOptions.satsbyte
-            );
+            // Add change output if needed
+            if (needChangeFeeOutput) {
+                psbtStart.addOutput({
+                    address: fundingKeypair.address,
+                    value: differenceBetweenCalculatedAndExpected,
+                });
+            }
 
             psbtStart.signInput(0, fundingKeypair.tweakedChildNode);
             psbtStart.finalizeAllInputs();
 
             // Extract the transaction and get its ID
-            let prelimTx = psbtStart.extractTransaction();
+            prelimTx = psbtStart.extractTransaction();
             const checkTxid = prelimTx.getId();
 
             logMiningProgressToConsole(
                 workerPerformBitworkForCommitTx,
                 workerOptions.disableMiningChalk,
                 checkTxid,
-                workerNoncesGenerated
+                sequence
             );
             // Check if there is a valid proof of work
             if (
@@ -169,37 +194,29 @@ if (parentPort) {
                 )
             ) {
                 // Valid proof of work found, log success message
-
                 console.log(
-                    chalk.green(
-                        checkTxid,
-                        ` nonces: ${workerNoncesGenerated} (${workerNonce})`
-                    )
+                    chalk.green(prelimTx.getId(), ` sequence: (${sequence})`)
                 );
                 console.log(
                     "\nBitwork matches commit txid! ",
                     prelimTx.getId(),
-                    `@ time: ${unixtime}`
+                    `@ time: ${Math.floor(Date.now() / 1000)}`
                 );
-
-                // Set final results
 
                 finalCopyData = copiedData;
                 finalPrelimTx = prelimTx;
-                finalBaseCommit = updatedBaseCommit;
                 workerPerformBitworkForCommitTx = false;
             }
-
-            workerNoncesGenerated++;
         } while (workerPerformBitworkForCommitTx);
 
         // send a result or message back to the main thread
         console.log("got one finalCopyData:" + JSON.stringify(finalCopyData));
         console.log("got one finalPrelimTx:" + JSON.stringify(finalPrelimTx));
+        console.log("got one final sequence:" + JSON.stringify(sequence));
+
         parentPort!.postMessage({
             finalCopyData,
-            finalPrelimTx,
-            finalBaseCommit,
+            sequence,
         });
     });
 }
@@ -208,16 +225,16 @@ function logMiningProgressToConsole(
     dowork: boolean,
     disableMiningChalk,
     txid,
-    nonces
+    seq
 ) {
     if (!dowork) {
         return;
     }
-    
-    if (nonces % 10000 === 0) {
+
+    if (seq % 10000 === 0) {
         console.log(
-            "Nonces: ",
-            nonces,
+            "sequence: ",
+            seq,
             ", time: ",
             Math.floor(Date.now() / 1000)
         );
