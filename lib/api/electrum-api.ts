@@ -13,7 +13,7 @@ export class ElectrumApi implements ElectrumApiInterface {
     }
 
     public async resetConnection() {
-
+        this.isOpenFlag = false;
     }
 
     static createClient(url: string, usePost = true) {
@@ -26,6 +26,7 @@ export class ElectrumApi implements ElectrumApiInterface {
                 resolve(true);
                 return;
             }
+            this.isOpenFlag = true;
             resolve(true);
         });
     }
@@ -35,6 +36,7 @@ export class ElectrumApi implements ElectrumApiInterface {
     }
 
     public close(): Promise<any> {
+        this.isOpenFlag = false;
         return Promise.resolve(true);
     }
 
