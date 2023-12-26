@@ -813,18 +813,20 @@ export class AtomicalOperationBuilder {
                 }
             });
 
-            // Calculate nonce range for this worker
-            const nonceStart = i * seqRangePerWorker;
-            let nonceEnd = nonceStart + seqRangePerWorker - 1;
+            // Calculate sequence range for this worker
+            const seqStart = i * seqRangePerWorker;
+            let seqEnd = seqStart + seqRangePerWorker - 1;
 
             // Ensure the last worker covers the remaining range
             if (i === concurrency - 1) {
-                nonceEnd = MAX_SEQUENCE - 1;
+                seqEnd = MAX_SEQUENCE - 1;
             }
 
             // Send necessary data to the worker
             const messageToWorker = {
                 copiedData,
+                seqStart,
+                seqEnd,
                 workerOptions,
                 fundingWIF,
                 fundingUtxo,
