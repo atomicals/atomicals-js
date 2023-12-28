@@ -5,6 +5,17 @@
 
 ![Atomicals](banner.png)
 
+
+### WARNING: STRONGLY RECOMMENDED TO USE YARN INSTEAD OF NPM
+
+Use `yarn` package manager instead of `npm`. Instructions below (They are: `npm install -g yarn`)
+
+In the latest version of the CLI processing library the option switches (the settings starting with `--`) are not processed correctly and it would lead to
+too small of a fee being set and result in your transactions not being mined.
+
+Workaround: Use `yarn` instead of `npm`
+
+
 ### Install, Build and Run Tests
 
 ## Install
@@ -26,6 +37,7 @@ yarn run build
 #See all commands at:
 
 yarn run cli --help
+
 ```
 
 ### Quick Start - Command Line (CLI)
