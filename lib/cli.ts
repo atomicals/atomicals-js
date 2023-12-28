@@ -2008,7 +2008,6 @@ program.command('download')
     }
   });
 
-
 program.command('broadcast')
   .description('broadcast a rawtx')
   .option('--rawtx <string>', 'Rawtx')
@@ -2027,6 +2026,29 @@ program.command('broadcast')
       }
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       const result: any = await atomicals.broadcast(rawtx);
+      handleResultLogging(result);
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
+  program.command('decodetx')
+  .description('Decode a tx')
+  .option('--rawtx <string>', 'Rawtx')
+  .option('--rawtxfile <string>', 'File path to the rawtx')
+  .action(async (options) => {
+    try {
+    
+      if (!options.rawtx && !options.rawtxfile) {
+        throw new Error("must specify either rawtx or rawtxfile")
+      }
+      let rawtx = options.rawtx;
+      if (!rawtx) {
+        rawtx = options.rawtxfile;
+        rawtx = await fileReader(rawtx, 'utf8');
+      }
+ 
+      const result: any = await Atomicals.decodeTx(rawtx);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
