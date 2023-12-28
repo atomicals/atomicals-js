@@ -1979,7 +1979,7 @@ program.command('store-file')
         init: options.init,
         satsbyte: parseInt(options.satsbyte, 10),
         satsoutput: parseInt(options.satsoutput, 10),
-        bitworkc: options.bitworkc,
+        bitworkc: options.bitworkc || getRandomBitwork4(),
         bitworkr: options.bitworkr,
         parent: options.parent,
         parentOwner: parentOwnerRecord,
