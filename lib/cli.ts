@@ -1958,7 +1958,7 @@ program.command('store-file')
   .argument('<filepath>', 'string')
   .argument('<givenFileName>', 'string')
   .option('--rbf', 'Whether to enable RBF for transactions.')
-  .option('--initialowner <string>', 'Initial owner wallet alias to mint the Atomical into')
+  .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')     
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
   .option('--satsoutput <number>', 'Satoshis to put into output', '1000')
   .option('--bitworkc <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the commit transaction.')
@@ -1971,7 +1971,7 @@ program.command('store-file')
       const walletInfo = await validateWalletStorage();
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-      let walletRecord = resolveWalletAliasNew(walletInfo, options.initialowner, walletInfo.primary);
+      let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       let parentOwnerRecord = resolveWalletAliasNew(walletInfo, options.parentowner, walletInfo.primary);
       const result: any = await atomicals.mintDatInteractive({
         meta: options.meta,
@@ -1985,7 +1985,7 @@ program.command('store-file')
         parentOwner: parentOwnerRecord,
         disableMiningChalk: options.disablechalk,
         rbf: options.rbf,
-      }, filepath, givenFileName, walletRecord.address, walletRecord.WIF, );
+      }, filepath, givenFileName, fundingRecord.address, fundingRecord.WIF);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
