@@ -71,6 +71,27 @@ export class InitInteractiveDftCommand implements CommandInterface {
   async run(): Promise<any> {
     // let filesData = await prepareFilesDataAsObject(this.files);
     let filesData = await readJsonFileAsCompleteDataObjectEncodeAtomicalIds(this.file, true);
+    console.log(filesData)
+    if (!filesData['name']) {
+      throw new Error('Please set a name in the files metadata. See examples in /templates/fungible-tokens')
+    }
+
+    if (!filesData['legal']) {
+      throw new Error('Please set legal in the files metadata. See examples in /templates/fungible-tokens')
+    }
+
+    if (!filesData['legal']['terms']) {
+      throw new Error('Please set legal terms in the files metadata. See examples in /templates/fungible-tokens')
+    }
+
+    if (!filesData['image']) {
+      throw new Error('Please set image in the files metadata. See examples in /templates/fungible-tokens')
+    }
+    // Ex: atom:btc:dat:<location of store-file data>/image.png
+    const re = /atom\:btc\:dat\:[a-f0-9]{64}i0\/.*\.(png|jpeg|svg|jpg|gif|webp)/
+    if (!re.test(filesData['image'])) {
+      throw new Error('The image field in the metadata is invalid and must be in the format of atom:btc:dat:<locationId>/image.png - create the file with the store-file command and copy the urn into the image field')
+    }
     console.log('Initializing Decentralized FT Token')
     console.log('-----------------------')
     let supply = this.maxMints * this.mintAmount;
@@ -90,6 +111,10 @@ export class InitInteractiveDftCommand implements CommandInterface {
 
     if (this.mintBitworkc?.length > 8) {
       console.log('WARNING: Mint Bitworkc might be too hard to mine and could take a very long time. Confirm if that is acceptable.', this.mintBitworkc);
+    }
+
+    if (supply < 21000000) {
+      console.log('WARNING: Total supply is less than 21,000,000. Confirm if that is acceptable.', supply);
     }
 
     await promptContinue();

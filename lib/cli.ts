@@ -1536,7 +1536,6 @@ program.command('init-dft')
       let walletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
       let parentOwnerRecord = resolveWalletAliasNew(walletInfo, options.parentowner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
-      const mintBitworkc = options.mintbitworkc ? options.mintbitworkc : getRandomBitwork4();
       const result: any = await atomicals.initDftInteractive({
         rbf: options.rbf,
         meta: options.meta,
@@ -1550,7 +1549,7 @@ program.command('init-dft')
         parent: options.parent,
         parentOwner: parentOwnerRecord,
         disableMiningChalk: options.disablechalk,
-      }, file, walletRecord.address, requestTicker, mintAmount, maxMints, mintHeight, mintBitworkc, mintbitworkc, fundingRecord.WIF);
+      }, file, walletRecord.address, requestTicker, mintAmount, maxMints, mintHeight, mintbitworkc, mintbitworkc, fundingRecord.WIF);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
