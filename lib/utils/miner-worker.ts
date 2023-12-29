@@ -105,7 +105,6 @@ if (parentPort) {
         const expectedFee =
             fees.commitFeeOnly +
             (workerOptions.satsbyte as any) * OUTPUT_BYTES_BASE;
-        // console.log('expectedFee', expectedFee);
         const differenceBetweenCalculatedAndExpected =
             calculatedFee - expectedFee;
         if (
@@ -241,7 +240,6 @@ function addCommitChangeOutputIfRequired(
     // In order to keep the fee-rate unchanged, we should add extra fee for the new added change output.
     const expectedFee =
         fee.commitFeeOnly + (satsbyte as any) * OUTPUT_BYTES_BASE;
-    // console.log('expectedFee', expectedFee);
     const differenceBetweenCalculatedAndExpected = calculatedFee - expectedFee;
     if (differenceBetweenCalculatedAndExpected <= 0) {
         return;

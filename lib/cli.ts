@@ -1520,7 +1520,7 @@ program.command('init-dft')
   .argument('<mintbitworkc>', 'string')
   .option('--rbf', 'Whether to enable RBF for transactions.')
   .option('--funding <string>', 'Use wallet alias wif key to be used for funding and change')
-  .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
+  .option('--satsbyte <number>', 'Satoshis per byte in fees', '200')
   .option('--mintbitworkr <string>', 'Whether to require any bitwork proof of work to mint. Applies to the reveal transaction.')
   .option('--bitworkc <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the commit transaction.')
   .option('--bitworkr <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the reveal transaction.')
@@ -1562,7 +1562,7 @@ program.command('mint-dft')
   .option('--rbf', 'Whether to enable RBF for transactions.')
   .option('--initialowner <string>', 'Assign claimed tokens into this address')
   .option('--funding <string>', 'Use wallet alias wif key to be used for funding and change')
-  .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
+  .option('--satsbyte <number>', 'Satoshis per byte in fees', '150')
   .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for Bitwork mining. Improvements mining performance to set this flag')
   .action(async (ticker, options) => {
     try {
@@ -1572,6 +1572,8 @@ program.command('mint-dft')
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       let walletRecord = resolveWalletAliasNew(walletInfo, options.initialowner, walletInfo.primary);
       let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
+      const sats = parseInt(options.satsbyte);
+
       const result: any = await atomicals.mintDftInteractive({
         rbf: options.rbf,
         satsbyte: parseInt(options.satsbyte),
@@ -1631,7 +1633,7 @@ program.command('mint-realm')
   .argument('<realm>', 'string')
   .option('--rbf', 'Whether to enable RBF for transactions.')
   .option('--initialowner <string>', 'Initial owner wallet alias to mint the Atomical into')
-  .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
+  .option('--satsbyte <number>', 'Satoshis per byte in fees', '200')
   .option('--satsoutput <number>', 'Satoshis to put into the minted atomical', '1000')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
   .option('--container <string>', 'Name of the container to request')
@@ -1674,7 +1676,7 @@ program.command('mint-subrealm')
   .option('--rbf', 'Whether to enable RBF for transactions.')
   .option('--owner <string>', 'Owner of the parent Atomical. Used for direct subrealm minting.')
   .option('--initialowner <string>', 'Initial owner wallet alias to mint the Atomical into')
-  .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
+  .option('--satsbyte <number>', 'Satoshis per byte in fees', '200')
   .option('--satsoutput <number>', 'Satoshis to put into the minted atomical', '1000')
   .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
   .option('--container <string>', 'Name of the container to request')
