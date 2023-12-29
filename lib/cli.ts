@@ -1517,17 +1517,17 @@ program.command('init-dft')
   .argument('<max_mints>', 'number')
   .argument('<mint_height>', 'number')
   .argument('<file>', 'string')
+  .argument('<mintbitworkc>', 'string')
   .option('--rbf', 'Whether to enable RBF for transactions.')
   .option('--funding <string>', 'Use wallet alias wif key to be used for funding and change')
   .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
-  .option('--mintbitworkc <string>', 'Whether to require any bitwork proof of work to mint. Applies to the commit transaction.')
   .option('--mintbitworkr <string>', 'Whether to require any bitwork proof of work to mint. Applies to the reveal transaction.')
   .option('--bitworkc <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the commit transaction.')
   .option('--bitworkr <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the reveal transaction.')
   .option('--parent <string>', 'Whether to require a parent atomical to be spent along with the mint.')
   .option('--parentowner <string>', 'Wallet owner of the parent to spend along with the mint.')
   .option('--disablechalk', 'Whether to disable the real-time chalked logging of each hash for Bitwork mining. Improvements mining performance to set this flag')
-  .action(async (ticker, mintAmount, maxMints, mintHeight, file, options) => {
+  .action(async (ticker, mintAmount, maxMints, mintHeight, file, mintbitworkc, options) => {
     try {
       const walletInfo = await validateWalletStorage();
       const config: ConfigurationInterface = validateCliInputs();
@@ -1550,7 +1550,7 @@ program.command('init-dft')
         parent: options.parent,
         parentOwner: parentOwnerRecord,
         disableMiningChalk: options.disablechalk,
-      }, file, walletRecord.address, requestTicker, mintAmount, maxMints, mintHeight, mintBitworkc, options.mintbitworkr ? options.mintbitworkr : getRandomBitwork4(), fundingRecord.WIF);
+      }, file, walletRecord.address, requestTicker, mintAmount, maxMints, mintHeight, mintBitworkc, mintbitworkc, fundingRecord.WIF);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);

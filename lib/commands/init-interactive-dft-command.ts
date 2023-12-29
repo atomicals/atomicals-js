@@ -51,7 +51,7 @@ export class InitInteractiveDftCommand implements CommandInterface {
     private mintAmount: number,
     private maxMints: number,
     private mintHeight: number,
-    private mintBitworkc: string | null,
+    private mintBitworkc: string,
     private mintBitworkr: string | null,
     private fundingWIF: string,
   ) {
@@ -59,14 +59,15 @@ export class InitInteractiveDftCommand implements CommandInterface {
     this.requestTicker = this.requestTicker.startsWith('$') ? this.requestTicker.substring(1) : this.requestTicker;
     isValidBitworkMinimum(this.options.bitworkc);
 
-    if (this.maxMints > 500000 || this.maxMints < 1) {
-      throw new Error('max mints must be between 1 and 500,000')
+    if (this.maxMints > 500000 || this.maxMints < 10000) {
+      throw new Error('Command line tool expects max mints to be between 10,000 and 500,000')
     }
     
     if (this.mintAmount > 100000000 || this.mintAmount < 546) {
       throw new Error('mint amount must be between 546 and 100,000,000')
     }
   }
+
   async run(): Promise<any> {
     // let filesData = await prepareFilesDataAsObject(this.files);
     let filesData = await readJsonFileAsCompleteDataObjectEncodeAtomicalIds(this.file, true);
@@ -75,28 +76,22 @@ export class InitInteractiveDftCommand implements CommandInterface {
     let supply = this.maxMints * this.mintAmount;
     console.log('Total Supply (Satoshis): ', supply);
     console.log('Total Supply (BTC): ', supply / 100000000);
-
-    let decimals = 0;
-    if (filesData['decimals']) {
-      decimals = parseInt(filesData['decimals'], 10);
-    }
-    console.log('Decimals: ', decimals);
-
-    if (!decimals || decimals === 0) {
-      console.log('RECOMMENDATION: USE AT LEAST DECIMALS 1 OR 2');
-    }
     let expandedSupply = supply;
-    if (decimals > 0) {
-      let decimalFactor = Math.pow(10, decimals);
-      expandedSupply = supply / decimalFactor
-    }
-    console.log('Total Supply (With Decimals): ', expandedSupply);
-
+    console.log('Total Supply: ', expandedSupply);
     console.log('Max mints', this.maxMints);
+    console.log('Mint Bitwork (commit)', this.mintBitworkc);
     console.log('Mint Amount', this.mintAmount);
     console.log('Data objects: ', filesData);
     console.log('-----------------------')
-  
+    
+    if (this.mintBitworkc?.length < 5) {
+      console.log('WARNING: Mint Bitworkc is too easy to mine and can be mined in less than a minute or faster. Confirm if that is acceptable.', this.mintBitworkc);
+    }
+
+    if (this.mintBitworkc?.length > 8) {
+      console.log('WARNING: Mint Bitworkc might be too hard to mine and could take a very long time. Confirm if that is acceptable.', this.mintBitworkc);
+    }
+
     await promptContinue();
 
     const getExistingNameCommand = new GetByTickerCommand(this.electrumApi, this.requestTicker, AtomicalsGetFetchType.GET, undefined);
