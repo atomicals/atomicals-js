@@ -320,7 +320,7 @@ export const appendMintUpdateRevealScript = (
     payload: AtomicalsPayload,
     log: boolean = true
 ) => {
-    let ops = `${Buffer.from(keypair.childNodeXOnlyPubkey, "utf8").toString(
+    let ops = `${keypair.childNodeXOnlyPubkey.toString(
         "hex"
     )} OP_CHECKSIG OP_0 OP_IF `;
     ops += `${Buffer.from(ATOMICALS_PROTOCOL_ENVELOPE_ID, "utf8").toString(
