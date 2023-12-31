@@ -1361,6 +1361,20 @@ try {
     window['atomicals'] = {
       instance: instance
     };
+  } else {
+    const fs = require('fs');
+    const path = 'log.txt';
+    const logStream = fs.createWriteStream(path, { flags: 'a' });
+
+    const originalLog = console.log;
+
+    console.log = function(data) {
+      originalLog(data);
+      if (typeof data === 'object') {
+        data = JSON.stringify(data);
+      }
+      logStream.write(data + '\n');
+    };
   }
 }
 catch (ex) {
