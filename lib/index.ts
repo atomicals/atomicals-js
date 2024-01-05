@@ -3,6 +3,7 @@ const bitcoin = require('bitcoinjs-lib');
 import * as ecc from 'tiny-secp256k1';
 bitcoin.initEccLib(ecc);
 import * as cbor from 'borc';
+import * as dotenv from 'dotenv'
 export { ElectrumApiMock } from "./api/electrum-api-mock";
 import { ConfigurationInterface } from "./interfaces/configuration.interface";
 import { ElectrumApiInterface } from "./api/electrum-api.interface";
@@ -85,6 +86,7 @@ export { createMnemonicPhrase } from "./utils/create-mnemonic-phrase";
 export { detectAddressTypeToScripthash, detectScriptToAddressType } from "./utils/address-helpers";
 
 export { bitcoin };
+dotenv.config();
 export class Atomicals implements APIInterface {
   constructor(private electrumApi: ElectrumApiInterface) {
   }
@@ -1362,19 +1364,21 @@ try {
       instance: instance
     };
   } else {
-    const fs = require('fs');
-    const path = 'log.txt';
-    const logStream = fs.createWriteStream(path, { flags: 'a' });
+    if (process.env.LOG_TO_FILE && process.env.LOG_TO_FILE === 'true') {
+      const fs = require('fs');
+      const path = process.env.LOG_FILE || 'log.txt';
+      const logStream = fs.createWriteStream(path, { flags: 'a' });
 
-    const originalLog = console.log;
+      const originalLog = console.log;
 
-    console.log = function(data) {
-      originalLog(data);
-      if (typeof data === 'object') {
-        data = JSON.stringify(data);
-      }
-      logStream.write(data + '\n');
-    };
+      console.log = function(data) {
+        originalLog(data);
+        if (typeof data === 'object') {
+          data = JSON.stringify(data);
+        }
+        logStream.write(data + '\n');
+      };
+    }
   }
 }
 catch (ex) {
