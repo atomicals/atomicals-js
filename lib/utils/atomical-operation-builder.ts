@@ -937,15 +937,7 @@ export class AtomicalOperationBuilder {
             if (noncesGenerated % 10000 == 0) {
                 unixTime = Math.floor(Date.now() / 1000);
             }
-            const data = Buffer.from(unixTime + ":" + nonce, "utf8");
-            const embed = bitcoin.payments.embed({ data: [data] });
 
-            if (performBitworkForRevealTx) {
-                psbt.addOutput({
-                    script: embed.output!,
-                    value: 0,
-                });
-            }
             this.addRevealOutputIfChangeRequired(
                 totalInputsforReveal,
                 totalOutputsForReveal,
