@@ -104,7 +104,7 @@ export class MintInteractiveDftCommand implements CommandInterface {
       atomicalBuilder.setContainerMembership(this.options.container);
 
     // Attach any requested bitwork OR automatically request bitwork if the parent decentralized ft requires it
-    const mint_bitworkc = atomicalDecorated['$mint_bitworkc'] || this.options.bitworkc
+    const mint_bitworkc = atomicalDecorated['$mint_bitworkc'] || atomicalDecorated['$bitwork']?.bitworkc || this.options.bitworkc
     if (mint_bitworkc) {
       atomicalBuilder.setBitworkCommit(mint_bitworkc);
     }
