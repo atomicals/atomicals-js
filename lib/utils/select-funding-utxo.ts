@@ -8,13 +8,13 @@ bitcoin.initEccLib(ecc);
 export const getInputUtxoFromTxid = async (utxo: UTXO, electrumx: ElectrumApiInterface) => {
   const txResult = await electrumx.getTx(utxo.txId);
 
-  if (!txResult || !txResult.success) {
+  if (!txResult || !txResult.success || !txResult.tx) {
     throw `Transaction not found in getInputUtxoFromTxid ${utxo.txId}`;
   }
   const tx = txResult.tx;
   utxo.nonWitnessUtxo = Buffer.from(tx, 'hex');
 
-  const reconstructedTx = bitcoin.Transaction.fromHex(tx.tx);
+  const reconstructedTx = bitcoin.Transaction.fromHex(tx);
   if (reconstructedTx.getId() !== utxo.txId) {
     throw "getInputUtxoFromTxid txid mismatch error";
   }
