@@ -26,3 +26,5 @@ commit-command-output*.json
 *.njsproj
 *.sln
 .gitkeep
+*.log
+*.txt
