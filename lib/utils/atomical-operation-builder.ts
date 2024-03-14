@@ -971,6 +971,7 @@ export class AtomicalOperationBuilder {
                 totalInputsforReveal,
                 totalOutputsForReveal,
                 fees.revealFeeOnly,
+                psbt,
                 fundingKeypair.address
             );
 
@@ -1243,6 +1244,7 @@ export class AtomicalOperationBuilder {
         totalInputsValue: number,
         totalOutputsValue: number,
         revealFee: number,
+        pbst: any,
         address: string
     ) {
         const currentSatoshisFeePlanned = totalInputsValue - totalOutputsValue;
@@ -1261,7 +1263,7 @@ export class AtomicalOperationBuilder {
         }
         // There were some excess satoshis, but let's verify that it meets the dust threshold to make change
         if (excessSatoshisFound >= DUST_AMOUNT) {
-            this.addOutput({
+            pbst.addOutput({
                 address: address,
                 value: excessSatoshisFound,
             });
