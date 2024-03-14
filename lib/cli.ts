@@ -2203,9 +2203,10 @@ program.command('broadcast')
       }
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       const result: any = await atomicals.broadcast(rawtx);
-      handleResultLogging(result);
+      console.log(result.tx.ins[0].hash.toString())
+      // handleResultLogging(result);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   });
 
