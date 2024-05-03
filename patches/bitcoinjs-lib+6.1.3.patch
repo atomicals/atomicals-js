@@ -1,0 +1,19 @@
+diff --git a/node_modules/bitcoinjs-lib/src/psbt.js b/node_modules/bitcoinjs-lib/src/psbt.js
+index 71c3589..223b21e 100644
+--- a/node_modules/bitcoinjs-lib/src/psbt.js
++++ b/node_modules/bitcoinjs-lib/src/psbt.js
+@@ -249,12 +249,12 @@ class Psbt {
+     return this;
+   }
+   extractTransaction(disableFeeCheck) {
+-    if (!this.data.inputs.every(isFinalized)) throw new Error('Not finalized');
++    // if (!this.data.inputs.every(isFinalized)) throw new Error('Not finalized');
+     const c = this.__CACHE;
+     if (!disableFeeCheck) {
+       checkFees(this, c, this.opts);
+     }
+-    if (c.__EXTRACTED_TX) return c.__EXTRACTED_TX;
++    // if (c.__EXTRACTED_TX) return c.__EXTRACTED_TX;
+     const tx = c.__TX.clone();
+     inputFinalizeGetAmts(this.data.inputs, tx, c, true);
+     return tx;

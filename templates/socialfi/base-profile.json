@@ -1,0 +1,132 @@
+{
+    "v": "1.2",
+    "name": "User or profile title or name",
+    "image": "atom:btc:id:<atomicalId>/image.jpg",
+    "desc": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "ids": {
+        "0": {
+            "t": "realm",
+            "v": "myrealmname"
+        },
+        "1": {
+            "t": "realm",
+            "v": "messenger.cool"
+        }
+    },
+    "wallets": {
+        "btc": {
+            "address": "btc address to receive tips"
+        },
+        "doge": {
+            "address": "doge address to receive tips"
+        },
+        "nostr": {
+            "nip05": "...any other nostr fields"
+        }
+    },
+    "links": {
+        "0": {
+            "group": "social",
+            "items": {
+                "0": {
+                    "type": "instagram",
+                    "name": "@loremipsum",
+                    "url": "https://instagram.com/loremipsum9872"
+                },
+                "1": {
+                    "type": "x",
+                    "name": "@loremipsum9872",
+                    "url": "https://x.com/loremipsum9872"
+                },
+                "2": {
+                    "type": "youtube",
+                    "name": "@loremipsum9872",
+                    "url": "https://www.youtube.com/@GuitarMelodies2023"
+                }
+            }
+        }
+    },
+    "collections": {
+        "container-name1": {
+            "name": "my cool collection",
+            "image": "atom:btc:id:<atomicalId>/image.jpg optional but recommended image",
+            "desc": "Optional collection info",
+            "meta": {
+                "order": 1,
+                "note": "This section can be used to give presentation instructions",
+                "display": "gallery"
+            },
+            "preview": {
+                "0": {
+                    "type": "previewbox",
+                    "text": "caption text hint",
+                    "name": "@loremipsum",
+                    "url": "https://instagram.com/loremipsum9872",
+                    "img": "optional image url",
+                    "class": [
+                        "border-none",
+                        "blue-highlight"
+                    ],
+                    "style": {
+                        "border": "none"
+                    }
+                },
+                "1": {
+                    "type": "previewbox",
+                    "text": "caption text hint",
+                    "name": "@loremipsum",
+                    "url": "https://instagram.com/loremipsum9872",
+                    "img": "optional image url",
+                    "class": [
+                        "border-none",
+                        "blue-highlight"
+                    ],
+                    "style": {
+                        "border": "none"
+                    }
+                },
+                "2": {
+                    "type": "previewbox",
+                    "text": "caption text hint",
+                    "name": "@loremipsum",
+                    "url": "https://instagram.com/loremipsum9872",
+                    "img": "optional image url",
+                    "class": [
+                        "border-none",
+                        "blue-highlight"
+                    ],
+                    "style": {
+                        "border": "none"
+                    }
+                }
+            },
+            "links": [
+                {
+                    "group": "social",
+                    "meta": {
+                        "order": 1,
+                        "note": "This section can be used to give presentation instructions",
+                        "display": "bottom"
+                    },
+                    "items": {
+                        "0": {
+                            "type": "instagram",
+                            "name": "@loremipsum",
+                            "url": "https://instagram.com/loremipsum9872"
+                        },
+                        "1": {
+                            "type": "x",
+                            "name": "@loremipsum9872",
+                            "url": "https://x.com/loremipsum9872"
+                        },
+                        "2": {
+                            "type": "youtube",
+                            "name": "@loremipsum9872",
+                            "url": "https://www.youtube.com/@GuitarMelodies2023"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

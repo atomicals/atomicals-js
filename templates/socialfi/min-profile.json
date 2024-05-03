@@ -1,0 +1,29 @@
+{
+    "v": "1.2",
+    "name": "User or profile title or name",
+    "image": "atom:btc:id:<atomicalId>/image.jpg",
+    "desc": "Lorem ipsum dolor sit amet...",
+    "ids": {
+        "0": {
+            "t": "realm",
+            "v": "myrealmname"
+        }
+    },
+    "wallets": {
+        "btc": {
+            "address": "btc address to receive tips"
+        }
+    },
+    "links": {
+        "0": {
+            "group": "social",
+            "items": {
+                "0": {
+                    "type": "x",
+                    "name": "@loremipsum9872",
+                    "url": "https://x.com/loremipsum9872"
+                }
+            }
+        }
+    }
+}

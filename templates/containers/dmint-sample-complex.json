@@ -1,0 +1,34 @@
+{
+  "note": "this file should not be generated manually but used with prepare-dmint command",
+  "dmint": {
+    "v": 1,
+    "mint_height": 8182000,
+    "items": 10000,
+    "merkle": "<merkle root generated>",
+    "immutable": true,
+    "rules": [
+      {
+        "p": "^0.*$",
+        "o": {
+          "5120c2521c3abacd75346eb3115ca1270225ba2bab5d273b7c8b1eab34b21deea861": {
+            "v": 1000
+          },
+          "5120c2529c35bacd75346eb3115ca1270325ba2bab5d573b7c8a1eab54b21d4ea86e": {
+            "v": 600,
+            "id": "2112003789d572f764f391b2732663997e53a1153e01dc8a4fca020eaff324501i0"
+          }
+        },
+        "bitworkc": "4180"
+      },
+      {
+        "p": "^.*\\.gif$",
+        "bitworkc": "888888"
+      },
+      {
+        "p": ".*",
+        "bitworkc": "1234",
+        "bitworkr": "333"
+      }
+    ]
+  }
+}
