@@ -75,7 +75,7 @@ export interface APIInterface {
     getAtomical(atomicalId: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     getAtomicalLocation(atomicalId: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     getAtomicalHistory(atomicalId: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
-    getAtomicalState(atomicalId: string, verbose: boolean, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
+    getAtomicalState(atomicalId: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     getAtomicalStateHistory(atomicalId: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     getAtomicalEventHistory(atomicalId: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;
     searchTickers(prefix: string, keepElectrumAlive: boolean): Promise<CommandResultInterface>;

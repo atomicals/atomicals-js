@@ -457,12 +457,12 @@ export class Atomicals implements APIInterface {
     requestTicker: string,
     mintAmount: number,
     maxMints: number,
-    mintHeight: number, 
-    mintBitworkVector: string, 
-    mintBitworkCommitIncrement: number, 
-    mintBitworkRevealIncrement: number | null, 
+    mintHeight: number,
+    mintBitworkVector: string,
+    mintBitworkCommitIncrement: number,
+    mintBitworkRevealIncrement: number | null,
     mintBitworkCommitIncrementStart: number | null,
-    mintBitworkRevealIncrementStart: number | null, 
+    mintBitworkRevealIncrementStart: number | null,
     maxGlobalMints: number | null,
     WIF: string,
     noImage?: boolean,
@@ -470,17 +470,17 @@ export class Atomicals implements APIInterface {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new InitInteractiveInfiniteDftCommand(
-        this.electrumApi, 
-        options, 
+        this.electrumApi,
+        options,
         file,
         address,
         requestTicker,
-        mintAmount, 
-        maxMints, 
-        mintHeight, 
-        mintBitworkVector, 
+        mintAmount,
+        maxMints,
+        mintHeight,
+        mintBitworkVector,
         mintBitworkCommitIncrement,
-        mintBitworkRevealIncrement, 
+        mintBitworkRevealIncrement,
         mintBitworkCommitIncrementStart,
         mintBitworkRevealIncrementStart,
 	maxGlobalMints,
@@ -505,25 +505,25 @@ export class Atomicals implements APIInterface {
     requestTicker: string,
     mintAmount: number,
     maxMints: number,
-    mintHeight: number, 
-    mintBitworkCommit: string, 
-    mintBitworkReveal: string | null, 
+    mintHeight: number,
+    mintBitworkCommit: string,
+    mintBitworkReveal: string | null,
     WIF: string,
     noImage?: boolean,
   ): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
       const command: CommandInterface = new InitInteractiveFixedDftCommand(
-        this.electrumApi, 
-        options, 
+        this.electrumApi,
+        options,
         file,
         address,
         requestTicker,
-        mintAmount, 
-        maxMints, 
-        mintHeight, 
-        mintBitworkCommit, 
-        mintBitworkReveal, 
+        mintAmount,
+        maxMints,
+        mintHeight,
+        mintBitworkCommit,
+        mintBitworkReveal,
         WIF,
         noImage);
       return await command.run();
@@ -634,7 +634,7 @@ export class Atomicals implements APIInterface {
       this.electrumApi.close();
     }
   }
-  
+
   async emitInteractive(options: BaseRequestOptions, atomicalId: string, files: string[], funding: IWalletRecord, atomicalOwner: IWalletRecord): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
@@ -962,10 +962,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async getAtomicalState(atomicalAliasOrId: string, verbose: boolean = false, keepElectrumAlive = false): Promise<CommandResultInterface> {
+  async getAtomicalState(atomicalAliasOrId: string, keepElectrumAlive = false): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new GetCommand(this.electrumApi, atomicalAliasOrId, AtomicalsGetFetchType.STATE, verbose);
+      const command: CommandInterface = new GetCommand(this.electrumApi, atomicalAliasOrId, AtomicalsGetFetchType.STATE);
       return await command.run();
     } catch (error: any) {
       return {
@@ -1384,10 +1384,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async getTx(txid: string, verbose: boolean): Promise<CommandResultInterface> {
+  async getTx(txid: string): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new TxCommand(this.electrumApi, txid, verbose);
+      const command: CommandInterface = new TxCommand(this.electrumApi, txid);
       return await command.run();
     } catch (error: any) {
       return {

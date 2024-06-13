@@ -23,7 +23,7 @@ export class ElectrumApiMock implements ElectrumApiInterface {
     }
 
     async dump() {
- 
+
     }
 
     async resetConnection() {
@@ -34,7 +34,7 @@ export class ElectrumApiMock implements ElectrumApiInterface {
        return null;
     }
 
-    
+
 
     setSendTransaction(cb: Function) {
         return this.sendTransactionCallback = cb;
@@ -73,7 +73,7 @@ export class ElectrumApiMock implements ElectrumApiInterface {
         return this.getTxCallback = cb;
     }
 
-    async getTx(txid: string, verbose = false): Promise<any> {
+    async getTx(txid: string): Promise<any> {
         if (!this.getTxCallback) {
             throw "getTxCallback undefined";
         }
@@ -118,7 +118,7 @@ export class ElectrumApiMock implements ElectrumApiInterface {
     public async atomicalsGetFtInfo(atomicalAliasOrId: string | number): Promise<any> {
         return "atomicalsGetFtInfo"
     }
-    
+
     public async atomicalsGetLocation(atomicalAliasOrId: string | number): Promise<any> {
         return "atomicalsGetLocation"
     }
@@ -170,7 +170,7 @@ export class ElectrumApiMock implements ElectrumApiInterface {
     public async atomicalsGetByContainerItemValidated(container: string, item: string, bitworkc: string, bitworkr: string, main: string, mainHash: string, proof: any, checkWithoutSealed: boolean): Promise<any> {
         return "atomicalsGetByContainerItemValidated"
     }
-    
+
     public async atomicalsFindTickers(tickerPrefix: string | null, asc?: boolean): Promise<any> {
         return "atomicalsFindTickers"
     }
