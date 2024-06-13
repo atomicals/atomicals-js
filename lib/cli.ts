@@ -600,10 +600,9 @@ program.command('tx')
   .action(async (txid, options) => {
     try {
       await validateWalletStorage();
-      const verbose = options.verbose ? true : false;
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-      const result = await atomicals.getTx(txid, verbose);
+      const result = await atomicals.getTx(txid);
       console.log(JSON.stringify(result, null, 2));
     } catch (error) {
       console.log(error);

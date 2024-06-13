@@ -55,14 +55,14 @@ export class ElectrumApi implements ElectrumApiInterface {
                     url: url,
                     ...(this.usePost ? { data: { params } } : { params: params })
                 };
-    
+
                 const response = await axios(options);
                 return response.data.response;
             } catch (error) {
                 console.log(`Error using endpoint ${baseUrl}:`, error);
             }
         }
-    
+
         throw new Error('All endpoints failed');
     }
 
@@ -70,9 +70,9 @@ export class ElectrumApi implements ElectrumApiInterface {
         return this.broadcast(signedRawTx);
     }
 
-    public getTx(txId: string, verbose = false): Promise<any> {
+    public getTx(txId: string): Promise<any> {
         return new Promise((resolve, reject) => {
-            this.call('blockchain.transaction.get', [txId, verbose ? 1 : 0]
+            this.call('blockchain.transaction.get', [txId]
             ).then((result: any) => {
                 resolve({success: true, tx: result});
             }).catch((error) => reject(error))
@@ -210,8 +210,8 @@ export class ElectrumApi implements ElectrumApiInterface {
         return this.call('blockchain.atomicals.get_state_history', [atomicalAliasOrId]);
     }
 
-    public atomicalsGetState(atomicalAliasOrId: string | number, verbose: boolean): Promise<any> {
-        return this.call('blockchain.atomicals.get_state', [atomicalAliasOrId, verbose ? 1 : 0]);
+    public atomicalsGetState(atomicalAliasOrId: string | number): Promise<any> {
+        return this.call('blockchain.atomicals.get_state', [atomicalAliasOrId]);
     }
 
     public atomicalsGetEventHistory(atomicalAliasOrId: string | number): Promise<any> {

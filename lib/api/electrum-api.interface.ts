@@ -16,7 +16,7 @@ export interface ElectrumApiInterface {
     getUnspentAddress: (address: string) => Promise<IUnspentResponse>;
     getUnspentScripthash: (address: string) => Promise<IUnspentResponse>;
     waitUntilUTXO: (address: string, satoshis: number, sleepTimeSec: number, exactSatoshiAmount?: boolean) => Promise<UTXO>;
-    getTx: (txid: string, verbose?: boolean) => Promise<any>;
+    getTx: (txid: string) => Promise<any>;
     serverVersion: () => Promise<any>;
     broadcast: (rawtx: string, force?: boolean) => Promise<any>;
     history: (scripthash: string) => Promise<any>;
@@ -27,7 +27,7 @@ export interface ElectrumApiInterface {
     atomicalsGet: (atomicalAliasOrId: string | number) => Promise<any>;
     atomicalsGetFtInfo: (atomicalAliasOrId: string | number) => Promise<any>;
     atomicalsGetLocation: (atomicalAliasOrId: string | number) => Promise<any>;
-    atomicalsGetState: (atomicalAliasOrId: string | number, verbose: boolean) => Promise<any>;
+    atomicalsGetState: (atomicalAliasOrId: string | number) => Promise<any>;
     atomicalsGetStateHistory: (atomicalAliasOrId: string | number) => Promise<any>;
     atomicalsGetEventHistory: (atomicalAliasOrId: string | number) => Promise<any>;
     atomicalsGetTxHistory: (atomicalAliasOrId: string | number) => Promise<any>;
@@ -38,7 +38,7 @@ export interface ElectrumApiInterface {
     atomicalsGetByContainerItem: (container: string, item: string) => Promise<any>;
     atomicalsGetByContainerItemValidated: (container: string, item: string, bitworkc: string, bitworkr: string, main: string, mainHash: string, proof: any, checkWithoutSealed: boolean) => Promise<any>;
     atomicalsGetByRealm: (realm: string) => Promise<any>;
-    atomicalsGetRealmInfo: (realmOrSubRealm: string, verbose?: boolean) => Promise<any>;
+    atomicalsGetRealmInfo: (realmOrSubRealm: string) => Promise<any>;
     atomicalsGetByTicker: (ticker: string) => Promise<any>;
     atomicalsGetByContainer: (container: string) => Promise<any>;
     atomicalsGetContainerItems: (container: string, limit: number, offset: number) => Promise<any>;
@@ -46,4 +46,4 @@ export interface ElectrumApiInterface {
     atomicalsFindContainers: (containerPrefix: string | null, asc?: boolean) => Promise<any>;
     atomicalsFindRealms: (realmPrefix: string | null, asc?: boolean) => Promise<any>;
     atomicalsFindSubRealms: (parentRealmId: string, subrealmPrefix: string | null, mostRecentFirst?: boolean) => Promise<any>;
-} 
+}
