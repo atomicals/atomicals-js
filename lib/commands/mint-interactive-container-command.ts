@@ -31,7 +31,7 @@ export class MintInteractiveContainerCommand implements CommandInterface {
   }
   async run(): Promise<any> {
     // Check if the request already exists
-    const getExistingNameCommand = new GetByContainerCommand(this.electrumApi, this.requestContainer, AtomicalsGetFetchType.GET, undefined);
+    const getExistingNameCommand = new GetByContainerCommand(this.electrumApi, this.requestContainer, AtomicalsGetFetchType.GET);
     try {
       const getExistingNameResult = await getExistingNameCommand.run();
       if (getExistingNameResult.success && getExistingNameResult.data) {

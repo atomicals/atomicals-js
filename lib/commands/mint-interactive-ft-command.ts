@@ -66,16 +66,16 @@ export class MintInteractiveFtCommand implements CommandInterface {
     console.log('Total Supply (Satoshis): ', this.supply);
     console.log('Total Supply (BTC): ', this.supply / 100000000);
     let supply = this.supply;
- 
+
     let expandedSupply = supply;
-    
+
     console.log('Total Supply: ', expandedSupply);
     console.log('Data objects: ', filesData);
     console.log('-----------------------')
 
     await promptContinue();
 
-    const getExistingNameCommand = new GetByTickerCommand(this.electrumApi, this.requestTicker, AtomicalsGetFetchType.GET, undefined);
+    const getExistingNameCommand = new GetByTickerCommand(this.electrumApi, this.requestTicker, AtomicalsGetFetchType.GET);
     try {
       const getExistingNameResult = await getExistingNameCommand.run();
       if (getExistingNameResult.success && getExistingNameResult.data) {

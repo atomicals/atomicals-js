@@ -11,7 +11,6 @@ export class ResolveCommand implements CommandInterface {
     private electrumApi: ElectrumApiInterface,
     private atomicalAliasOrId: any,
     private fetchType: AtomicalsGetFetchType = AtomicalsGetFetchType.GET,
-    private verbose?: boolean
   ) {
   }
 
@@ -20,13 +19,13 @@ export class ResolveCommand implements CommandInterface {
     let foundAtomicalResponse;
     let cmd;
     if (atomicalType.type === AtomicalIdentifierType.ATOMICAL_ID || atomicalType.type === AtomicalIdentifierType.ATOMICAL_NUMBER) {
-      cmd = new GetCommand(this.electrumApi, atomicalType.providedIdentifier || '', this.fetchType, this.verbose);
+      cmd = new GetCommand(this.electrumApi, atomicalType.providedIdentifier || '', this.fetchType);
     } else if (atomicalType.type === AtomicalIdentifierType.REALM_NAME) {
-      cmd = new GetByRealmCommand(this.electrumApi, atomicalType.realmName || '', this.fetchType, this.verbose);
+      cmd = new GetByRealmCommand(this.electrumApi, atomicalType.realmName || '', this.fetchType);
     } else if (atomicalType.type === AtomicalIdentifierType.CONTAINER_NAME) {
-      cmd = new GetByContainerCommand(this.electrumApi, atomicalType.containerName || '', this.fetchType, this.verbose);
+      cmd = new GetByContainerCommand(this.electrumApi, atomicalType.containerName || '', this.fetchType);
     } else if (atomicalType.type === AtomicalIdentifierType.TICKER_NAME) {
-      cmd = new GetByTickerCommand(this.electrumApi, atomicalType.tickerName || '', this.fetchType, this.verbose);
+      cmd = new GetByTickerCommand(this.electrumApi, atomicalType.tickerName || '', this.fetchType);
     }
     const cmdResponse = await cmd.run();
     if (!cmdResponse || !cmdResponse.success) {
