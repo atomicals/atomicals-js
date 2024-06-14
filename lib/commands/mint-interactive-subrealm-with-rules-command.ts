@@ -37,7 +37,7 @@ export class MintInteractiveSubrealmWithRulesCommand implements CommandInterface
     const finalSubrealmPart = realmParts[realmParts.length - 1];
 
     // Step 1. Query the full realm and determine if it's already claimed
-    const getSubrealmCommand = new GetByRealmCommand(this.electrumApi, this.requestSubrealm, AtomicalsGetFetchType.LOCATION, true);
+    const getSubrealmCommand = new GetByRealmCommand(this.electrumApi, this.requestSubrealm, AtomicalsGetFetchType.LOCATION);
     const getSubrealmReponse = await getSubrealmCommand.run();
     if (getSubrealmReponse.data.atomical_id) {
       return {

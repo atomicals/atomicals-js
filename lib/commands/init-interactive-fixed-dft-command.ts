@@ -63,7 +63,7 @@ export class InitInteractiveFixedDftCommand implements CommandInterface {
     if (this.maxMints > 10000000 || this.maxMints < 10000) {
       throw new Error('Command line tool expects max mints to be between 10,000 and 10,000,000')
     }
-    
+
     if (this.mintAmount > 100000000 || this.mintAmount < 546) {
       throw new Error('mint amount must be between 546 and 100,000,000')
     }
@@ -77,15 +77,15 @@ export class InitInteractiveFixedDftCommand implements CommandInterface {
       if (!filesData['name']) {
         throw new Error('Please set a name in the files metadata. See examples in /templates/fungible-tokens')
       }
-  
+
       if (!filesData['legal']) {
         throw new Error('Please set legal in the files metadata. See examples in /templates/fungible-tokens')
       }
-  
+
       if (!filesData['legal']['terms']) {
         throw new Error('Please set legal terms in the files metadata. See examples in /templates/fungible-tokens')
       }
-  
+
       if (!this.noimage && filesData['image']) {
         // Ex: atom:btc:dat:<location of store-file data>/image.png
         const re = /atom\:btc\:dat\:[a-f0-9]{64}i0\/.*\.(png|jpeg|svg|jpg|gif|webp)/
@@ -99,7 +99,7 @@ export class InitInteractiveFixedDftCommand implements CommandInterface {
         name: this.requestTicker.toUpperCase()
       }
     }
-   
+
     console.log('Initializing Fixed Decentralized FT Token')
     console.log('-----------------------')
 
@@ -115,7 +115,7 @@ export class InitInteractiveFixedDftCommand implements CommandInterface {
     console.log('Mint Amount: ', this.mintAmount);
     console.log('Data objects: ', filesData);
     console.log('-----------------------')
-    
+
     if (this.mintBitworkCommit?.length < 5) {
       console.log('WARNING: Mint Bitworkc is too easy to mine and can be mined in less than a minute or faster. Confirm if that is acceptable.', this.mintBitworkCommit);
     }
@@ -130,7 +130,7 @@ export class InitInteractiveFixedDftCommand implements CommandInterface {
 
     await promptContinue();
 
-    const getExistingNameCommand = new GetByTickerCommand(this.electrumApi, this.requestTicker, AtomicalsGetFetchType.GET, undefined);
+    const getExistingNameCommand = new GetByTickerCommand(this.electrumApi, this.requestTicker, AtomicalsGetFetchType.GET);
     try {
       const getExistingNameResult = await getExistingNameCommand.run();
       if (getExistingNameResult.success && getExistingNameResult.data) {

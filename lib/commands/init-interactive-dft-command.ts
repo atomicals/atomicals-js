@@ -62,7 +62,7 @@ export class InitInteractiveDftCommand implements CommandInterface {
     if (this.maxMints > 500000 || this.maxMints < 10000) {
       throw new Error('Command line tool expects max mints to be between 10,000 and 500,000')
     }
-    
+
     if (this.mintAmount > 100000000 || this.mintAmount < 546) {
       throw new Error('mint amount must be between 546 and 100,000,000')
     }
@@ -103,7 +103,7 @@ export class InitInteractiveDftCommand implements CommandInterface {
     console.log('Mint Amount', this.mintAmount);
     console.log('Data objects: ', filesData);
     console.log('-----------------------')
-    
+
     if (this.mintBitworkc?.length < 5) {
       console.log('WARNING: Mint Bitworkc is too easy to mine and can be mined in less than a minute or faster. Confirm if that is acceptable.', this.mintBitworkc);
     }
@@ -118,7 +118,7 @@ export class InitInteractiveDftCommand implements CommandInterface {
 
     await promptContinue();
 
-    const getExistingNameCommand = new GetByTickerCommand(this.electrumApi, this.requestTicker, AtomicalsGetFetchType.GET, undefined);
+    const getExistingNameCommand = new GetByTickerCommand(this.electrumApi, this.requestTicker, AtomicalsGetFetchType.GET);
     try {
       const getExistingNameResult = await getExistingNameCommand.run();
       if (getExistingNameResult.success && getExistingNameResult.data) {

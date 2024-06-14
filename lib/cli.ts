@@ -1265,7 +1265,7 @@ program.command('get')
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       const verbose = options.verbose ? true : false;
-      const result = await atomicals.resolveAtomical(atomicalAliasOrIdLC, AtomicalsGetFetchType.GET, undefined, verbose);
+      const result = await atomicals.resolveAtomical(atomicalAliasOrIdLC, AtomicalsGetFetchType.GET);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1311,7 +1311,7 @@ program.command('location')
       await validateWalletStorage();
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
-      const result = await atomicals.resolveAtomical(atomicalAliasOrId, AtomicalsGetFetchType.LOCATION, undefined, options.verbose);
+      const result = await atomicals.resolveAtomical(atomicalAliasOrId, AtomicalsGetFetchType.LOCATION);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1343,7 +1343,7 @@ program.command('state')
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       const verbose = options.verbose ? true : false;
-      const result = await atomicals.resolveAtomical(atomicalAliasOrId, AtomicalsGetFetchType.STATE, verbose);
+      const result = await atomicals.resolveAtomical(atomicalAliasOrId, AtomicalsGetFetchType.STATE);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1360,7 +1360,7 @@ program.command('state-history')
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       const verbose = options.verbose ? true : false;
-      const result = await atomicals.resolveAtomical(atomicalAliasOrId, AtomicalsGetFetchType.STATE_HISTORY, undefined, verbose);
+      const result = await atomicals.resolveAtomical(atomicalAliasOrId, AtomicalsGetFetchType.STATE_HISTORY);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -1377,7 +1377,7 @@ program.command('events')
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       const verbose = options.verbose ? true : false;
-      const result = await atomicals.resolveAtomical(atomicalAliasOrId, AtomicalsGetFetchType.EVENT_HISTORY, undefined, verbose);
+      const result = await atomicals.resolveAtomical(atomicalAliasOrId, AtomicalsGetFetchType.EVENT_HISTORY);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);
@@ -2061,7 +2061,7 @@ program.command('tx-history')
       const config: ConfigurationInterface = validateCliInputs();
       const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
       const verbose = options.verbose ? true : false;
-      const result = await atomicals.resolveAtomical(atomicalAliasOrId, AtomicalsGetFetchType.TX_HISTORY, undefined, verbose);
+      const result = await atomicals.resolveAtomical(atomicalAliasOrId, AtomicalsGetFetchType.TX_HISTORY);
       handleResultLogging(result);
     } catch (error) {
       console.log(error);

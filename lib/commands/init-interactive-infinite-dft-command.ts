@@ -68,7 +68,7 @@ export class InitInteractiveInfiniteDftCommand implements CommandInterface {
     if (this.maxMints > 100000 || this.maxMints < 1) {
       throw new Error('Command line tool expects max mints to be between 1 and 100,000')
     }
-    
+
     if (this.mintAmount > 100000000 || this.mintAmount < 546) {
       throw new Error('mint amount must be between 546 and 100,000,000')
     }
@@ -82,15 +82,15 @@ export class InitInteractiveInfiniteDftCommand implements CommandInterface {
       if (!filesData['name']) {
         throw new Error('Please set a name in the files metadata. See examples in /templates/fungible-tokens')
       }
-  
+
       if (!filesData['legal']) {
         throw new Error('Please set legal in the files metadata. See examples in /templates/fungible-tokens')
       }
-  
+
       if (!filesData['legal']['terms']) {
         throw new Error('Please set legal terms in the files metadata. See examples in /templates/fungible-tokens')
       }
-  
+
       if (!this.noimage && filesData['image']) {
         // Ex: atom:btc:dat:<location of store-file data>/image.png
         const re = /atom\:btc\:dat\:[a-f0-9]{64}i0\/.*\.(png|jpeg|svg|jpg|gif|webp)/
@@ -104,7 +104,7 @@ export class InitInteractiveInfiniteDftCommand implements CommandInterface {
         name: this.requestTicker.toUpperCase()
       }
     }
-   
+
     console.log('Initializing Infinite Decentralized FT Token')
     console.log('-----------------------')
     console.log('Total Supply (Satoshis): unbounded');
@@ -121,7 +121,7 @@ export class InitInteractiveInfiniteDftCommand implements CommandInterface {
     console.log('Mint Amount: ', this.mintAmount);
     console.log('Data objects: ', filesData);
     console.log('-----------------------')
-    
+
     if (this.mintBitworkCommitIncrement < 1 || this.mintBitworkCommitIncrement > 64) {
       throw new Error('Error: Mint Bitwork Commit Increment must be between 1 and 64')
     }
@@ -134,7 +134,7 @@ export class InitInteractiveInfiniteDftCommand implements CommandInterface {
     }
     await promptContinue();
 
-    const getExistingNameCommand = new GetByTickerCommand(this.electrumApi, this.requestTicker, AtomicalsGetFetchType.GET, undefined);
+    const getExistingNameCommand = new GetByTickerCommand(this.electrumApi, this.requestTicker, AtomicalsGetFetchType.GET);
     try {
       const getExistingNameResult = await getExistingNameCommand.run();
       if (getExistingNameResult.success && getExistingNameResult.data) {
@@ -174,7 +174,7 @@ export class InitInteractiveInfiniteDftCommand implements CommandInterface {
       mint_height: Number(this.mintHeight),
       max_mints: Number(this.maxMints),
     };
-    
+
     // Set mint mode = perpetual/infinite
     args['md'] = 1
     args['bv'] = this.mintBitworkVector
@@ -201,7 +201,7 @@ export class InitInteractiveInfiniteDftCommand implements CommandInterface {
       args['maxg'] = this.maxGlobalMints;
     }
 
- 
+
     atomicalBuilder.setArgs(args);
     // Set to request a container
     atomicalBuilder.setRequestTicker(this.requestTicker);

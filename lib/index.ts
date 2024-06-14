@@ -872,10 +872,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async resolveAtomical(atomicalIdOrNumberOrVariousName: string, atomicalsGetFetchType: AtomicalsGetFetchType, verbose = false, keepElectrumAlive = false): Promise<CommandResultInterface> {
+  async resolveAtomical(atomicalIdOrNumberOrVariousName: string, atomicalsGetFetchType: AtomicalsGetFetchType, keepElectrumAlive = false): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new ResolveCommand(this.electrumApi, atomicalIdOrNumberOrVariousName, atomicalsGetFetchType, verbose);
+      const command: CommandInterface = new ResolveCommand(this.electrumApi, atomicalIdOrNumberOrVariousName, atomicalsGetFetchType);
       return await command.run();
     } catch (error: any) {
       return {
@@ -890,10 +890,10 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  async getRealmInfo(atomicalIdOrNumberOrVariousName: string, verbose = false, keepElectrumAlive = false): Promise<CommandResultInterface> {
+  async getRealmInfo(atomicalIdOrNumberOrVariousName: string, keepElectrumAlive = false): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
-      const command: CommandInterface = new GetRealmInfoCommand(this.electrumApi, atomicalIdOrNumberOrVariousName, verbose);
+      const command: CommandInterface = new GetRealmInfoCommand(this.electrumApi, atomicalIdOrNumberOrVariousName);
       return await command.run();
     } catch (error: any) {
       return {

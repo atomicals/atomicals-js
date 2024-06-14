@@ -11,15 +11,14 @@ export interface GetSubrealmInfoCommandResultInterface {
 }
 
 export class GetRealmInfoCommand implements CommandInterface {
-  constructor( 
+  constructor(
     private electrumApi: ElectrumApiInterface,
     private realmOrSubrealm: any,
-    private verbose?: boolean
   ) {
   }
 
   async run(): Promise<any> {
-    const responseResult = await this.electrumApi.atomicalsGetRealmInfo(this.realmOrSubrealm, this.verbose);
+    const responseResult = await this.electrumApi.atomicalsGetRealmInfo(this.realmOrSubrealm);
     return {
       success: true,
       data: responseResult.result

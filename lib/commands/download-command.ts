@@ -80,7 +80,7 @@ export const writeFiles = async (inputIndexToFilesMap: any, txDir: string): Prom
           const fullPath = inputTxDir + `/${fileNameWithExtension}`
           await fileWriter(fullPath, JSON.stringify(fileEntry, null, 2));
           const contentLength = fileEntry.length;
-          const body = fileEntry 
+          const body = fileEntry
           fileSummary[inputIndex]['files'][filename] = {
             filename,
             fileNameWithExtension,
@@ -98,14 +98,14 @@ export const writeFiles = async (inputIndexToFilesMap: any, txDir: string): Prom
   return fileSummary;
 }
 export class DownloadCommand implements CommandInterface {
-  constructor( 
+  constructor(
     private electrumApi: ElectrumApiInterface,
     private atomicalIdOrTxId: string,
   ) {
   }
   async run(): Promise<any> {
     const txid = getTxIdFromAtomicalId(this.atomicalIdOrTxId);
-    const txResult = await this.electrumApi.getTx(txid, false);
+    const txResult = await this.electrumApi.getTx(txid);
 
     if (!txResult || !txResult.success) {
       throw `transaction not found ${txid}`;
