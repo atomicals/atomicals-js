@@ -27,7 +27,6 @@ initEccLib(tinysecp as any);
 import {
     AtomTypeOp,
     AtomicalsPayload,
-    AvmSubTypeOp,
     NETWORK,
     RBF_INPUT_SEQUENCE,
     calculateFundsRequired,
@@ -155,7 +154,6 @@ export interface AtomicalOperationBuilderOptions {
     satsbyte?: number; // satoshis
     address: string;
     opType: AtomTypeOp;
-    avmSubOpType?: AvmSubTypeOp;
     requestContainerMembership?: string;
     bitworkc?: string;
     bitworkr?: string;
@@ -275,11 +273,8 @@ export class AtomicalOperationBuilder {
     }
 
     setRequestProtocol(name: string) {
-        if (this.options.opType !== avmConst) {
+        if (this.options.opType !== "def") {
             throw new Error("setRequestProtocol needs opType to be 'avm'");
-        }
-        if (this.options.avmSubOpType !== "def") {
-            throw new Error("setRequestProtocol needs avmSubOpType to be 'def'");
         }
         isValidProtocolName(name);
         this.requestName = name;
@@ -287,11 +282,8 @@ export class AtomicalOperationBuilder {
     }
 
     setRequestContract(name: string, protocolName: string) {
-        if (this.options.opType !== avmConst) {
+        if (this.options.opType !== "new") {
             throw new Error("setRequestContract needs opType to be 'avm'");
-        }
-        if (this.options.avmSubOpType !== "deploy") {
-            throw new Error("setRequestContract needs avmSubOpType to be 'deploy'");
         }
         isValidContractName(name);
         this.requestName = name;
@@ -1089,7 +1081,8 @@ export class AtomicalOperationBuilder {
             this.options.opType === "nft" ||
             this.options.opType === "ft" ||
             this.options.opType === "dft" ||
-            (this.options.opType === avmConst && (this.options.avmSubOpType === 'def' || this.options.avmSubOpType === 'deploy'))
+            this.options.opType === "def" ||
+            this.options.opType === "new"
         ) {
             ret["data"]["atomicalId"] = atomicalId;
         }

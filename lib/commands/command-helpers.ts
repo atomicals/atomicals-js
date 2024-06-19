@@ -144,8 +144,7 @@ export const prepareCommitRevealConfig2 = (opType: 'nft' | 'ft' | 'dft' | 'dmt' 
     }
 }
 
-export type AtomTypeOp = 'nft' | 'ft' | 'dft' | 'dmt' | 'sl' | 'x' | 'y' | 'mod' | 'evt' | 'dat' | 'z' | 'brl';
-export type AvmSubTypeOp = 'def' | 'call' | 'deploy';
+export type AtomTypeOp = 'nft' | 'ft' | 'dft' | 'dmt' | 'sl' | 'x' | 'y' | 'mod' | 'evt' | 'dat' | 'z' | 'def' | 'new' | 'c';
 
 export const prepareCommitRevealConfig = (opType: AtomTypeOp, keypair: KeyPairInfo, atomicalsPayload: AtomicalsPayload, log = true) => {
     const revealScript = appendMintUpdateRevealScript(opType, keypair, atomicalsPayload, log);

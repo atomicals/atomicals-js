@@ -72,8 +72,7 @@ export class MintInteractiveContractCommand implements CommandInterface {
       satsbyte: this.options.satsbyte,
       address: this.address,
       disableMiningChalk: this.options.disableMiningChalk,
-      opType: 'brl',
-      avmSubOpType: 'deploy',
+      opType: 'new',
       nftOptions: {
         satsoutput: this.options.satsoutput as any
       },
