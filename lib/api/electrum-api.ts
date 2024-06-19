@@ -265,6 +265,14 @@ export class ElectrumApi implements ElectrumApiInterface {
         return this.call('blockchain.atomicals.get_by_ticker', [ticker]);
     }
 
+    public atomicalsGetByProtocol(name: string): Promise<any> {
+        return this.call('blockchain.atomicals.get_by_protocol', [name]);
+    }
+
+    public atomicalsGetByContract(name: string): Promise<any> {
+        return this.call('blockchain.atomicals.get_by_contract', [name]);
+    }
+
     public atomicalsGetByContainer(container: string): Promise<any> {
         return this.call('blockchain.atomicals.get_by_container', [container]);
     }

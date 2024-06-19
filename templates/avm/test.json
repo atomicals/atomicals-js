@@ -1,0 +1,35 @@
+{
+    "v": "1",
+    "code": "01",
+    "fn": [
+        {
+            "name": "ctor",
+            "params": [
+                {
+                    "name": "owner",
+                    "type": "Ripemd160"
+                } 
+            ]
+        },
+        {
+            "name": "addDonation",
+            "state_read": true,
+            "state_write": true,
+            "params": [
+                {
+                    "name": "name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "donator",
+                    "type": "PublicKey"
+                }
+            ],
+            "payable": [
+                {
+                    "type": "FT"
+                }
+            ]
+        }
+    ]
+}

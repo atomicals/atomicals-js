@@ -1,0 +1,58 @@
+{
+    "v": "1",
+    "p": "pname",
+    "fn": [
+        {
+            "name": "ctor",
+            "params": [
+                {
+                    "name": "pubKeyHash",
+                    "type": "Ripemd160",
+                    "state": true
+                }
+            ]
+        },
+        {
+            "name": "writeNote",
+            "params": [
+                {
+                    "name": "memo",
+                    "type": "bytes"
+                }
+            ],
+            "payable": [
+                {
+                    "type": "NFT"
+                },
+                {
+                    "type": "FT"
+                }
+            ]
+        },
+        {
+            "name": "withdraw",
+            "params": [
+                {
+                    "name": "memo",
+                    "type": "bytes"
+                },
+                {
+                    "name": "pubKeyHash",
+                    "type": "Ripemd160"
+                },
+                {
+                    "name": "amount",
+                    "type": "int"
+                }
+            ],
+            "withdrawable": [
+                {
+                    "type": "NFT"
+                },
+                {
+                    "type": "FT"
+                }
+            ]
+        }
+    ]
+}

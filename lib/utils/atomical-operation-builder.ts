@@ -7,6 +7,8 @@ import {
     isAtomicalId,
     isValidBitworkString,
     isValidContainerName,
+    isValidContractName,
+    isValidProtocolName,
     isValidRealmName,
     isValidSubRealmName,
     isValidTickerName,
@@ -23,7 +25,9 @@ import { initEccLib, Psbt } from "bitcoinjs-lib";
 
 initEccLib(tinysecp as any);
 import {
+    AtomTypeOp,
     AtomicalsPayload,
+    AvmSubTypeOp,
     NETWORK,
     RBF_INPUT_SEQUENCE,
     calculateFundsRequired,
@@ -50,7 +54,7 @@ export const INPUT_BYTES_BASE = 57.5;
 export const OUTPUT_BYTES_BASE = 43;
 export const EXCESSIVE_FEE_LIMIT: number = 1000000; // Limit to 1/100 of a BTC for now
 export const MAX_SEQUENCE = 0xffffffff;
-
+export const avmConst = "brl";
 interface WorkerOut {
     finalCopyData: AtomicalsPayload;
     finalSequence: number;
@@ -105,8 +109,7 @@ function printBitworkLog(bitworkInfo: BitworkInfo, commit?: boolean) {
         return;
     }
     console.log(
-        `\nAtomicals Bitwork Mining - Requested bitwork proof-of-work mining for the ${
-            commit ? "commit" : "reveal"
+        `\nAtomicals Bitwork Mining - Requested bitwork proof-of-work mining for the ${commit ? "commit" : "reveal"
         } transaction.`
     );
     if (commit) {
@@ -142,6 +145,8 @@ export enum REQUEST_NAME_TYPE {
     REALM = "REALM",
     SUBREALM = "SUBREALM",
     ITEM = "ITEM",
+    PROTOCOL = "PROTOCOL",
+    CONTRACT = "CONTRACT"
 }
 
 export interface AtomicalOperationBuilderOptions {
@@ -149,18 +154,8 @@ export interface AtomicalOperationBuilderOptions {
     rbf?: boolean;
     satsbyte?: number; // satoshis
     address: string;
-    opType:
-        | "nft"
-        | "ft"
-        | "dft"
-        | "dmt"
-        | "dat"
-        | "mod"
-        | "evt"
-        | "sl"
-        | "x"
-        | "y"
-        | "z";
+    opType: AtomTypeOp;
+    avmSubOpType?: AvmSubTypeOp;
     requestContainerMembership?: string;
     bitworkc?: string;
     bitworkr?: string;
@@ -203,6 +198,7 @@ export class AtomicalOperationBuilder {
     private bitworkInfoReveal: BitworkInfo | null = null;
     private requestName: string | null = null;
     private requestParentId: string | null = null;
+    private requestProtocolName?: string;
     private requestNameType: REQUEST_NAME_TYPE = REQUEST_NAME_TYPE.NONE;
     private meta: any = {};
     private args: any = {};
@@ -276,6 +272,31 @@ export class AtomicalOperationBuilder {
         this.requestName = trimmed;
         this.requestNameType = REQUEST_NAME_TYPE.REALM;
         this.requestParentId = null;
+    }
+
+    setRequestProtocol(name: string) {
+        if (this.options.opType !== avmConst) {
+            throw new Error("setRequestProtocol needs opType to be 'avm'");
+        }
+        if (this.options.avmSubOpType !== "def") {
+            throw new Error("setRequestProtocol needs avmSubOpType to be 'def'");
+        }
+        isValidProtocolName(name);
+        this.requestName = name;
+        this.requestNameType = REQUEST_NAME_TYPE.PROTOCOL;
+    }
+
+    setRequestContract(name: string, protocolName: string) {
+        if (this.options.opType !== avmConst) {
+            throw new Error("setRequestContract needs opType to be 'avm'");
+        }
+        if (this.options.avmSubOpType !== "deploy") {
+            throw new Error("setRequestContract needs avmSubOpType to be 'deploy'");
+        }
+        isValidContractName(name);
+        this.requestName = name;
+        this.requestProtocolName = protocolName;
+        this.requestNameType = REQUEST_NAME_TYPE.CONTRACT;
     }
 
     setRequestSubrealm(
@@ -378,6 +399,10 @@ export class AtomicalOperationBuilder {
         if (log) {
             console.log("setData", this.userDefinedData);
         }
+    }
+
+    setAvmArgs(args: any) {
+        this.args = args;
     }
 
     getData(): any | null {
@@ -563,7 +588,16 @@ export class AtomicalOperationBuilder {
                 copiedData["args"]["request_dmitem"] = this.requestName;
                 copiedData["args"]["parent_container"] = this.requestParentId;
                 console.log(copiedData);
-                console.log(" this.requestParentId;", this.requestParentId);
+            case REQUEST_NAME_TYPE.PROTOCOL:
+                copiedData["p"] = this.requestName;
+                copiedData["op"] = "def";
+                console.log(copiedData);
+            case REQUEST_NAME_TYPE.CONTRACT:
+                copiedData["p"] = this.requestProtocolName;
+                // copiedData["name"] = this.requestName;
+                copiedData["op"] = "deploy";
+                copiedData["args"] = copiedData["args"] || {};
+                console.log(copiedData);
             default:
                 break;
         }
@@ -601,7 +635,7 @@ export class AtomicalOperationBuilder {
                 estimatedSatsByte = 200; // Something went wrong, just default to 30 bytes sat estimate
                 console.log('satsbyte fee query failed, defaulted to: ', estimatedSatsByte)
             } else {
-                this.options.satsbyte = estimatedSatsByte; 
+                this.options.satsbyte = estimatedSatsByte;
                 console.log('satsbyte fee auto-detected to: ', estimatedSatsByte)
             }
         } else {
@@ -644,7 +678,7 @@ export class AtomicalOperationBuilder {
         const fees: FeeCalculations =
             this.calculateFeesRequiredForAccumulatedCommitAndReveal(
                 mockBaseCommitForFeeCalculation.hashLockP2TR.redeem.output.length,
-              performBitworkForRevealTx
+                performBitworkForRevealTx
             );
 
         ////////////////////////////////////////////////////////////////////////
@@ -769,7 +803,7 @@ export class AtomicalOperationBuilder {
                             console.log("Error sending", interTx.getId(), rawtx);
                             throw new Error(
                                 "Unable to broadcast commit transaction after attempts: " +
-                                    interTx.getId()
+                                interTx.getId()
                             );
                         } else {
                             console.log("Success sent tx: ", interTx.getId());
@@ -1054,7 +1088,8 @@ export class AtomicalOperationBuilder {
         if (
             this.options.opType === "nft" ||
             this.options.opType === "ft" ||
-            this.options.opType === "dft"
+            this.options.opType === "dft" ||
+            (this.options.opType === avmConst && (this.options.avmSubOpType === 'def' || this.options.avmSubOpType === 'deploy'))
         ) {
             ret["data"]["atomicalId"] = atomicalId;
         }
@@ -1139,7 +1174,7 @@ export class AtomicalOperationBuilder {
         // OP_RETURN size
         let hashLockCompactSizeBytes = 9;
         let op_Return_SizeBytes = 0;
-        if(performBitworkForRevealTx){
+        if (performBitworkForRevealTx) {
             op_Return_SizeBytes = OP_RETURN_BYTES;
         }
         if (hashLockP2TROutputLen <= 252) {
@@ -1151,23 +1186,23 @@ export class AtomicalOperationBuilder {
         }
         return Math.ceil(
             (this.options.satsbyte as any) *
-                (BASE_BYTES +
-                    // Reveal input
-                    REVEAL_INPUT_BYTES_BASE +
-                    (hashLockCompactSizeBytes + hashLockP2TROutputLen) / 4 +
-                    // Additional inputs
-                    this.inputUtxos.length * INPUT_BYTES_BASE +
-                    // Outputs
-                    this.additionalOutputs.length * OUTPUT_BYTES_BASE +
-                    // Bitwork Output OP_RETURN Size Bytes
-                    op_Return_SizeBytes)
-                )
+            (BASE_BYTES +
+                // Reveal input
+                REVEAL_INPUT_BYTES_BASE +
+                (hashLockCompactSizeBytes + hashLockP2TROutputLen) / 4 +
+                // Additional inputs
+                this.inputUtxos.length * INPUT_BYTES_BASE +
+                // Outputs
+                this.additionalOutputs.length * OUTPUT_BYTES_BASE +
+                // Bitwork Output OP_RETURN Size Bytes
+                op_Return_SizeBytes)
+        )
     }
 
     calculateFeesRequiredForCommit(): number {
-        let fees =  Math.ceil(
+        let fees = Math.ceil(
             (this.options.satsbyte as any) *
-                (BASE_BYTES + 1 * INPUT_BYTES_BASE + 1 * OUTPUT_BYTES_BASE)
+            (BASE_BYTES + 1 * INPUT_BYTES_BASE + 1 * OUTPUT_BYTES_BASE)
         );
         return fees;
     }

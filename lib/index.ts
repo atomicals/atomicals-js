@@ -80,6 +80,9 @@ import { AwaitUtxoCommand } from "./commands/await-utxo-command";
 import { InitInteractiveInfiniteDftCommand } from "./commands/init-interactive-infinite-dft-command";
 import { InitInteractiveFixedDftCommand } from "./commands/init-interactive-fixed-dft-command";
 import { customColorInteractiveCommand } from "./commands/custom-color-interactive-command";
+import { MintInteractiveProtocolCommand } from "./commands/mint-interactive-protocol-command";
+import { MintInteractiveContractCommand } from "./commands/mint-interactive-contract-command";
+import { CallContractInteractiveCommand } from "./commands/call-contract-interactive-command";
 export { decorateAtomicals } from "./utils/atomical-format-helpers";
 export { addressToP2PKH } from "./utils/address-helpers";
 export { getExtendTaprootAddressKeypairPath } from "./utils/address-keypair-path";
@@ -369,6 +372,54 @@ export class Atomicals implements APIInterface {
     }
   }
 
+  async mintProtocolInteractive(options: BaseRequestOptions, protocolName: string, defFile: string, address: string, WIF: string): Promise<CommandResultInterface> {
+    try {
+      await this.electrumApi.open();
+      const command: CommandInterface = new MintInteractiveProtocolCommand(this.electrumApi, options, protocolName, defFile, address, WIF);
+      return await command.run();
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.toString(),
+        error
+      }
+    } finally {
+      this.electrumApi.close();
+    }
+  }
+
+  async mintContractInteractive(options: BaseRequestOptions, contractName: string, protocolName: string, args: any, address: string, WIF: string): Promise<CommandResultInterface> {
+    try {
+      await this.electrumApi.open();
+      const command: CommandInterface = new MintInteractiveContractCommand(this.electrumApi, options, contractName, protocolName, args, address, WIF);
+      return await command.run();
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.toString(),
+        error
+      }
+    } finally {
+      this.electrumApi.close();
+    }
+  }
+  
+  async callContractInteractive(options: BaseRequestOptions, callFile: string, useopreturn: boolean, identity: IWalletRecord, owner: IWalletRecord, funding: IWalletRecord, walletInfo: IValidatedWalletInfo, nofunding?: boolean): Promise<CommandResultInterface> {
+    try {
+      await this.electrumApi.open();
+      const command: CommandInterface = new CallContractInteractiveCommand(this.electrumApi, options, callFile, useopreturn, identity, owner, funding, walletInfo, nofunding);
+      return await command.run();
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.toString(),
+        error
+      }
+    } finally {
+      this.electrumApi.close();
+    }
+  }
+
   async mintContainerInteractive(options: BaseRequestOptions, requestContainer: string, address: string, WIF: string): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
@@ -483,7 +534,7 @@ export class Atomicals implements APIInterface {
         mintBitworkRevealIncrement,
         mintBitworkCommitIncrementStart,
         mintBitworkRevealIncrementStart,
-	maxGlobalMints,
+        maxGlobalMints,
         WIF,
         noImage);
       return await command.run();

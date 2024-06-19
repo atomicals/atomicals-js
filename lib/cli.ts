@@ -1755,7 +1755,6 @@ program.command('mint-nft')
     }
   });
 
-
 program.command('mint-nft-json')
 .description('Mint non-fungible token (NFT) Atomical with JSON only data')
 .argument('<jsonFile>', 'string')
@@ -1797,7 +1796,70 @@ program.command('mint-nft-json')
     console.log(error);
   }
 });
+ 
+program.command('define-protocol')
+  .description('Define protocol')
+  .argument('<protocolName>', 'string')
+  .argument('<definitionfile>', 'string')
+  .option('--initialowner <string>', 'Initial owner wallet alias to mint the Atomical into')
+  .option('--satsbyte <number>', 'Satoshis per byte in fees', '-1')
+  .option('--satsoutput <number>', 'Satoshis to put into the minted atomical', '1000')
+  .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
+  .option('--bitworkc <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the commit transaction.')
+  .option('--bitworkr <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the reveal transaction.')
+  .action(async (protocolName, definitionfile, options) => {
+    try {
+      const walletInfo = await validateWalletStorage();
+      const config: ConfigurationInterface = validateCliInputs();
+      const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
+      let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary).address;
+      let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
+      const result: any = await atomicals.mintProtocolInteractive({
+        meta: options.meta,
+        ctx: options.ctx,
+        init: options.init,
+        satsbyte: parseInt(options.satsbyte),
+        satsoutput: parseInt(options.satsoutput),
+        bitworkc: options.bitworkc,
+        bitworkr: options.bitworkr,
+      }, protocolName, definitionfile, initialOwnerAddress, fundingRecord.WIF);
+      handleResultLogging(result);
+    } catch (error) {
+      console.log(error);
+    }
+  });
 
+program.command('deploy-contract')
+  .description('Deploy contract of a protocol')
+  .argument('<contractName>', 'string')
+  .argument('<protocolName>', 'string')
+  .option('--initialowner <string>', 'Initial owner wallet alias to mint the Atomical into')
+  .option('--satsbyte <number>', 'Satoshis per byte in fees', '-1')
+  .option('--satsoutput <number>', 'Satoshis to put into the minted atomical', '1000')
+  .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
+  .option('--bitworkc <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the commit transaction.')
+  .option('--bitworkr <string>', 'Whether to put any bitwork proof of work into the token mint. Applies to the reveal transaction.')
+  .action(async (contractName, protocolName, options) => {
+    try {
+      const walletInfo = await validateWalletStorage();
+      const config: ConfigurationInterface = validateCliInputs();
+      const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
+      let initialOwnerAddress = resolveAddress(walletInfo, options.initialowner, walletInfo.primary).address;
+      let fundingRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
+      const result: any = await atomicals.mintContractInteractive({
+        meta: options.meta,
+        ctx: options.ctx,
+        init: options.init,
+        satsbyte: parseInt(options.satsbyte),
+        satsoutput: parseInt(options.satsoutput),
+        bitworkc: options.bitworkc,
+        bitworkr: options.bitworkr,
+      }, contractName, protocolName, null, initialOwnerAddress, fundingRecord.WIF);
+      handleResultLogging(result);
+    } catch (error) {
+      console.log(error);
+    }
+  });
 
 program.command('mint-realm')
   .description('Mint top level Realm non-fungible token (NFT) Atomical')
@@ -1978,8 +2040,35 @@ program.command('transfer-ft')
     }
   });
 
+program.command('call')
+  .description('Call contract method')
+  .argument('<callFile>', 'string')
+  .option('--identity <string>', 'Use wallet alias WIF key to move the Atomical')
+  .option('--funding <string>', 'Use wallet alias WIF key to be used for funding and change')
+  .option('--satsbyte <number>', 'Satoshis per byte in fees', '15')
+  .option('--nofunding', 'Do not ask for seperate funding, use existing utxo')
+  .option('--useopreturn', 'Attach an atomical id to a pay receipt')
+  .action(async (callFile, options) => {
+    try {
+      const walletInfo = await validateWalletStorage();
+      const satsbyte = parseInt(options.satsbyte);
+      const config: ConfigurationInterface = validateCliInputs();
+      const atomicals = new Atomicals(ElectrumApi.createClient(process.env.ELECTRUMX_PROXY_BASE_URL || ''));
+      let identityWalletRecord = resolveWalletAliasNew(walletInfo, options.identity, walletInfo.primary);
+      let ownerWalletRecord = resolveWalletAliasNew(walletInfo, options.owner, walletInfo.primary);
+      let fundingWalletRecord = resolveWalletAliasNew(walletInfo, options.funding, walletInfo.funding);
+      const useopreturn = options.atomicalreceipt;
+      const result: any = await atomicals.callContractInteractive({
+        satsbyte: parseInt(options.satsbyte)
+      }, callFile, useopreturn, identityWalletRecord, ownerWalletRecord, fundingWalletRecord, walletInfo, options.nofunding);
+      
+      handleResultLogging(result);
+    } catch (error) {
+      console.log(error);
+    }
+  });
 
-program.command('transfer-builder')
+  program.command('transfer-builder')
   .description('Transfer plain regular UTXOs to another addresses')
   .option('--rbf', 'Whether to enable RBF for transactions.')
   .option('--owner <string>', 'Use wallet alias WIF key to move the Atomical')

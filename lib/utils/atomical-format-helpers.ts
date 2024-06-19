@@ -28,6 +28,8 @@ export enum AtomicalIdentifierType {
   REALM_NAME = 'REALM_NAME',
   CONTAINER_NAME = 'CONTAINER_NAME',
   TICKER_NAME = 'TICKER_NAME',
+  CONTRACT_NAME = 'CONTRACT_NAME',
+  PROTOCOL_NAME = 'PROTOCOL_NAME',
 }
 export interface AtomicalResolvedIdentifierReturn {
   type: AtomicalIdentifierType;
@@ -35,6 +37,8 @@ export interface AtomicalResolvedIdentifierReturn {
   realmName?: string;
   containerName?: string;
   tickerName?: string;
+  contractName?: string;
+  protocolName?: string;
 }
 
 export const isObject = (p): boolean => {
@@ -73,7 +77,7 @@ export const encodeHashToBuffer = (v) => {
   return Buffer.from(v, 'hex');
 }
 
-export const encodeIds = (jsonObject, updatedObject, atomicalIdEncodingFunc, otherEncodingFunc, autoEncodePattern?: string) => {
+export const encodeIds = (jsonObject, updatedObject, atomicalIdEncodingFunc, otherEncodingFunc, autoEncodePattern?: string, stripEncodePattern?: boolean) => {
   if (!isObject(jsonObject)) {
     return;
   }
@@ -84,10 +88,14 @@ export const encodeIds = (jsonObject, updatedObject, atomicalIdEncodingFunc, oth
     if (prop === 'id' && isAtomicalId(jsonObject['id'])) {
       updatedObject[prop] = atomicalIdEncodingFunc(jsonObject['id'])
     } else if (autoEncodePattern && prop.endsWith(autoEncodePattern)) {
-      updatedObject[prop] = otherEncodingFunc(jsonObject[prop])
+      if (stripEncodePattern) {
+        updatedObject[prop.substring(0, prop.indexOf(stripEncodePattern as any))] = otherEncodingFunc(jsonObject[prop])
+      } else {
+        updatedObject[prop] = otherEncodingFunc(jsonObject[prop])
+      }
     } else {
       updatedObject[prop] = jsonObject[prop]
-      encodeIds(jsonObject[prop], updatedObject[prop], atomicalIdEncodingFunc, otherEncodingFunc, autoEncodePattern)
+      encodeIds(jsonObject[prop], updatedObject[prop], atomicalIdEncodingFunc, otherEncodingFunc, autoEncodePattern, stripEncodePattern)
     }
   }
   return updatedObject;
@@ -119,7 +127,7 @@ export const getAtomicalIdentifierType = (providedIdentifier: any): AtomicalReso
       providedIdentifier: providedIdentifier,
       realmName: providedIdentifier.substring(1),
     }
-  } else if (providedIdentifier.indexOf('.') !== -1) {
+  } else if (providedIdentifier.indexOf('.') !== -1 && providedIdentifier.indexOf('.') !== 0) {
     // If there is at least one dot . then assume it's a subrealm type
     return {
       type: AtomicalIdentifierType.REALM_NAME,
@@ -132,6 +140,18 @@ export const getAtomicalIdentifierType = (providedIdentifier: any): AtomicalReso
       type: AtomicalIdentifierType.CONTAINER_NAME,
       providedIdentifier: providedIdentifier,
       containerName: providedIdentifier.substring(1),
+    }
+  } else if (providedIdentifier.startsWith('^')) {
+    return {
+      type: AtomicalIdentifierType.CONTRACT_NAME,
+      providedIdentifier: providedIdentifier,
+      contractName: providedIdentifier.substring(1),
+    }
+  } else if (providedIdentifier.startsWith('.')) {
+    return {
+      type: AtomicalIdentifierType.PROTOCOL_NAME,
+      providedIdentifier: providedIdentifier,
+      protocolName: providedIdentifier.substring(1),
     }
   } else if (providedIdentifier.startsWith('$')) {
     return {
@@ -521,6 +541,22 @@ export const isValidRealmName = (name: string) => {
   isValidNameBase(name, isTLR);
   if (!/^[a-z][a-z0-9\-]{0,63}$/.test(name)) {
     throw new Error('Invalid realm name');
+  }
+  return true;
+}
+ 
+export const isValidProtocolName = (name: string) => {
+  isValidNameBase(name);
+  if (!/^[a-z][a-z0-9]{0,11}$/.test(name)) {
+    throw new Error('Invalid protocol name');
+  }
+  return true;
+}
+
+export const isValidContractName = (name: string) => {
+  isValidNameBase(name);
+  if (!/^[a-z][a-z0-9]{0,11}$/.test(name)) {
+    throw new Error('Invalid contract name');
   }
   return true;
 }

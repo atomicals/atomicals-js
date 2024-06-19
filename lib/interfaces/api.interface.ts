@@ -32,6 +32,11 @@ export interface APIInterface {
     mintSubrealmInteractive(options: BaseRequestOptions, requestSubRealm: string, address: string, WIF: string, owner: IWalletRecord): Promise<CommandResultInterface>;
     mintContainerInteractive(options: BaseRequestOptions, requestContainer: string, address: string, WIF: string): Promise<CommandResultInterface>;
     mintContainerItemInteractive(options: BaseRequestOptions, container: string, itemId: string, manifestFile: string, address: string, WIF: string, owner: IWalletRecord): Promise<CommandResultInterface>;
+    mintProtocolInteractive(options: BaseRequestOptions, protocolName: string, defFile: string, address: string, WIF: string, owner: IWalletRecord): Promise<CommandResultInterface>;
+    mintContractInteractive(options: BaseRequestOptions, contractName, protocolName: string, argsFile: string, address: string, WIF: string, owner: IWalletRecord): Promise<CommandResultInterface>;
+
+    // AVM calls
+    callContractInteractive(options: BaseRequestOptions, callFile: string, useopreturn: boolean, identity: IWalletRecord, owner: IWalletRecord, funding: IWalletRecord, walletInfo: IValidatedWalletInfo, nofunding?: boolean): Promise<CommandResultInterface>;
 
     // Mint fungible-token methods (FT)
     mintFtInteractive(options: BaseRequestOptions, file: string, supply: number, address: string, requestTicker: string, WIF: string): Promise<CommandResultInterface>;
