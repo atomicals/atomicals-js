@@ -2,7 +2,7 @@ import { APIInterface, BaseRequestOptions } from "./interfaces/api.interface";
 const bitcoin = require('bitcoinjs-lib');
 import * as ecc from 'tiny-secp256k1';
 bitcoin.initEccLib(ecc);
-import * as cbor from 'borc';
+
 export { ElectrumApiMock } from "./api/electrum-api-mock";
 import { ConfigurationInterface } from "./interfaces/configuration.interface";
 import { ElectrumApiInterface } from "./api/electrum-api.interface";
@@ -248,9 +248,9 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  static async walletPhraseDecode(phrase: string, path: string): Promise<any> {
+  static async walletPhraseDecode(phrase: string, path: string, passphrase?: string): Promise<any> {
     try {
-      const command: CommandInterface = new WalletPhraseDecodeCommand(phrase, path);
+      const command: CommandInterface = new WalletPhraseDecodeCommand(phrase, path, passphrase);
       return command.run();
     } catch (error: any) {
       return {
@@ -261,9 +261,9 @@ export class Atomicals implements APIInterface {
     }
   }
 
-  static async walletInit(phrase: string | undefined, path: string, n?: number): Promise<any> {
+  static async walletInit(phrase: string | undefined, path: string, passphrase?: string, n?: number): Promise<any> {
     try {
-      const command: CommandInterface = new WalletInitCommand(phrase, path, n);
+      const command: CommandInterface = new WalletInitCommand(phrase, path, passphrase, n);
       return command.run();
     } catch (error: any) {
       return {

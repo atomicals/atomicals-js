@@ -234,9 +234,11 @@ program.command('wallet-decode')
   .description('Decode secret mnemonic phrase to display derive address and key at provided path')
   .argument('<phrase>', 'string')
   .option('-p, --path <string>', 'Derivation path to use', `m/44'/0'/0'/0/0`)
+  .option('--passphrase <string>', 'Passphrase for the wallet')
   .action(async (phrase, options) => {
     let path = options.path;
-    const result = await Atomicals.walletPhraseDecode(phrase, path);
+    let passphrase = options.passphrase;
+    const result = await Atomicals.walletPhraseDecode(phrase, path, passphrase);
     console.log('Provided mnemonic phrase:');
     console.log(`phrase: ${result.data.phrase}`);
     console.log(`Requested Derivation Path: ${path}`);
@@ -251,10 +253,16 @@ program.command('wallet-init')
   .description('Initializes a new wallet at wallet.json')
   .option('--phrase <string>', 'Provide a wallet phrase')
   .option('--path <string>', 'Provide a path base', `m/86'/0'/0'`)
+  .option('--passphrase <string>', 'Provide a passphrase for the wallet')
   .option('--n <number>', 'Provider number of alias')
   .action(async (options) => {
     try {
-      const result = await Atomicals.walletInit(options.phrase, options.path, options.n ? parseInt(options.n, 10) : undefined);
+      const result = await Atomicals.walletInit(
+          options.phrase,
+          options.path,
+          options.passphrase,
+          options.n ? parseInt(options.n, 10) : undefined
+      );
       console.log('Wallet created at wallet.json');
       console.log(`phrase: ${result.data.phrase}`);
       console.log(`Primary address (P2TR): ${result.data.primary.address}`);

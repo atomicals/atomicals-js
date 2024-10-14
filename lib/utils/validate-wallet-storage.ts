@@ -83,7 +83,7 @@ export const validateWalletStorage = async (): Promise<IValidatedWalletInfo> => 
       throw new Error(`Funding address not set`);
     }
 
-    const seed = await bip39.mnemonicToSeed(wallet.phrase);
+    const seed = await bip39.mnemonicToSeed(wallet.phrase, wallet.passphrase);
     const rootKey = bip32.fromSeed(seed);
     const derivePathPrimary = wallet.primary.path; //`m/44'/0'/0'/0/0`;
 

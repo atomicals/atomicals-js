@@ -8,21 +8,35 @@ import * as fs from 'fs';
 const walletPath = walletPathResolver();
 
 export class WalletInitCommand implements CommandInterface {
-    constructor(private phrase: string | undefined, private path: string, private n?: number) {
-
+    constructor(
+        private phrase: string | undefined,
+        private path: string,
+        private passphrase?: string,
+        private n?: number
+    ) {
     }
+
     async run(): Promise<CommandResultInterface> {
         if (await this.walletExists()) {
             throw "wallet.json exists, please remove it first to initialize another wallet. You may also use 'wallet-create' command to generate a new wallet."
         }
 
-        const { wallet, imported } = await createPrimaryAndFundingImportedKeyPairs(this.phrase, this.path, this.n);
+        const {
+            wallet,
+            imported
+        } = await createPrimaryAndFundingImportedKeyPairs(
+            this.phrase,
+            this.path,
+            this.passphrase,
+            this.n
+        );
         const walletDir = `wallets/`;
         if (!fs.existsSync(walletDir)) {
           fs.mkdirSync(walletDir);
         }
         const created = {
             phrase: wallet.phrase,
+            passphrase: wallet.passphrase,
             primary: {
                 address: wallet.primary.address,
                 path: wallet.primary.path,

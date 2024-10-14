@@ -13,11 +13,11 @@ const toXOnly = (publicKey) => {
 }
 const bip39 = require('bip39');
 
-export const decodeMnemonicPhrase = async (phrase: string, path: string) => {
+export const decodeMnemonicPhrase = async (phrase: string, path: string, passphrase?: string) => {
     if (!bip39.validateMnemonic(phrase)) {
         throw new Error("Invalid mnemonic phrase provided!");
     }
-    const seed = await bip39.mnemonicToSeed(phrase);
+    const seed = await bip39.mnemonicToSeed(phrase, passphrase);
     const rootKey = bip32.fromSeed(seed);
     const childNode = rootKey.derivePath(path);
     // const { address } = bitcoin.payments.p2pkh({ pubkey: childNode.publicKey });

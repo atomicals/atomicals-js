@@ -16,8 +16,12 @@ export interface ExtendTaprootAddressScriptKeyPairInfo {
   path: string;
 }
 
-export const getExtendTaprootAddressKeypairPath = async (phrase: string, path: string): Promise<ExtendTaprootAddressScriptKeyPairInfo> => {
-  const seed = await bip39.mnemonicToSeed(phrase);
+export const getExtendTaprootAddressKeypairPath = async (
+  phrase: string,
+  path: string,
+  passphrase?: string,
+): Promise<ExtendTaprootAddressScriptKeyPairInfo> => {
+  const seed = await bip39.mnemonicToSeed(phrase, passphrase);
   const rootKey = bip32.fromSeed(seed);
   const childNode = rootKey.derivePath(path);
   const childNodeXOnlyPubkey = childNode.publicKey.slice(1, 33);
