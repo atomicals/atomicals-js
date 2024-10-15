@@ -12,6 +12,8 @@ import { toXOnly } from "./create-key-pair";
 import { Network } from "bitcoinjs-lib";
 dotenv.config();
 
+export const defaultDerivedPath = `m/86'/0'/0'/0/0`;
+
 function convertAddressToScripthash(address, network) {
   const output = bitcoin.address.toOutputScript(address, network);
   return {
@@ -103,8 +105,8 @@ export function performAddressAliasReplacement(walletInfo: IValidatedWalletInfo,
 /**
  * Whether the atomical for the mint is owned by the provided wallet or not
  * @param ownerRecord The proposed wallet that owns the atomical
- * @param atomical 
- * @returns 
+ * @param atomical
+ * @returns
  */
 export function IsAtomicalOwnedByWalletRecord(address: string, atomical: AtomicalStatus): IInputUtxoPartial | null {
   if (!(atomical.location_info_obj as any)) {

@@ -6,7 +6,13 @@ import { ElectrumApi } from './api/electrum-api';
 import { validateCliInputs } from './utils/validate-cli-inputs';
 import { IValidatedWalletInfo, IWalletRecord, validateWalletStorage } from './utils/validate-wallet-storage';
 import * as qrcode from 'qrcode-terminal';
-import { detectAddressTypeToScripthash, detectAddressTypeToScripthash2, detectScriptToAddressType, performAddressAliasReplacement } from './utils/address-helpers';
+import {
+  defaultDerivedPath,
+  detectAddressTypeToScripthash,
+  detectAddressTypeToScripthash2,
+  detectScriptToAddressType,
+  performAddressAliasReplacement
+} from './utils/address-helpers';
 import { AtomicalsGetFetchType } from './commands/command.interface';
 import { fileReader, jsonFileReader, jsonFileWriter } from './utils/file-utils';
 import * as cbor from 'borc';
@@ -233,7 +239,7 @@ program.command('wallet-create')
 program.command('wallet-decode')
   .description('Decode secret mnemonic phrase to display derive address and key at provided path')
   .argument('<phrase>', 'string')
-  .option('-p, --path <string>', 'Derivation path to use', `m/44'/0'/0'/0/0`)
+  .option('-p, --path <string>', 'Derivation path to use', defaultDerivedPath)
   .option('--passphrase <string>', 'Passphrase for the wallet')
   .action(async (phrase, options) => {
     let path = options.path;
@@ -252,7 +258,7 @@ program.command('wallet-decode')
 program.command('wallet-init')
   .description('Initializes a new wallet at wallet.json')
   .option('--phrase <string>', 'Provide a wallet phrase')
-  .option('--path <string>', 'Provide a path base', `m/86'/0'/0'`)
+  .option('--path <string>', 'Provide a path base', defaultDerivedPath.substring(0, 11))
   .option('--passphrase <string>', 'Provide a passphrase for the wallet')
   .option('--n <number>', 'Provider number of alias')
   .action(async (options) => {

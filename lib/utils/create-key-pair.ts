@@ -1,9 +1,10 @@
-
 const bitcoin = require('bitcoinjs-lib');
+bitcoin.initEccLib(ecc);
+
 import ECPairFactory from 'ecpair';
 import * as ecc from 'tiny-secp256k1';
+import { defaultDerivedPath } from './address-helpers';
 import { createMnemonicPhrase } from './create-mnemonic-phrase';
-bitcoin.initEccLib(ecc);
 
 const ECPair = ECPairFactory(ecc);
 import BIP32Factory from 'bip32';
@@ -26,7 +27,7 @@ export interface KeyPair {
 
 export const createKeyPair = async (
     phrase: string = '',
-    path = `m/44'/0'/0'/0/0`,
+    path = defaultDerivedPath,
     passphrase: string = ''
 ) : Promise<KeyPair> => {
     if (!phrase || phrase === '') {
@@ -87,7 +88,7 @@ export const createPrimaryAndFundingImportedKeyPairs = async (
     if (!phrase) {
         phrase = createMnemonicPhrase().phrase;
     }
-    let pathUsed = `m/44'/0'/0'`;
+    let pathUsed = defaultDerivedPath.substring(0, 11);
     if (path) {
         pathUsed = path;
     }
@@ -116,7 +117,7 @@ export const createNKeyPairs = async (
 ) => {
     const keypairs: any = [];
     for (let i = 0; i < n; i++) {
-        keypairs.push(await createKeyPair(phrase, `m/44'/0'/0'/0/${i}`, passphrase));
+        keypairs.push(await createKeyPair(phrase, `${defaultDerivedPath.substring(0, 13)}/${i}`, passphrase));
     }
     return {
         phrase,
