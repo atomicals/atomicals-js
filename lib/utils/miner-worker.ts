@@ -18,6 +18,7 @@ import { initEccLib, networks, Psbt } from "bitcoinjs-lib";
 
 initEccLib(tinysecp as any);
 import {
+    AtomTypeOp,
     AtomicalsPayload,
     NETWORK,
     RBF_INPUT_SEQUENCE,
@@ -280,18 +281,7 @@ function addCommitChangeOutputIfRequired(
 }
 
 export const workerPrepareCommitRevealConfig = (
-    opType:
-        | "nft"
-        | "ft"
-        | "dft"
-        | "dmt"
-        | "sl"
-        | "x"
-        | "y"
-        | "z"
-        | "mod"
-        | "evt"
-        | "dat",
+    opType: AtomTypeOp,
     keypair: KeyPairInfo,
     atomicalsPayload: AtomicalsPayload,
     log = true
@@ -332,18 +322,7 @@ export const workerPrepareCommitRevealConfig = (
 };
 
 export const appendMintUpdateRevealScript = (
-    opType:
-        | "nft"
-        | "ft"
-        | "dft"
-        | "dmt"
-        | "sl"
-        | "x"
-        | "y"
-        | "z"
-        | "mod"
-        | "evt"
-        | "dat",
+    opType: AtomTypeOp,
     keypair: KeyPairInfo,
     payload: AtomicalsPayload,
     log: boolean = true

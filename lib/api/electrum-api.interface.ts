@@ -41,6 +41,8 @@ export interface ElectrumApiInterface {
     atomicalsGetRealmInfo: (realmOrSubRealm: string) => Promise<any>;
     atomicalsGetByTicker: (ticker: string) => Promise<any>;
     atomicalsGetByContainer: (container: string) => Promise<any>;
+    atomicalsGetByProtocol: (name: string) => Promise<any>;
+    atomicalsGetByContract: (name: string) => Promise<any>;
     atomicalsGetContainerItems: (container: string, limit: number, offset: number) => Promise<any>;
     atomicalsFindTickers: (tickerPrefix: string | null, asc?: boolean) => Promise<any>;
     atomicalsFindContainers: (containerPrefix: string | null, asc?: boolean) => Promise<any>;

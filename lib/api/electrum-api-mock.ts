@@ -158,6 +158,12 @@ export class ElectrumApiMock implements ElectrumApiInterface {
     public async atomicalsGetByTicker(ticker: string): Promise<any> {
         return "atomicalsGetByTicker"
     }
+    public async atomicalsGetByProtocol(name: string): Promise<any> {
+        return "atomicalsGetByProtocol"
+    }
+    public async atomicalsGetByContract(name: string): Promise<any> {
+        return "atomicalsGetByContract"
+    }
     public async atomicalsGetByContainer(container: string): Promise<any> {
         return "atomicalsGetByContainer"
     }

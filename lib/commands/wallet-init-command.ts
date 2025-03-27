@@ -37,6 +37,11 @@ export class WalletInitCommand implements CommandInterface {
         const created = {
             phrase: wallet.phrase,
             passphrase: wallet.passphrase,
+            auth: {
+                address: wallet.auth.address,
+                path: wallet.auth.path,
+                WIF: wallet.auth.WIF
+            },
             primary: {
                 address: wallet.primary.address,
                 path: wallet.primary.path,

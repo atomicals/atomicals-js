@@ -14,12 +14,14 @@ const bip32 = BIP32Factory(ecc);
 const walletPath = walletPathResolver();
 
 export interface IWalletRecord {
-  address: string,
-  WIF: string,
-  childNode?: any
+  address: string;
+  WIF: string;
+  childNode?: any;
+  publicKey?: any;
 }
 
 export interface IValidatedWalletInfo {
+  auth?: IWalletRecord;
   primary: IWalletRecord;
   funding: IWalletRecord;
   imported: {
@@ -29,7 +31,7 @@ export interface IValidatedWalletInfo {
 
 export const validateWalletStorage = async (): Promise<IValidatedWalletInfo> => {
   try {
-    console.log('walletPath', walletPath);
+    //console.log('walletPath', walletPath);
     const wallet: any = await jsonFileReader(walletPath);
     if (!wallet.phrase) {
       console.log(`phrase field not found in ${walletPath}`);
@@ -156,7 +158,8 @@ export const validateWalletStorage = async (): Promise<IValidatedWalletInfo> => 
       }
       imported[prop] = {
         address: p2trImported.address,
-        WIF: wallet.imported[prop].WIF
+        WIF: wallet.imported[prop].WIF,
+        publicKey: wallet.imported[prop].publicKey
       }
     }
 
@@ -164,12 +167,14 @@ export const validateWalletStorage = async (): Promise<IValidatedWalletInfo> => 
       primary: {
         childNode: childNodePrimary,
         address: p2trPrimary.address,
-        WIF: childNodePrimary.toWIF()
+        WIF: childNodePrimary.toWIF(),
+        publicKey: childNodePrimary.publicKey // wallet.imported[prop].publicKey
       },
       funding: {
         childNode: childNodeFunding,
         address: p2trFunding.address,
-        WIF: childNodeFunding.toWIF()
+        WIF: childNodeFunding.toWIF(),
+        publicKey: childNodePrimary.publicKey
       },
       imported
     };

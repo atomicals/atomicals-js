@@ -1,0 +1,109 @@
+{
+    "v": "1",
+    "code": "01",
+    "fn": [
+        {
+            "name": "ctor",
+            "params": [
+                {
+                    "name": "owner",
+                    "type": "Ripemd160"
+                },
+                {
+                    "name": "freezableAfter",
+                    "type": "int"
+                }
+            ]
+        },
+        {
+            "name": "addDonation",
+            "//": "Anyone can donate any FT token and withdraw until it is not frozen by owner",
+            "state_read": true,
+            "state_write": true,
+            "params": [
+                {
+                    "name": "name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "donator",
+                    "type": "PublicKey"
+                }
+            ],
+            "payable": [
+                {
+                    "type": "FT"
+                }
+            ]
+        },
+        {
+            "name": "getDonationAmount",
+            "//": "Query how much as been donated by a donator",
+            "state_read": true,
+            "params": [
+                {
+                    "name": "donator",
+                    "type": "PublicKey"
+                }
+            ],
+            "ret": {
+                "type": "int"
+            }
+        },
+        {
+            "name": "freeze",
+            "//": "Freeze the contract from further deposits and withdrawals by donators",
+            "state_read": true,
+            "state_write": true,
+            "params": [
+                {
+                    "name": "pubKey",
+                    "type": "pubKey"
+                },
+                {
+                    "name": "sig",
+                    "type": "Sig"
+                }
+            ]
+        },
+        {
+            "name": "withdraw",
+            "//": "Donators can withdraw their balance prior to contract being frozen",
+            "state_read": true,
+            "state_write": true,
+            "withdrawable": [
+                {
+                    "type": "FT"
+                }
+            ],
+            "params": [
+                {
+                    "name": "pubKey",
+                    "type": "pubKey"
+                },
+                {
+                    "name": "sig",
+                    "type": "Sig"
+                },
+                {
+                    "name": "recipient",
+                    "type": "Ripemd160"
+                }
+            ]
+        },
+        {
+            "name": "messageOfTheDay",
+            "//": "Get a message of the day based on day of the week. Used to demonstrate static function",
+            "static": true,
+            "params": [
+                {
+                    "name": "dayOfWeek",
+                    "type": "int"
+                }
+            ],
+            "ret": {
+                "type": "bytes"
+            }
+        }
+    ]
+}

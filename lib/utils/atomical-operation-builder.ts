@@ -7,6 +7,8 @@ import {
     isAtomicalId,
     isValidBitworkString,
     isValidContainerName,
+    isValidContractName,
+    isValidProtocolName,
     isValidRealmName,
     isValidSubRealmName,
     isValidTickerName,
@@ -23,6 +25,7 @@ import { initEccLib, Psbt } from "bitcoinjs-lib";
 
 initEccLib(tinysecp as any);
 import {
+    AtomTypeOp,
     AtomicalsPayload,
     NETWORK,
     RBF_INPUT_SEQUENCE,
@@ -50,7 +53,6 @@ export const INPUT_BYTES_BASE = 57.5;
 export const OUTPUT_BYTES_BASE = 43;
 export const EXCESSIVE_FEE_LIMIT: number = 1000000; // Limit to 1/100 of a BTC for now
 export const MAX_SEQUENCE = 0xffffffff;
-
 interface WorkerOut {
     finalCopyData: AtomicalsPayload;
     finalSequence: number;
@@ -105,8 +107,7 @@ function printBitworkLog(bitworkInfo: BitworkInfo, commit?: boolean) {
         return;
     }
     console.log(
-        `\nAtomicals Bitwork Mining - Requested bitwork proof-of-work mining for the ${
-            commit ? "commit" : "reveal"
+        `\nAtomicals Bitwork Mining - Requested bitwork proof-of-work mining for the ${commit ? "commit" : "reveal"
         } transaction.`
     );
     if (commit) {
@@ -142,6 +143,8 @@ export enum REQUEST_NAME_TYPE {
     REALM = "REALM",
     SUBREALM = "SUBREALM",
     ITEM = "ITEM",
+    PROTOCOL = "PROTOCOL",
+    CONTRACT = "CONTRACT"
 }
 
 export interface AtomicalOperationBuilderOptions {
@@ -149,18 +152,7 @@ export interface AtomicalOperationBuilderOptions {
     rbf?: boolean;
     satsbyte?: number; // satoshis
     address: string;
-    opType:
-        | "nft"
-        | "ft"
-        | "dft"
-        | "dmt"
-        | "dat"
-        | "mod"
-        | "evt"
-        | "sl"
-        | "x"
-        | "y"
-        | "z";
+    opType: AtomTypeOp;
     requestContainerMembership?: string;
     bitworkc?: string;
     bitworkr?: string;
@@ -203,11 +195,14 @@ export class AtomicalOperationBuilder {
     private bitworkInfoReveal: BitworkInfo | null = null;
     private requestName: string | null = null;
     private requestParentId: string | null = null;
+    private requestProtocolName?: string;
     private requestNameType: REQUEST_NAME_TYPE = REQUEST_NAME_TYPE.NONE;
+    private requestContractDeployScript: Buffer | null = null;
     private meta: any = {};
     private args: any = {};
     private init: any = {};
     private ctx: any = {};
+    private beforeRevealSignCallback?: Function;
     private parentInputAtomical: ParentInputAtomical | null = null;
     private inputUtxos: Array<{
         utxo: IInputUtxoPartial;
@@ -276,6 +271,25 @@ export class AtomicalOperationBuilder {
         this.requestName = trimmed;
         this.requestNameType = REQUEST_NAME_TYPE.REALM;
         this.requestParentId = null;
+    }
+
+    setRequestProtocol(name: string) {
+        if (this.options.opType !== "def") {
+            throw new Error("setRequestProtocol needs opType to be 'avm'");
+        }
+        isValidProtocolName(name);
+        this.requestName = name;
+        this.requestNameType = REQUEST_NAME_TYPE.PROTOCOL;
+    }
+
+    setRequestContract(name: string, protocolName: string) {
+        if (this.options.opType !== "new") {
+            throw new Error("setRequestContract needs opType to be 'avm'");
+        }
+        isValidContractName(name);
+        this.requestName = name;
+        this.requestProtocolName = protocolName;
+        this.requestNameType = REQUEST_NAME_TYPE.CONTRACT;
     }
 
     setRequestSubrealm(
@@ -347,6 +361,9 @@ export class AtomicalOperationBuilder {
      */
     static async getDataObjectFromStringTypeHints(fieldTypeHints: string[]) {
         return prepareFilesDataAsObject(fieldTypeHints);
+    }
+    setBeforeRevealSignCallback(callback: Function) {
+        this.beforeRevealSignCallback = callback;
     }
 
     setData(data: any, log = false) {
@@ -443,6 +460,9 @@ export class AtomicalOperationBuilder {
         this.bitworkInfoReveal = isValidBitworkString(bitworkString);
     }
 
+    setContractDeployScript(script: Buffer) {
+        this.requestContractDeployScript = script;
+    }
     /**
      *
      * @param utxoPartial The UTXO to spend in the constructed tx
@@ -562,8 +582,16 @@ export class AtomicalOperationBuilder {
                 copiedData["args"] = copiedData["args"] || {};
                 copiedData["args"]["request_dmitem"] = this.requestName;
                 copiedData["args"]["parent_container"] = this.requestParentId;
-                console.log(copiedData);
-                console.log(" this.requestParentId;", this.requestParentId);
+                break;
+            case REQUEST_NAME_TYPE.PROTOCOL:
+                copiedData["p"] = this.requestName;
+                break;
+            case REQUEST_NAME_TYPE.CONTRACT:
+                copiedData["p"] = this.requestProtocolName
+                copiedData["name"] = this.requestName;
+                copiedData["u"] = this.requestContractDeployScript;
+                copiedData["args"] = copiedData["args"] || {};
+                break;
             default:
                 break;
         }
@@ -601,7 +629,7 @@ export class AtomicalOperationBuilder {
                 estimatedSatsByte = 200; // Something went wrong, just default to 30 bytes sat estimate
                 console.log('satsbyte fee query failed, defaulted to: ', estimatedSatsByte)
             } else {
-                this.options.satsbyte = estimatedSatsByte; 
+                this.options.satsbyte = estimatedSatsByte;
                 console.log('satsbyte fee auto-detected to: ', estimatedSatsByte)
             }
         } else {
@@ -644,7 +672,7 @@ export class AtomicalOperationBuilder {
         const fees: FeeCalculations =
             this.calculateFeesRequiredForAccumulatedCommitAndReveal(
                 mockBaseCommitForFeeCalculation.hashLockP2TR.redeem.output.length,
-              performBitworkForRevealTx
+                performBitworkForRevealTx
             );
 
         ////////////////////////////////////////////////////////////////////////
@@ -769,7 +797,7 @@ export class AtomicalOperationBuilder {
                             console.log("Error sending", interTx.getId(), rawtx);
                             throw new Error(
                                 "Unable to broadcast commit transaction after attempts: " +
-                                    interTx.getId()
+                                interTx.getId()
                             );
                         } else {
                             console.log("Success sent tx: ", interTx.getId());
@@ -947,7 +975,9 @@ export class AtomicalOperationBuilder {
                 fees.revealFeeOnly,
                 fundingKeypair.address
             );
-
+            if (this.beforeRevealSignCallback) {
+               await this.beforeRevealSignCallback(utxoOfCommitAddress, psbt);
+            }
             psbt.signInput(0, fundingKeypair.childNode);
             // Sign all the additional inputs, if there were any
             let signInputIndex = 1;
@@ -1054,7 +1084,9 @@ export class AtomicalOperationBuilder {
         if (
             this.options.opType === "nft" ||
             this.options.opType === "ft" ||
-            this.options.opType === "dft"
+            this.options.opType === "dft" ||
+            this.options.opType === "def" ||
+            this.options.opType === "new"
         ) {
             ret["data"]["atomicalId"] = atomicalId;
         }
@@ -1139,7 +1171,7 @@ export class AtomicalOperationBuilder {
         // OP_RETURN size
         let hashLockCompactSizeBytes = 9;
         let op_Return_SizeBytes = 0;
-        if(performBitworkForRevealTx){
+        if (performBitworkForRevealTx) {
             op_Return_SizeBytes = OP_RETURN_BYTES;
         }
         if (hashLockP2TROutputLen <= 252) {
@@ -1151,23 +1183,23 @@ export class AtomicalOperationBuilder {
         }
         return Math.ceil(
             (this.options.satsbyte as any) *
-                (BASE_BYTES +
-                    // Reveal input
-                    REVEAL_INPUT_BYTES_BASE +
-                    (hashLockCompactSizeBytes + hashLockP2TROutputLen) / 4 +
-                    // Additional inputs
-                    this.inputUtxos.length * INPUT_BYTES_BASE +
-                    // Outputs
-                    this.additionalOutputs.length * OUTPUT_BYTES_BASE +
-                    // Bitwork Output OP_RETURN Size Bytes
-                    op_Return_SizeBytes)
-                )
+            (BASE_BYTES +
+                // Reveal input
+                REVEAL_INPUT_BYTES_BASE +
+                (hashLockCompactSizeBytes + hashLockP2TROutputLen) / 4 +
+                // Additional inputs
+                this.inputUtxos.length * INPUT_BYTES_BASE +
+                // Outputs
+                this.additionalOutputs.length * OUTPUT_BYTES_BASE +
+                // Bitwork Output OP_RETURN Size Bytes
+                op_Return_SizeBytes)
+        )
     }
 
     calculateFeesRequiredForCommit(): number {
-        let fees =  Math.ceil(
+        let fees = Math.ceil(
             (this.options.satsbyte as any) *
-                (BASE_BYTES + 1 * INPUT_BYTES_BASE + 1 * OUTPUT_BYTES_BASE)
+            (BASE_BYTES + 1 * INPUT_BYTES_BASE + 1 * OUTPUT_BYTES_BASE)
         );
         return fees;
     }

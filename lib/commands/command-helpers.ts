@@ -74,8 +74,6 @@ export const calculateUtxoFundsRequired = (numberOfInputs, numberOfOutputs, sats
     }
 }
 
-
-
 export const appendMintUpdateRevealScript2 = (opType: 'nft' | 'ft' | 'dft' | 'dmt' | 'sl' | 'x' | 'y' | 'z' | 'mod' | 'evt', keypair: KeyPairInfo, files: AtomicalFileData[], log: boolean = true) => {
     let ops = `${keypair.childNodeXOnlyPubkey.toString('hex')} OP_CHECKSIG OP_0 OP_IF `;
     ops += `${Buffer.from(ATOMICALS_PROTOCOL_ENVELOPE_ID, 'utf8').toString('hex')}`;
@@ -144,7 +142,9 @@ export const prepareCommitRevealConfig2 = (opType: 'nft' | 'ft' | 'dft' | 'dmt' 
     }
 }
 
-export const prepareCommitRevealConfig = (opType: 'nft' | 'ft' | 'dft' | 'dmt' | 'sl' | 'x' | 'y' | 'z' | 'mod' | 'evt' | 'dat', keypair: KeyPairInfo, atomicalsPayload: AtomicalsPayload, log = true) => {
+export type AtomTypeOp = 'nft' | 'ft' | 'dft' | 'dmt' | 'sl' | 'x' | 'y' | 'mod' | 'evt' | 'dat' | 'z' | 'def' | 'new' | 'c';
+
+export const prepareCommitRevealConfig = (opType: AtomTypeOp, keypair: KeyPairInfo, atomicalsPayload: AtomicalsPayload, log = true) => {
     const revealScript = appendMintUpdateRevealScript(opType, keypair, atomicalsPayload, log);
     const hashscript = script.fromASM(revealScript);
     const scriptTree = {
@@ -173,7 +173,7 @@ export const prepareCommitRevealConfig = (opType: 'nft' | 'ft' | 'dft' | 'dmt' |
         hashscript
     }
 }
-
+ 
 export const readAsAtomicalFileData = async (file: string, alternateName?: string): Promise<AtomicalFileData> => {
     let expectedName = file;
     const rawbytes: any = await fileReader(file);
@@ -311,6 +311,34 @@ export const readJsonFileAsCompleteDataObjectEncodeAtomicalIds = async (jsonFile
     return jsonFileContents;
 }
 
+export const readJsonFileAsCompleteDataObjectEncodeBMarkers = async (jsonFile, autoEncode = false, autoEncodePattern?: string) => {
+    if (!jsonFile.endsWith('.json')) {
+        throw new Error('Filename must end in json')
+    }
+    const jsonFileContents: any = await jsonFileReader(jsonFile);
+    if (autoEncode) {
+        const updatedObject = {};
+        encodeIds(jsonFileContents, updatedObject, encodeAtomicalIdToBuffer, encodeHashToBuffer, autoEncodePattern);
+        return updatedObject;
+    }
+    return jsonFileContents;
+}
+
+export const readJsonFileAsCompleteDataObjectEncodeFields = async (jsonFile, fields: string[]) => {
+    if (!jsonFile) {
+        return {};
+    }
+    if (!jsonFile.endsWith('.json')) {
+        throw new Error('Filename must end in json')
+    }
+    const jsonFileContents: any = await jsonFileReader(jsonFile);
+    for (const field of fields) {
+        if (jsonFileContents[field]) {
+            jsonFileContents[field] = Buffer.from(jsonFileContents[field], 'hex');
+        }
+    }
+    return jsonFileContents;
+}
 
 export const readJsonFileAsCompleteDataObjectEncodeHash = async (jsonFile, autoEncode = false, autoEncodePattern?: string) => {
     if (!jsonFile.endsWith('.json')) {
@@ -473,6 +501,7 @@ export class AtomicalsPayload {
             const tx = typeof x;
             const isAllowed = isAllowedtype(tx, allowBuffer);
             if (!isAllowed) {
+                console.log('tx', tx)
                 return false;
             }
             if (tx === 'object') {
@@ -524,7 +553,7 @@ export class AtomicalsPayload {
     }
 }
 
-export const appendMintUpdateRevealScript = (opType: 'nft' | 'ft' | 'dft' | 'dmt' | 'sl' | 'x' | 'y' | 'z' | 'mod' | 'evt' | 'dat', keypair: KeyPairInfo, payload: AtomicalsPayload, log: boolean = true) => {
+export const appendMintUpdateRevealScript = (opType: AtomTypeOp, keypair: KeyPairInfo, payload: AtomicalsPayload, log: boolean = true) => {
     let ops = `${keypair.childNodeXOnlyPubkey.toString('hex')} OP_CHECKSIG OP_0 OP_IF `;
     ops += `${Buffer.from(ATOMICALS_PROTOCOL_ENVELOPE_ID, 'utf8').toString('hex')}`;
     ops += ` ${Buffer.from(opType, 'utf8').toString('hex')}`;
@@ -535,7 +564,7 @@ export const appendMintUpdateRevealScript = (opType: 'nft' | 'ft' | 'dft' | 'dmt
     ops += ` OP_ENDIF`;
     return ops;
 };
-
+ 
 export const guessPrefixType = (id: any): any => {
     if (id.startsWith('#')) {
         return id;

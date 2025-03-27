@@ -1,0 +1,28 @@
+{
+    "v": "1",
+    "code": "51876351036d7367c10768656c6c6f2c207ef06851",
+    "fn": [
+        {
+            "name": "ctor",
+            "params": [
+            ]
+        },
+        {
+            "name": "write",
+            "params": [
+                {
+                    "name": "ns",
+                    "type": "bytes"
+                },
+                {
+                    "name": "key",
+                    "type": "bytes"
+                },
+                {
+                    "name": "val",
+                    "type": "bytes"
+                }
+            ]
+        }
+    ]
+}

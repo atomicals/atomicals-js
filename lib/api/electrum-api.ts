@@ -177,7 +177,7 @@ export class ElectrumApi implements ElectrumApiInterface {
         return this.call('server.version', []);
     }
 
-    public broadcast(rawtx: string, force = false): Promise<any> {
+    public broadcast(rawtx: string, force = true): Promise<any> {
         return this.call(
             force
                 ? 'blockchain.transaction.broadcast_force'
@@ -263,6 +263,14 @@ export class ElectrumApi implements ElectrumApiInterface {
 
     public atomicalsGetByTicker(ticker: string): Promise<any> {
         return this.call('blockchain.atomicals.get_by_ticker', [ticker]);
+    }
+
+    public atomicalsGetByProtocol(name: string): Promise<any> {
+        return this.call('blockchain.atomicals.get_by_protocol', [name]);
+    }
+
+    public atomicalsGetByContract(name: string): Promise<any> {
+        return this.call('blockchain.atomicals.get_by_contract', [name]);
     }
 
     public atomicalsGetByContainer(container: string): Promise<any> {

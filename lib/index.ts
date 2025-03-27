@@ -77,6 +77,9 @@ import {AwaitUtxoCommand} from "./commands/await-utxo-command";
 import {InitInteractiveInfiniteDftCommand} from "./commands/init-interactive-infinite-dft-command";
 import {InitInteractiveFixedDftCommand} from "./commands/init-interactive-fixed-dft-command";
 import {customColorInteractiveCommand} from "./commands/custom-color-interactive-command";
+import {MintInteractiveProtocolCommand} from "./commands/mint-interactive-protocol-command";
+import {MintInteractiveContractCommand} from "./commands/mint-interactive-contract-command";
+import {CallInteractiveContractCommand} from "./commands/call-interactive-contract-command";
 
 export { ElectrumApiMock } from "./api/electrum-api-mock";
 export { ElectrumApi } from "./api/electrum-api";
@@ -259,6 +262,36 @@ export class Atomicals implements APIInterface {
     }
   }
 
+  async mintProtocolInteractive(options: BaseRequestOptions, protocolName: string, defFile: string, address: string, WIF: string): Promise<CommandResultInterface> {
+    try {
+      await this.electrumApi.open();
+      const command: CommandInterface = new MintInteractiveProtocolCommand(this.electrumApi, options, protocolName, defFile, address, WIF);
+      return await command.run();
+    } finally {
+        await this.electrumApi.close();
+    }
+  }
+
+  async mintContractInteractive(options: BaseRequestOptions, contractName: string, protocolName: string, args: any, address: string, WIF: string): Promise<CommandResultInterface> {
+    try {
+      await this.electrumApi.open();
+      const command: CommandInterface = new MintInteractiveContractCommand(this.electrumApi, options, contractName, protocolName, args, address, WIF);
+      return await command.run();
+    } finally {
+        await this.electrumApi.close();
+    }
+  }
+
+  async callContractInteractive(options: BaseRequestOptions, callFile: string, identity: IWalletRecord, funding: IWalletRecord): Promise<CommandResultInterface> {
+    try {
+      await this.electrumApi.open();
+      const command: CommandInterface = new CallInteractiveContractCommand(this.electrumApi, options, callFile, identity, funding);
+      return await command.run();
+    } finally {
+        await this.electrumApi.close();
+    }
+  }
+
   async mintContainerInteractive(options: BaseRequestOptions, requestContainer: string, address: string, WIF: string): Promise<CommandResultInterface> {
     try {
       await this.electrumApi.open();
@@ -349,7 +382,7 @@ export class Atomicals implements APIInterface {
         mintBitworkRevealIncrement,
         mintBitworkCommitIncrementStart,
         mintBitworkRevealIncrementStart,
-	maxGlobalMints,
+        maxGlobalMints,
         WIF,
         noImage);
       return await command.run();

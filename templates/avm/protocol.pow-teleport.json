@@ -1,0 +1,46 @@
+{
+    "v": "1",
+    "comment": "Lock ARC20 tokens on BTC and teleport a surrogate to secondary proof-of-work blockchain and back to BTC again.",
+    "code": "todo", 
+    "fn": [
+        {
+            "name": "ctor",
+            "payable": [
+                {
+                    "type": "FT"
+                }
+            ],
+            "params": [
+                {
+                    "name": "surrogateTokenId",
+                    "type": "bytes"
+                },
+                {
+                    "name": "surrogateMinDifficulty",
+                    "type": "bytes"
+                }
+            ]
+        },
+        {
+            "name": "teleportBackToBtc",
+            "params": [
+                {
+                    "name": "surrogateParentBurnRawTx",
+                    "type": "bytes"
+                },
+                {
+                    "name": "surrogateBurnRawTx",
+                    "type": "bytes"
+                },
+                {
+                    "name": "surrogateBlockHeader",
+                    "type": "bytes"
+                },
+                {
+                    "name": "surrogateBlockMerkleProof",
+                    "type": "bytes"
+                }
+            ]
+        }
+    ]
+}

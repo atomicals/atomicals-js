@@ -1,0 +1,47 @@
+{
+    "v": "1",
+    "comment": "Basic crowd funding contract. Crowd fund ARC20 tokens and after block height owner can withdraw",
+    "code": "00870000537af00051537af051870058fb0001efa08800f651880000f7d352870058fb0001efa2880000efc18800f7f2", 
+    "fn": [
+        {
+            "name": "ctor",
+            "params": [
+                {
+                    "name": "pubkey",
+                    "type": "bytes"
+                },
+                {
+                    "name": "height",
+                    "type": "bytes"
+                }
+            ]
+        },
+        {
+            "name": "deposit",
+            "payable": [
+                {
+                    "type": "FT"
+                }
+            ],
+            "params": [
+            ]
+        },
+        {
+            "name": "withdraw",
+            "params": [
+                {
+                    "name": "tokenIndex",
+                    "type": "bytes"
+                },
+                {
+                    "name": "amount",
+                    "type": "bytes"
+                },
+                {
+                    "name": "withdrawOutIdx",
+                    "type": "bytes"
+                }
+            ]
+        }
+    ]
+}

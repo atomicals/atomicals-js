@@ -5,6 +5,8 @@ import { GetByRealmCommand } from "./get-by-realm-command";
 import { GetByContainerCommand } from "./get-by-container-command";
 import { GetByTickerCommand } from "./get-by-ticker-command";
 import { GetCommand } from "./get-command";
+import { GetByContractCommand } from "./get-by-contract-command";
+import { GetByProtocolCommand } from "./get-by-protocol-command";
 
 export class ResolveCommand implements CommandInterface {
   constructor(
@@ -26,6 +28,10 @@ export class ResolveCommand implements CommandInterface {
       cmd = new GetByContainerCommand(this.electrumApi, atomicalType.containerName || '', this.fetchType);
     } else if (atomicalType.type === AtomicalIdentifierType.TICKER_NAME) {
       cmd = new GetByTickerCommand(this.electrumApi, atomicalType.tickerName || '', this.fetchType);
+    } else if (atomicalType.type === AtomicalIdentifierType.CONTRACT_NAME) {
+      cmd = new GetByContractCommand(this.electrumApi, atomicalType.contractName || '', this.fetchType);
+    } else if (atomicalType.type === AtomicalIdentifierType.PROTOCOL_NAME) {
+      cmd = new GetByProtocolCommand(this.electrumApi, atomicalType.protocolName || '', this.fetchType);
     }
     const cmdResponse = await cmd.run();
     if (!cmdResponse || !cmdResponse.success) {
