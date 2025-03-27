@@ -46,7 +46,9 @@ export interface ISelectedUtxo {
   index: number;
   value: number;
   script: any;
-  atomicals: string[];
+  atomicals: {
+    [atomical_id: string]: string
+  };
 }
 
 
@@ -190,7 +192,7 @@ export class TransferInteractiveFtCommand implements CommandInterface {
     let isOtherAtomicalsFound = false;
     const indexesOfSelectedUtxosWithMultipleAtomicals: number[] = [];
     for (const utxo of selectedUtxos) {
-      for (const atomical of utxo.atomicals) {
+      for (const atomical of Object.keys(utxo.atomicals)) {
         if (!dupMap[atomical]) {
           isOtherAtomicalsFound = true;
           indexesOfSelectedUtxosWithMultipleAtomicals.push(i);
@@ -306,7 +308,7 @@ export class TransferInteractiveFtCommand implements CommandInterface {
     // console.log(JSON.stringify(res.utxos, null, 2))
     const filteredUtxosByAtomical: any = [];
     for (const utxo of res.utxos) {
-      if (utxo.atomicals.find((item) => item === atomicalId)) {
+      if (Object.keys(utxo.atomicals).find((item) => item === atomicalId)) {
         filteredUtxosByAtomical.push({
           txid: utxo.txid,
           index: utxo.index,

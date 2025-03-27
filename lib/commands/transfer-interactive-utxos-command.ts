@@ -35,7 +35,9 @@ export interface ISelectedUtxo {
   index: number;
   value: number;
   script: any;
-  atomicals: string[];
+  atomicals: {
+    [atomical_id: string]: string
+  };
 }
 
 

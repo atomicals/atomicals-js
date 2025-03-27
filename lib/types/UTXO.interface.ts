@@ -7,7 +7,9 @@ export interface UTXO {
   script?: string;
   height?: number;
   outputIndex: number;
-  atomicals?: any[];
+  atomicals: {
+    [atomical_id: string]: string
+  };
   atomicals_at_location?: any[];
   nonWitnessUtxo?: Buffer;
 }
